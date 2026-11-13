@@ -720,7 +720,7 @@ function conflitos(lista){
   return out;
 }
 function jobCard(j){const open=!j.principal_id&&j.status==="aberto";
-  return `<div class="jc ${j.status==="realizado"?"done":open?"open":""}" data-act="job" data-id="${j.id}"><b>${hm(j.inicio)}–${hm(j.fim)}</b> · ${esc(j.marca||cliNome(j.cliente_id)||"")}<br>
+  return `<div class="jc ${j.status==="realizado"?"done":open?"open":""}" data-act="job" data-id="${j.id}"><b>${hm(j.inicio)}–${hm(j.fim)}</b> · ${esc(j.marca||cliNome(j.cliente_id)||"")}${platTag(j)}<br>
   <span class="muted">${j.local_tipo==="estudio"?(j.espaco||"estúdio"):j.local_tipo==="cliente"?"local do cliente":"online"}</span><br>
   ${j.principal_id?`A: ${esc(nome(j.principal_id))}`:`<span style="color:var(--flash)">A: vaga aberta</span>`}${j.substituto_id?` · B: ${esc(nome(j.substituto_id))}`:""}</div>`}
 VIEWS.agenda=()=>{
@@ -734,7 +734,7 @@ VIEWS.agenda=()=>{
       for(let i=0;i<nCel;i++){const d=new Date(start);d.setDate(start.getDate()+i);const fora=d.getMonth()!==ref.getMonth();
         const js=fora?[]:S.jobs.filter(j=>j.status!=="cancelado"&&sameDay(new Date(j.inicio),d)).sort((a,b)=>a.inicio<b.inicio?-1:1);
         cells+=`<div class="md ${fora?"out":""} ${sameDay(d,today)?"today":""} ${d<new Date(today.toDateString())?"past":""}">${fora?"":`<div class="mdh"><b data-act="agDia" data-v="${ymd(d)}" title="Ver a semana">${d.getDate()}</b><button class="madd" data-act="novoJobDia" data-v="${ymd(d)}" title="Nova live neste dia">+</button></div>
-        ${js.slice(0,2).map(j=>`<div class="mj ${!j.principal_id&&j.status==="aberto"?"open":""} ${j.status==="realizado"?"done":""}" data-act="job" data-id="${j.id}" title="${hm(j.inicio)} ${esc(j.marca||"")}${j.principal_id?" · "+esc(nome(j.principal_id)):" · vaga aberta"}"><b>${hm(j.inicio).replace(":00","h")}</b> ${esc(j.marca||cliNome(j.cliente_id)||"Live")}${j.principal_id?`<span> · ${esc(String(nome(j.principal_id)).split(" ")[0])}</span>`:""}</div>`).join("")}${js.length>2?`<div class="mmore" data-act="agDia" data-v="${ymd(d)}">+${js.length-2}</div>`:""}`}</div>`}
+        ${js.slice(0,2).map(j=>`<div class="mj ${!j.principal_id&&j.status==="aberto"?"open":""} ${j.status==="realizado"?"done":""}" data-act="job" data-id="${j.id}" title="${hm(j.inicio)} ${esc(j.marca||"")}${j.plataforma?" · "+esc(j.plataforma):""}${j.principal_id?" · "+esc(nome(j.principal_id)):" · vaga aberta"}"><b>${hm(j.inicio).replace(":00","h")}</b> ${esc(j.marca||cliNome(j.cliente_id)||"Live")}${j.principal_id?`<span> · ${esc(String(nome(j.principal_id)).split(" ")[0])}</span>`:""}</div>`).join("")}${js.length>2?`<div class="mmore" data-act="agDia" data-v="${ymd(d)}">+${js.length-2}</div>`:""}`}</div>`}
       const mjs=S.jobs.filter(j=>j.status!=="cancelado"&&new Date(j.inicio).getMonth()===ref.getMonth()&&new Date(j.inicio).getFullYear()===ref.getFullYear());
       return `<div class="m2"><div class="row" style="justify-content:space-between;margin-bottom:6px;align-items:baseline"><h2 style="font-size:16px;text-transform:capitalize;margin:0">${ML[ref.getMonth()]} ${ref.getFullYear()}</h2><span class="muted small">${mjs.length} lives · ${mjs.filter(j=>!j.principal_id&&j.status==="aberto").length} vagas</span></div><div class="mgrid big sm2">${DS.map(d=>`<div class="mwd">${d}</div>`).join("")}${cells}</div></div>`};
     const r1=S.agMes,r2=new Date(r1.getFullYear(),r1.getMonth()+1,1);
@@ -754,7 +754,7 @@ VIEWS.agenda=()=>{
 
 /* ================= JOBS ================= */
 function jobItem(j){const open=!j.principal_id&&j.status==="aberto";
-  return `<div class="item" data-act="job" data-id="${j.id}"><div class="b"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")} <span class="muted small">${jn(j.numero)}</span></div>
+  return `<div class="item" data-act="job" data-id="${j.id}"><div class="b"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)} <span class="muted small">${jn(j.numero)}</span></div>
   <div class="s">${dCurta(j.inicio)} · ${hm(j.inicio)}–${hm(j.fim)} · ${j.local_tipo==="estudio"?(j.espaco?"Estúdio "+j.espaco:"Estúdio"):j.local_tipo==="cliente"?"Local do cliente":"Online"}${j.produto?" · "+esc(j.produto):""}</div>
   <div>${j.status==="realizado"?`<span class="tag o">realizado</span>`:j.status==="cancelado"?`<span class="tag x">cancelado</span>`:open?`<span class="tag f">vaga aberta</span>`:`<span class="tag">A: ${esc(nome(j.principal_id))}</span>`}${j.substituto_id?`<span class="tag">B: ${esc(nome(j.substituto_id))}</span>`:j.status==="aberto"?`<span class="tag">B: livre</span>`:""}${j.modalidade==="aluguel"?`<span class="tag c">aluguel</span>`:""}${j.publicado&&j.status==="aberto"?"":j.status==="aberto"?`<span class="tag w">fora do mural</span>`:""}</div></div>
   <div class="r">${j.valor_seller?brl(j.valor_seller):""}</div></div>`}
@@ -793,6 +793,7 @@ function openJob(id,preset={}){
    ${id?`<div>${j.status==="realizado"?`<span class="tag o">realizado</span>`:j.status==="cancelado"?`<span class="tag x">cancelado</span>`:`<span class="tag v">aberto</span>`}</div>`:""}
    <div class="fld"><label>Contrato</label><select name="proposta_id" data-act-change="jobContrato" data-1c="lista"><option value="">— sem contrato —</option>${contratos.map(p=>`<option value="${p.id}" ${p.id===j.proposta_id?"selected":""}>${esc(p.contrato_numero||pn(p.numero))} · ${esc(p.marca)}</option>`).join("")}</select><div class="hint">Liga a live às condições de venda da proposta aceita.</div></div>
    ${cliSel(j.cliente_id,"Cliente")}${fld("marca","Marca",j.marca)}
+   ${pick("plataforma","Onde é a live",j.plataforma||(id?"":"TikTok"),PLAT_LIVE,{ph:"Outra: escreva"})}<div class="hint" style="margin-top:-6px">Mesma marca no TikTok e no Instagram? Cadastre uma live para cada plataforma.</div>
    <div class="fld"><label>Modalidade</label>${seg("modalidade",[["servico","Serviço completo"],["aluguel","Só aluguel do espaço"]],j.modalidade)}</div>
    <div data-show="modalidade=servico" class="sbox">${pickM("equipamento","Equipamento (pode marcar mais de um)",j.equipamento||"",["Celular","Câmera profissional","2 câmeras","Iluminação extra","Microfone de lapela","Cenário da marca"],{ph:"Outro equipamento: escreva aqui"})}</div>
    <div class="sec"><h2>Local</h2></div>
@@ -837,7 +838,7 @@ async function saveJob(id){
   const row={proposta_id:f.proposta_id||null,cliente_id:f.cliente_id||null,marca:f.marca||cliNome(f.cliente_id)||null,equipamento:srv?(f.equipamento||null):null,seller_clt:clt,seller_fora:fora,clt_ids:clt&&f.clt_ids?f.clt_ids.split(","):[],convidados:conv?(f.convidados||null):null,modalidade:f.modalidade,local_tipo:f.local_tipo,
     espaco:f.local_tipo==="estudio"?(f.espaco||null):null,local_endereco:f.local_tipo==="cliente"?f.local_endereco||null:null,inicio:ini.toISOString(),fim:fim.toISOString(),
     valor_seller:app?num(f.valor_seller):null,seller_pago_por:f.seller_pago_por||"cliente",requisitos:app?(f.requisitos||null):null,publicado:app,
-    principal_id:app?(f.principal_id||null):null,substituto_id:app?(f.substituto_id||null):null,obs:f.obs||null};
+    principal_id:app?(f.principal_id||null):null,substituto_id:app?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null};
   if(row.principal_id&&row.principal_id===row.substituto_id)return toast("Principal e substituto precisam ser pessoas diferentes",true);
   if(id&&f.ireal_h!==undefined){const j=S.jobs.find(x=>x.id===id);const base=ymd(new Date(j.inicio));
     let ir=combine(f.data||base,f.ireal_h,f.ireal_m),fr=combine(f.data||base,f.freal_h,f.freal_m);if(fr<=ir)fr=new Date(fr.getTime()+864e5);
@@ -1212,7 +1213,7 @@ function jobSteps(j){
   let last=-1;st.forEach((s,i)=>{if(s[1])last=i});
   return `<div class="dots">${st.map((s,i)=>`<div class="st ${s[1]?"ok":""} ${i===last?"cur":""}"><i></i>${s[0]}</div>`).join("")}</div>`}
 function jobRow(j){const open=!j.principal_id&&j.status==="aberto";
-  return `<tr data-act="job" data-id="${j.id}"><td class="m0"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")}</div><div class="s">${jn(j.numero)}${j.produto?" · "+esc(j.produto):""}</div></td>
+  return `<tr data-act="job" data-id="${j.id}"><td class="m0"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)}</div><div class="s">${jn(j.numero)}${j.produto?" · "+esc(j.produto):""}</div></td>
   <td data-l="Etapa" class="hm">${jobSteps(j)}</td>
   <td data-l="Quando"><div>${dCurta(j.inicio)}</div><div class="s">${hm(j.inicio)}–${hm(j.fim)} · ${horas(j.inicio,j.fim)}</div></td>
   <td data-l="Local">${j.local_tipo==="estudio"?"Estúdio "+(j.espaco||""):j.local_tipo==="cliente"?"Cliente":"Online"}${j.modalidade==="aluguel"?`<div><span class="tag c">aluguel</span></div>`:""}</td>
@@ -2513,8 +2514,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="36";const APP_DATA="29/10/2026";
+const APP_VERSAO="37";const APP_DATA="29/10/2026";
 const NOVIDADES=[
+ ["37","13/11","Lives: novo campo 'Onde é a live' (TikTok, Instagram, Shopee, YouTube ou outra). A plataforma aparece como etiqueta colorida na agenda (dia, semana, mês e lista) e no resumo, para diferenciar lives da mesma marca no TikTok e no Instagram."],
  ["36","03/11","Contrato: cláusulas 6ª, 7ª, 8ª e 16ª revisadas a pedido do jurídico de cliente (aprovação prévia para preços, descontos e anúncios; % só sobre vendas confirmadas com nota; nenhum custo extra sem aprovação; responsabilidade sem limite em dolo, culpa grave, dados, sigilo e direitos de terceiros). Vale para contratos e versões gerados daqui para frente; os já gerados não mudam."],
  ["35","30/10","Proposta: botão ✂ Escolher páginas na tela do PDF. Mostra todas as páginas em miniatura; toque em 'Tirar esta página' nas que não quer. Atalho 'Curta' deixa só capa, valores, resumo e contato. A numeração se ajusta e a escolha fica guardada para aquela proposta neste aparelho."],
  ["34","29/10","Um clique: listas com até 10 opções curtas também viram botões, e listas maiores ganham botões favoritos. Os botões acompanham quando o sistema muda o valor sozinho."],
@@ -3194,7 +3196,7 @@ function jobSellerHtml(j){if(j.modalidade==="aluguel")return `<span class="tag c
   (j.clt_ids||[]).forEach(id=>out.push(`<span class="tag">${esc(nome(id))} (IMPlay)</span>`));if(j.convidados)out.push(`<span class="tag">${esc(j.convidados)}</span>`);
   return out.join(" ")||`<span class="muted small">sem seller definido</span>`}
 function agLinha(j){return `<div class="agl ${j.status==="realizado"?"done":""} ${!j.principal_id&&j.publicado&&j.status==="aberto"?"open":""}" data-act="job" data-id="${j.id}"><div class="agh"><b>${hm(j.inicio)}</b><span>${hm(j.fim)}</span></div>
-  <div class="agb"><div class="agt">${esc(j.marca||cliNome(j.cliente_id)||"Live")} <span class="muted small">· ${esc(jobSala(j))}</span>${j.status==="realizado"?` <span class="tag o">realizada</span>`:""}</div><div class="ags">${jobSellerHtml(j)}</div></div></div>`}
+  <div class="agb"><div class="agt">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)} <span class="muted small">· ${esc(jobSala(j))}</span>${j.status==="realizado"?` <span class="tag o">realizada</span>`:""}</div><div class="ags">${jobSellerHtml(j)}</div></div></div>`}
 function agDiaHead(d){const hoje=new Date();const rel=sameDay(d,hoje)?"Hoje":sameDay(d,new Date(hoje.getTime()+864e5))?"Amanhã":"";const t=`${rel?rel+" · ":""}${DL[d.getDay()]}, ${d.getDate()} de ${ML[d.getMonth()].toLowerCase()}`;return t.charAt(0).toUpperCase()+t.slice(1)}
 function agDiaView(){const d=S.agD?new Date(S.agD):new Date();d.setHours(0,0,0,0);const js=S.jobs.filter(j=>j.status!=="cancelado"&&sameDay(new Date(j.inicio),d)).sort((a,b)=>a.inicio<b.inicio?-1:1);
   const occ=new Set(js.filter(j=>j.local_tipo==="estudio"&&j.espaco).map(j=>j.espaco));const conf=conflitos(js);
@@ -3217,10 +3219,10 @@ VIEWS.agenda=()=>{let h=_agendaV21();const v=S.agView;
   return h};
 function openJobResumo(id){const j=S.jobs.find(x=>x.id===id);if(!j)return;const ini=new Date(j.inicio),fim=new Date(j.fim);const p=j.proposta_id&&S.propostas.find(x=>x.id===j.proposta_id);
   const R=(l,v)=>v?`<div class="jrr"><span>${l}</span><div>${v}</div></div>`:"";
-  openSheet(`<form onsubmit="return false"><div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">${esc(j.marca||cliNome(j.cliente_id)||"Live")}</h3><span class="muted small">${jn(j.numero)}</span></div>
+  openSheet(`<form onsubmit="return false"><div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)}</h3><span class="muted small">${jn(j.numero)}</span></div>
    <div style="margin:6px 0 12px">${j.status==="realizado"?`<span class="tag o">realizada</span>`:j.status==="cancelado"?`<span class="tag x">cancelada</span>`:`<span class="tag v">agendada</span>`}${j.modalidade==="aluguel"?` <span class="tag c">só aluguel do espaço</span>`:""}</div>
    <div class="jres">${R("Quando",`<b>${agDiaHead(ini)}</b><br>${hm(ini)} às ${hm(fim)} · ${Math.round((fim-ini)/36e5*10)/10} h`)}
-    ${R("Onde",esc(jobSala(j)))}${R("Seller",jobSellerHtml(j)+(j.valor_seller?`<div class="small muted" style="margin-top:4px">Cachê ${brl(j.valor_seller)} · pago por ${j.seller_pago_por==="implay"?"IMPlay":"cliente direto"}</div>`:""))}
+    ${R("Plataforma",esc(j.plataforma||""))}${R("Onde",esc(jobSala(j)))}${R("Seller",jobSellerHtml(j)+(j.valor_seller?`<div class="small muted" style="margin-top:4px">Cachê ${brl(j.valor_seller)} · pago por ${j.seller_pago_por==="implay"?"IMPlay":"cliente direto"}</div>`:""))}
     ${R("Equipamento",esc(j.equipamento||""))}${R("Contrato",p?esc(p.contrato_numero||pn(p.numero)):"")}${R("Requisitos",esc(j.requisitos||""))}${R("Observações",esc(j.obs||""))}</div>
    <div class="acts"><button type="button" class="btn p" data-act="jobEditar" data-id="${id}">Editar</button><button type="button" class="btn" data-act="fechar">Fechar</button>
     ${j.status==="aberto"?`<button type="button" class="btn" data-act="jobDup" data-id="${id}">Duplicar</button><button type="button" class="btn d" data-act="jobStatus" data-id="${id}" data-v="cancelado">Cancelar live</button>`:`<button type="button" class="btn" data-act="jobStatus" data-id="${id}" data-v="aberto">Reabrir</button>`}</div></form>`)}
@@ -3495,6 +3497,13 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(
   if(act==="pgCurta")off=new Set(ws.map(w=>w.dataset.pk).filter(k=>!(k==="capa"||k==="resumo"||k==="s29"||k.startsWith("inv:"))));
   if(act==="pgTog"){const k=a.closest(".pgw").dataset.pk;if(off.has(k))off.delete(k);else{if(ws.length-off.size<=1)return toast("Precisa ficar pelo menos 1 página",true);off.add(k)}}
   pgSalva(off);pgApply()},true);
+
+
+/* ================= v37 · LIVE: PLATAFORMA (TikTok, Instagram…) ================= */
+const PLAT_LIVE=[["TikTok","TikTok"],["Instagram","Instagram"],["Shopee","Shopee"],["YouTube","YouTube"]];
+function platTag(j){const p=(j&&j.plataforma)||"";if(!p)return "";const k=/tik/i.test(p)?"tt":/insta/i.test(p)?"ig":/shopee/i.test(p)?"sp":/you/i.test(p)?"yt":"ot";const t=k==="tt"?"TikTok":k==="ig"?"Insta":k==="sp"?"Shopee":k==="yt"?"YouTube":p;return ` <span class="pltag pl-${k}" title="${esc(p)}">${esc(t)}</span>`}
+(function(){const st=document.createElement("style");st.textContent=`.pltag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:1px 7px;border-radius:99px;vertical-align:1px;margin-left:4px;line-height:1.5;white-space:nowrap}
+.pl-tt{background:#111;color:#25F4EE;box-shadow:inset 0 0 0 1px #FE2C55}.pl-ig{background:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);color:#fff}.pl-sp{background:#EE4D2D;color:#fff}.pl-yt{background:#FF0000;color:#fff}.pl-ot{background:var(--linha2,#444);color:#fff}`;document.head.appendChild(st)})();
 
 if(!orcPreviewBoot())boot();
 </script>
