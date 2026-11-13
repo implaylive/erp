@@ -720,7 +720,7 @@ function conflitos(lista){
   return out;
 }
 function jobCard(j){const open=!j.principal_id&&j.status==="aberto";
-  return `<div class="jc ${j.status==="realizado"?"done":open?"open":""}" data-act="job" data-id="${j.id}"><b>${hm(j.inicio)}–${hm(j.fim)}</b> · ${esc(j.marca||cliNome(j.cliente_id)||"")}${platTag(j)}<br>
+  return `<div class="jc ${platCls(j)} ${j.status==="realizado"?"done":open?"open":""}" data-act="job" data-id="${j.id}"><b>${hm(j.inicio)}–${hm(j.fim)}</b> · ${esc(j.marca||cliNome(j.cliente_id)||"")}${platTag(j)}<br>
   <span class="muted">${j.local_tipo==="estudio"?(j.espaco||"estúdio"):j.local_tipo==="cliente"?"local do cliente":"online"}</span><br>
   ${j.principal_id?`A: ${esc(nome(j.principal_id))}`:`<span style="color:var(--flash)">A: vaga aberta</span>`}${j.substituto_id?` · B: ${esc(nome(j.substituto_id))}`:""}</div>`}
 VIEWS.agenda=()=>{
@@ -734,7 +734,7 @@ VIEWS.agenda=()=>{
       for(let i=0;i<nCel;i++){const d=new Date(start);d.setDate(start.getDate()+i);const fora=d.getMonth()!==ref.getMonth();
         const js=fora?[]:S.jobs.filter(j=>j.status!=="cancelado"&&sameDay(new Date(j.inicio),d)).sort((a,b)=>a.inicio<b.inicio?-1:1);
         cells+=`<div class="md ${fora?"out":""} ${sameDay(d,today)?"today":""} ${d<new Date(today.toDateString())?"past":""}">${fora?"":`<div class="mdh"><b data-act="agDia" data-v="${ymd(d)}" title="Ver a semana">${d.getDate()}</b><button class="madd" data-act="novoJobDia" data-v="${ymd(d)}" title="Nova live neste dia">+</button></div>
-        ${js.slice(0,2).map(j=>`<div class="mj ${!j.principal_id&&j.status==="aberto"?"open":""} ${j.status==="realizado"?"done":""}" data-act="job" data-id="${j.id}" title="${hm(j.inicio)} ${esc(j.marca||"")}${j.plataforma?" · "+esc(j.plataforma):""}${j.principal_id?" · "+esc(nome(j.principal_id)):" · vaga aberta"}"><b>${hm(j.inicio).replace(":00","h")}</b> ${esc(j.marca||cliNome(j.cliente_id)||"Live")}${j.principal_id?`<span> · ${esc(String(nome(j.principal_id)).split(" ")[0])}</span>`:""}</div>`).join("")}${js.length>2?`<div class="mmore" data-act="agDia" data-v="${ymd(d)}">+${js.length-2}</div>`:""}`}</div>`}
+        ${js.slice(0,2).map(j=>`<div class="mj ${platCls(j)} ${!j.principal_id&&j.status==="aberto"?"open":""} ${j.status==="realizado"?"done":""}" data-act="job" data-id="${j.id}" title="${hm(j.inicio)} ${esc(j.marca||"")}${j.plataforma?" · "+esc(j.plataforma):""}${j.principal_id?" · "+esc(nome(j.principal_id)):" · vaga aberta"}"><b>${hm(j.inicio).replace(":00","h")}</b> ${esc(j.marca||cliNome(j.cliente_id)||"Live")}${j.principal_id?`<span> · ${esc(String(nome(j.principal_id)).split(" ")[0])}</span>`:""}</div>`).join("")}${js.length>2?`<div class="mmore" data-act="agDia" data-v="${ymd(d)}">+${js.length-2}</div>`:""}`}</div>`}
       const mjs=S.jobs.filter(j=>j.status!=="cancelado"&&new Date(j.inicio).getMonth()===ref.getMonth()&&new Date(j.inicio).getFullYear()===ref.getFullYear());
       return `<div class="m2"><div class="row" style="justify-content:space-between;margin-bottom:6px;align-items:baseline"><h2 style="font-size:16px;text-transform:capitalize;margin:0">${ML[ref.getMonth()]} ${ref.getFullYear()}</h2><span class="muted small">${mjs.length} lives · ${mjs.filter(j=>!j.principal_id&&j.status==="aberto").length} vagas</span></div><div class="mgrid big sm2">${DS.map(d=>`<div class="mwd">${d}</div>`).join("")}${cells}</div></div>`};
     const r1=S.agMes,r2=new Date(r1.getFullYear(),r1.getMonth()+1,1);
@@ -754,7 +754,7 @@ VIEWS.agenda=()=>{
 
 /* ================= JOBS ================= */
 function jobItem(j){const open=!j.principal_id&&j.status==="aberto";
-  return `<div class="item" data-act="job" data-id="${j.id}"><div class="b"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)} <span class="muted small">${jn(j.numero)}</span></div>
+  return `<div class="item ${platCls(j)}" data-act="job" data-id="${j.id}"><div class="b"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)} <span class="muted small">${jn(j.numero)}</span></div>
   <div class="s">${dCurta(j.inicio)} · ${hm(j.inicio)}–${hm(j.fim)} · ${j.local_tipo==="estudio"?(j.espaco?"Estúdio "+j.espaco:"Estúdio"):j.local_tipo==="cliente"?"Local do cliente":"Online"}${j.produto?" · "+esc(j.produto):""}</div>
   <div>${j.status==="realizado"?`<span class="tag o">realizado</span>`:j.status==="cancelado"?`<span class="tag x">cancelado</span>`:open?`<span class="tag f">vaga aberta</span>`:`<span class="tag">A: ${esc(nome(j.principal_id))}</span>`}${j.substituto_id?`<span class="tag">B: ${esc(nome(j.substituto_id))}</span>`:j.status==="aberto"?`<span class="tag">B: livre</span>`:""}${j.modalidade==="aluguel"?`<span class="tag c">aluguel</span>`:""}${j.publicado&&j.status==="aberto"?"":j.status==="aberto"?`<span class="tag w">fora do mural</span>`:""}</div></div>
   <div class="r">${j.valor_seller?brl(j.valor_seller):""}</div></div>`}
@@ -1213,7 +1213,7 @@ function jobSteps(j){
   let last=-1;st.forEach((s,i)=>{if(s[1])last=i});
   return `<div class="dots">${st.map((s,i)=>`<div class="st ${s[1]?"ok":""} ${i===last?"cur":""}"><i></i>${s[0]}</div>`).join("")}</div>`}
 function jobRow(j){const open=!j.principal_id&&j.status==="aberto";
-  return `<tr data-act="job" data-id="${j.id}"><td class="m0"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)}</div><div class="s">${jn(j.numero)}${j.produto?" · "+esc(j.produto):""}</div></td>
+  return `<tr class="${platCls(j)}" data-act="job" data-id="${j.id}"><td class="m0"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)}</div><div class="s">${jn(j.numero)}${j.produto?" · "+esc(j.produto):""}</div></td>
   <td data-l="Etapa" class="hm">${jobSteps(j)}</td>
   <td data-l="Quando"><div>${dCurta(j.inicio)}</div><div class="s">${hm(j.inicio)}–${hm(j.fim)} · ${horas(j.inicio,j.fim)}</div></td>
   <td data-l="Local">${j.local_tipo==="estudio"?"Estúdio "+(j.espaco||""):j.local_tipo==="cliente"?"Cliente":"Online"}${j.modalidade==="aluguel"?`<div><span class="tag c">aluguel</span></div>`:""}</td>
@@ -2514,8 +2514,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="38";const APP_DATA="29/10/2026";
+const APP_VERSAO="39";const APP_DATA="29/10/2026";
 const NOVIDADES=[
+ ["39","13/11","Agenda e Lives: cada live mostra a plataforma bem visível (faixa e fundo azul-turquesa para TikTok, rosa para Instagram, etiqueta ♪ TikTok / ◎ Insta). Filtro no topo: Todas · TikTok · Instagram, com a quantidade de cada. Lives antigas sem plataforma: botão para marcar todas como TikTok de uma vez (sócios)."],
  ["38","13/11","Proposta: as páginas 'Gestão geral da marca' e 'Gestão de afiliados' agora usam os valores da proposta. No editor, novo grupo 'Gestão de marca e afiliados' (gestão R$ 8 mil/mês + 3% a 5%; afiliados R$ 1.000 e R$ 500 a cada 70 envios + 5% e 3%): altere valor e %, e ligue para entrar no resumo e no valor (venda casada). Baixou o preço? O valor antigo aparece riscado."],
  ["37","13/11","Lives: novo campo 'Onde é a live' (TikTok, Instagram, Shopee, YouTube ou outra). A plataforma aparece como etiqueta colorida na agenda (dia, semana, mês e lista) e no resumo, para diferenciar lives da mesma marca no TikTok e no Instagram."],
  ["36","03/11","Contrato: cláusulas 6ª, 7ª, 8ª e 16ª revisadas a pedido do jurídico de cliente (aprovação prévia para preços, descontos e anúncios; % só sobre vendas confirmadas com nota; nenhum custo extra sem aprovação; responsabilidade sem limite em dolo, culpa grave, dados, sigilo e direitos de terceiros). Vale para contratos e versões gerados daqui para frente; os já gerados não mudam."],
@@ -3196,7 +3197,7 @@ function jobSellerHtml(j){if(j.modalidade==="aluguel")return `<span class="tag c
   if(j.substituto_id)out.push(`<span class="tag">B: ${esc(nome(j.substituto_id))}</span>`);
   (j.clt_ids||[]).forEach(id=>out.push(`<span class="tag">${esc(nome(id))} (IMPlay)</span>`));if(j.convidados)out.push(`<span class="tag">${esc(j.convidados)}</span>`);
   return out.join(" ")||`<span class="muted small">sem seller definido</span>`}
-function agLinha(j){return `<div class="agl ${j.status==="realizado"?"done":""} ${!j.principal_id&&j.publicado&&j.status==="aberto"?"open":""}" data-act="job" data-id="${j.id}"><div class="agh"><b>${hm(j.inicio)}</b><span>${hm(j.fim)}</span></div>
+function agLinha(j){return `<div class="agl ${platCls(j)} ${j.status==="realizado"?"done":""} ${!j.principal_id&&j.publicado&&j.status==="aberto"?"open":""}" data-act="job" data-id="${j.id}"><div class="agh"><b>${hm(j.inicio)}</b><span>${hm(j.fim)}</span></div>
   <div class="agb"><div class="agt">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)} <span class="muted small">· ${esc(jobSala(j))}</span>${j.status==="realizado"?` <span class="tag o">realizada</span>`:""}</div><div class="ags">${jobSellerHtml(j)}</div></div></div>`}
 function agDiaHead(d){const hoje=new Date();const rel=sameDay(d,hoje)?"Hoje":sameDay(d,new Date(hoje.getTime()+864e5))?"Amanhã":"";const t=`${rel?rel+" · ":""}${DL[d.getDay()]}, ${d.getDate()} de ${ML[d.getMonth()].toLowerCase()}`;return t.charAt(0).toUpperCase()+t.slice(1)}
 function agDiaView(){const d=S.agD?new Date(S.agD):new Date();d.setHours(0,0,0,0);const js=S.jobs.filter(j=>j.status!=="cancelado"&&sameDay(new Date(j.inicio),d)).sort((a,b)=>a.inicio<b.inicio?-1:1);
@@ -3542,6 +3543,33 @@ function gestaoPages(o){const out=[];const comp=orcCompleto(o);
 .vgpg .vgl{columns:2;column-gap:28px;margin:18px 0 0;padding-left:20px;font-size:15px;line-height:1.35}.vgpg .vgl li{break-inside:avoid;margin:0 0 14px}
 .vgpg .vgl.w{columns:1;font-size:18px}.vgpg .dk .vgc .vgsub{color:#F3F3EC}`;document.head.appendChild(st)})();
 const _orcValorTxt8=orcValorTxt;orcValorTxt=function(o){const it=(o.itens||[]).filter(i=>i.on);const gs=it.filter(i=>(preco(i.k)||{}).grupo==="gestao");if(!gs.length)return _orcValorTxt8(o);const t=gs.map(i=>brl(i.valor)+((preco(i.k)||{}).unid||"")).join(" + ");return it.length>gs.length?_orcValorTxt8(o)+" + "+t:t};
+
+
+/* ================= v39 · LIVES: TIKTOK x INSTAGRAM BEM VISÍVEL + FILTRO ================= */
+function platKey(j){const p=(j&&j.plataforma)||"";return !p?"":/tik/i.test(p)?"tt":/insta/i.test(p)?"ig":/shopee/i.test(p)?"sp":/you/i.test(p)?"yt":"ot"}
+function platCls(j){const k=platKey(j);return k?"pf pf-"+k:""}
+platTag=function(j){const k=platKey(j);if(!k)return "";const p=j.plataforma;const t={tt:"♪ TikTok",ig:"◎ Insta",sp:"Shopee",yt:"▶ YouTube"}[k]||p;return ` <span class="pltag pl-${k}" title="${esc(p)}">${esc(t)}</span>`};
+const PLAT_FILTRO=[["","Todas"],["tt","♪ TikTok"],["ig","◎ Instagram"],["sem","Sem plataforma"]];
+function platPass(j){const f=S.agPlat||"";return !f||(f==="sem"?!platKey(j):platKey(j)===f)}
+function platChips(){const ativos=S.jobs.filter(j=>j.status!=="cancelado");const n=k=>ativos.filter(j=>k===""?true:k==="sem"?!platKey(j):platKey(j)===k).length;
+  const sem=n("sem");return `<div class="platbar"><div class="chips">${PLAT_FILTRO.filter(([k])=>k!=="sem"||sem).map(([k,t])=>`<button type="button" class="${(S.agPlat||"")===k?"on":""} ${k?"pc-"+k:""}" data-act="agPlat" data-v="${k}">${t}<span class="c">${n(k)}</span></button>`).join("")}</div>
+  ${sem&&isSocio()?`<button type="button" class="btn sm" data-act="platSemTT" title="Para as lives antigas, cadastradas antes do campo existir">Marcar as ${sem} sem plataforma como TikTok</button>`:""}</div>`}
+const _vAgenda39=VIEWS.agenda;VIEWS.agenda=()=>{const all=S.jobs;S.jobs=all.filter(platPass);let h;try{h=_vAgenda39()}finally{S.jobs=all}return platChips()+h};
+const _vJobs39=VIEWS.jobs;VIEWS.jobs=()=>{const all=S.jobs;S.jobs=all.filter(platPass);let h;try{h=_vJobs39()}finally{S.jobs=all}return platChips()+h};
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=agPlat],[data-act=platSemTT]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="agPlat"){S.agPlat=(S.agPlat||"")===a.dataset.v?"":a.dataset.v;return render()}
+  if(!armed(a))return;const ids=S.jobs.filter(j=>j.status!=="cancelado"&&!platKey(j)).map(j=>j.id);if(!ids.length)return;
+  await run(db.from("imp_jobs").update({plataforma:"TikTok"}).in("id",ids),ids.length+" lives marcadas como TikTok");await refresh()},true);
+(function(){const st=document.createElement("style");st.textContent=`
+.pltag{font-size:11px;padding:2px 8px}
+.pf-tt{background:linear-gradient(90deg,rgba(37,244,238,.16),rgba(254,44,85,.10) 70%,transparent)!important;box-shadow:inset 0 3px 0 #25F4EE}
+.pf-ig{background:linear-gradient(90deg,rgba(221,42,123,.20),rgba(129,52,175,.12) 70%,transparent)!important;box-shadow:inset 0 3px 0 #DD2A7B}
+.pf-sp{background:linear-gradient(90deg,rgba(238,77,45,.18),transparent)!important;box-shadow:inset 0 3px 0 #EE4D2D}
+.pf-yt{background:linear-gradient(90deg,rgba(255,0,0,.16),transparent)!important;box-shadow:inset 0 3px 0 #FF0000}
+tr.pf td:first-child{box-shadow:inset 4px 0 0 currentColor}tr.pf-tt td:first-child{color:inherit;box-shadow:inset 4px 0 0 #25F4EE}tr.pf-ig td:first-child{box-shadow:inset 4px 0 0 #DD2A7B}
+tr.pf{background:none!important;box-shadow:none}
+.platbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.platbar .chips button.pc-tt.on{background:#111;color:#25F4EE;border-color:#FE2C55}.platbar .chips button.pc-ig.on{background:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);color:#fff;border-color:transparent}`;document.head.appendChild(st)})();
 
 if(!orcPreviewBoot())boot();
 </script>
