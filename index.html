@@ -1689,8 +1689,8 @@ function preco(k){if(String(k||"").startsWith("cx:"))return cxFind(k);return pre
 function precosList(){return precosTodos().slice().sort((a,b)=>(a.ordem||0)-(b.ordem||0))}
 function itemDesc(it){const p=preco(it.k);if(!p||!it.on)return false;return Number(it.valor)<Number(p.valor)||Number(it.perc)<Number(p.perc)||(p.grupo==="hora"&&(hrDe(it,p).hmin<Number(p.horas)||hrDe(it,p).lsem<Number(p.lives)))}
 function orcTemDesc(o){return (o.itens||[]).some(itemDesc)}
-function orcResumo(o){const g={hora:[],pontual:[],pacote:[],drop:[],cx:[]};(o.itens||[]).filter(i=>i.on).forEach(i=>{const p=i.p||preco(i.k);if(!p)return;if(String(i.k).startsWith("cx:"))g.cx.push(p.nome||"Sob medida");else if(g[p.grupo])g[p.grupo].push(p.categoria)});
-  return [g.hora.length?"Por hora de live":"",...g.cx,g.pontual.length?"Pontual "+g.pontual.join("/"):"",g.pacote.length?"Pacote "+g.pacote.join("/"):"",g.drop.length?"Live Drop":""].filter(Boolean).join(" · ")||"—"}
+function orcResumo(o){const g={hora:[],pontual:[],pacote:[],drop:[],cx:[],gestao:[]};(o.itens||[]).filter(i=>i.on).forEach(i=>{const p=i.p||preco(i.k);if(!p)return;if(String(i.k).startsWith("cx:"))g.cx.push(p.nome||"Sob medida");else if(g[p.grupo])g[p.grupo].push(p.categoria)});
+  return [g.hora.length?"Por hora de live":"",...g.cx,g.pontual.length?"Pontual "+g.pontual.join("/"):"",g.pacote.length?"Pacote "+g.pacote.join("/"):"",g.drop.length?"Live Drop":"",...g.gestao].filter(Boolean).join(" · ")||"—"}
 function orcValorTxt(o){const it=(o.itens||[]).filter(i=>i.on);const hr=it.find(i=>(preco(i.k)||{}).grupo==="hora");if(hr){const h=hrDe(hr,preco(hr.k));return brl(h.vh)+"/hora · "+brl(h.mensal)+"/mês"}const pk=it.filter(i=>(preco(i.k)||{}).grupo==="pacote");
   if(pk.length)return brl(Math.min(...pk.map(i=>Number(i.valor))))+(pk.length>1?" a "+brl(Math.max(...pk.map(i=>Number(i.valor)))):"")+"/mês";
   const pt=it.filter(i=>(preco(i.k)||{}).grupo==="pontual");if(pt.length)return "a partir de "+brl(Math.min(...pt.map(i=>Number(i.valor))));
@@ -1775,7 +1775,7 @@ function oeCard(k){const p=preco(k),it=oeItem(k);const mud=Number(it.valor)!==Nu
    <button type="button" class="lnk" data-act="oeReset" data-k="${k}">Voltar ao preço de tabela</button></div>
    <button type="button" class="open" data-act="oeEdit" data-k="${k}">${it.edit?"Fechar ✓":"✏️ Alterar valor ou %"}${mud||mudp?" · alterado":""}</button></div>`}
 function oePriceHtml(k){const p=preco(k),it=oeItem(k);const mud=Number(it.valor)!==Number(p.valor),mudp=Number(it.perc)!==Number(p.perc);
-  const suf=p.grupo==="hora"?"/hora":p.grupo==="pacote"?"/mês":p.grupo==="pontual"?"/live":"";
+  const suf=p.unid?p.unid:p.grupo==="hora"?"/hora":p.grupo==="pacote"?"/mês":p.grupo==="pontual"?"/live":"";
   const dn=Number(it.valor)<Number(p.valor),dnp=Number(it.perc)<Number(p.perc);
   return `${p.valor_ref&&!mud?`<s>${brl(p.valor_ref)}</s> `:""}${mud&&dn?`<s>${brl(p.valor)}</s> `:""}<b class="${mud?(dn?"dn":"up"):""}">${brl(it.valor)}</b><small>${suf}</small>${mud&&!dn?`<div class="op" style="color:var(--ok)">acima da tabela (${brl(p.valor)}) · o cliente vê só o novo</div>`:""}
    <div class="op">${mudp&&dnp?`<s>${numIn(p.perc)}%</s> `:""}<b class="${mudp?(Number(it.perc)<Number(p.perc)?"dn":"up"):""}">+ ${numIn(it.perc)}%</b> sobre vendas das lives</div>${p.grupo==="hora"?(h=>`<div class="op">mínimo de <b>${numIn(h.hmin)} h</b> por mês · ${h.lsem} lives por semana<br>= <b>${brl(h.mensal)}</b> fixo por mês</div>`)(hrDe(it,p)):""}`}
@@ -1836,13 +1836,13 @@ function orcDoc(o){S._docO=o;const P=[];const M=esc(o.marca||"Marca");const fina
    ${Number(i.valor)<cheio?`<tr><td><b>${p.lives} lives</b></td><td>${esc(p.descricao)}</td><td>${brl(cheio)}</td><td>${pc(i)}</td></tr><tr class="hlr"><td colspan="2"><b>CONDIÇÃO ESPECIAL</b></td><td><s>${brl(cheio)}</s> <b>${brl(i.valor)}</b></td><td>${pc(i)}</td></tr>`:`<tr><td><b>${p.lives} lives</b></td><td>${esc(p.descricao)}</td><td><b>${brl(i.valor)}</b></td><td>${pc(i)}</td></tr>`}</table>
    <p class="vnote dk"><b>Inclui:</b> estúdio com áudio e vídeo, apresentadores treinados, roteiro e ofertas. <b>Não inclui:</b> custos com cenário.</p>`))}
   if(grp("outro").length){const l=grp("outro");P.push(v1page("cream",`<div class="vk">Investimento</div><h2>Serviços sob medida</h2><table class="vtb"><tr><th>Serviço</th><th>Valor</th><th>Variável</th></tr>${l.map(i=>{const p=preco(i.k);return `<tr><td><b>${esc(p.nome||"Serviço")}</b><small>${esc(p.descricao||"")}</small></td><td>${Number(i.valor)?`<b>${brl(i.valor)}</b>`:"—"}</td><td>${Number(i.perc)?pc(i):"—"}</td></tr>`}).join("")}</table>`))}
-  if(orcCompleto(o)){P.push(dimg(26));P.push(dimg(27))}
+  gestaoPages(o).forEach(x=>P.push(x));
   const cli=S.clientes.find(c=>c.id===o.cliente_id)||{};
   P.push(v1page("cream doc",`${final?"":`<div class="vwm">RASCUNHO · aguardando aprovação</div>`}<div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="vk">Resumo da proposta</div><h2>${on(o.numero)} · ${M}</h2></div><img src="${LOGO_LIMA}" class="vlogo2"></div>
    <div class="vmeta"><div><small>Cliente</small><b>${esc(cli.empresa||o.marca)}</b>${cli.cnpj?`<span>CNPJ ${esc(cli.cnpj)}</span>`:""}</div><div><small>Emitido em</small><b>${new Date(o.elaborado_em||Date.now()).toLocaleDateString("pt-BR")}</b></div><div><small>Válido até</small><b>${venc.toLocaleDateString("pt-BR")}</b></div><div><small>Elaborado por</small><b>${esc(o.elaborado_nome||S.me.nome)}</b></div><div><small>Aprovado por</small><b>${o.aprovado_nome?esc(o.aprovado_nome):"—"}</b>${o.aprovado_em?`<span>${new Date(o.aprovado_em).toLocaleDateString("pt-BR")}</span>`:""}</div></div>
-   <table class="vtb sm"><tr><th>Item</th><th>Descrição</th><th>Valor</th><th>Variável</th></tr>${it.map(i=>{const p=preco(i.k);const nm={hora:"Gestão de lives",pontual:"Live Pontual",pacote:"Pacote mensal",drop:"Live Drop",outro:"Serviço"}[p.grupo];const cx=!p.chave;
+   <table class="vtb sm"><tr><th>Item</th><th>Descrição</th><th>Valor</th><th>Variável</th></tr>${it.map(i=>{const p=preco(i.k);const nm={hora:"Gestão de lives",pontual:"Live Pontual",pacote:"Pacote mensal",drop:"Live Drop",outro:"Serviço",gestao:"Gestão"}[p.grupo];const cx=!p.chave;
     if(p.grupo==="hora"){const h=hrDe(i,p);return `<tr><td><b>${cx?esc(p.nome||nm):nm+" · por hora"}</b></td><td>${[esc(p.descricao||""),hrTxt(h)].filter(Boolean).join(" · ")}</td><td>${pr(i,"/hora")}<br><small>= ${brl(h.mensal)}/mês</small></td><td>${pc(i)} sobre vendas</td></tr>`}
-    return `<tr><td><b>${cx?esc(p.nome||nm):nm+" · "+esc(p.categoria)}</b></td><td>${esc(p.descricao||"")}${p.grupo==="pontual"?` · ${i.qtd||1} live(s)`:p.grupo==="pacote"&&p.lives?` · ${p.lives} lives/mês`:""}</td><td>${pr(i,p.grupo==="pacote"?"/mês":p.grupo==="pontual"?"/live":"")}</td><td>${pc(i)} sobre vendas</td></tr>`}).join("")}</table>
+    return `<tr><td><b>${cx?esc(p.nome||nm):nm+" · "+esc(p.categoria)}</b></td><td>${esc(p.descricao||"")}${p.grupo==="pontual"?` · ${i.qtd||1} live(s)`:p.grupo==="pacote"&&p.lives?` · ${p.lives} lives/mês`:""}</td><td>${pr(i,p.unid?p.unid:p.grupo==="pacote"?"/mês":p.grupo==="pontual"?"/live":"")}</td><td>${pc(i)} sobre vendas</td></tr>`}).join("")}</table>
    <div class="vcond"><div><b>Condições</b><ul><li>Pagamento: ${esc(o.pagamento||"a combinar")}</li><li>Vigência dos pacotes: ${o.vigencia_meses||3} meses, renovável</li><li>Percentual calculado sobre as vendas das lives, sem pedidos cancelados ou devolvidos</li><li>Início conforme agenda do estúdio</li></ul></div><div><b>Fica por conta da marca</b><ul><li>Verba de mídia (GMV Max) e comissão dos afiliados</li><li>Produtos, fretes, envios, atendimento e logística</li><li>Cenário com a identidade visual da marca, orçado à parte</li><li>Lives de 12 horas ou mais, orçadas como lançamento</li></ul></div></div>
    ${orcObs(o)?`<p class="vnote dk"><b>Observações:</b> ${esc(orcObs(o))}</p>`:""}<div class="vsrc dk">${EMPRESA.razao} · CNPJ ${EMPRESA.cnpj} · Proposta válida por ${o.validade_dias||10} dias corridos, até ${dBR(venc)}. Depois disso, valores e disponibilidade podem mudar.</div>`));
   P.push(dimg(29));
@@ -2514,8 +2514,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="37";const APP_DATA="29/10/2026";
+const APP_VERSAO="38";const APP_DATA="29/10/2026";
 const NOVIDADES=[
+ ["38","13/11","Proposta: as páginas 'Gestão geral da marca' e 'Gestão de afiliados' agora usam os valores da proposta. No editor, novo grupo 'Gestão de marca e afiliados' (gestão R$ 8 mil/mês + 3% a 5%; afiliados R$ 1.000 e R$ 500 a cada 70 envios + 5% e 3%): altere valor e %, e ligue para entrar no resumo e no valor (venda casada). Baixou o preço? O valor antigo aparece riscado."],
  ["37","13/11","Lives: novo campo 'Onde é a live' (TikTok, Instagram, Shopee, YouTube ou outra). A plataforma aparece como etiqueta colorida na agenda (dia, semana, mês e lista) e no resumo, para diferenciar lives da mesma marca no TikTok e no Instagram."],
  ["36","03/11","Contrato: cláusulas 6ª, 7ª, 8ª e 16ª revisadas a pedido do jurídico de cliente (aprovação prévia para preços, descontos e anúncios; % só sobre vendas confirmadas com nota; nenhum custo extra sem aprovação; responsabilidade sem limite em dolo, culpa grave, dados, sigilo e direitos de terceiros). Vale para contratos e versões gerados daqui para frente; os já gerados não mudam."],
  ["35","30/10","Proposta: botão ✂ Escolher páginas na tela do PDF. Mostra todas as páginas em miniatura; toque em 'Tirar esta página' nas que não quer. Atalho 'Curta' deixa só capa, valores, resumo e contato. A numeração se ajusta e a escolha fica guardada para aquela proposta neste aparelho."],
@@ -3504,6 +3505,43 @@ const PLAT_LIVE=[["TikTok","TikTok"],["Instagram","Instagram"],["Shopee","Shopee
 function platTag(j){const p=(j&&j.plataforma)||"";if(!p)return "";const k=/tik/i.test(p)?"tt":/insta/i.test(p)?"ig":/shopee/i.test(p)?"sp":/you/i.test(p)?"yt":"ot";const t=k==="tt"?"TikTok":k==="ig"?"Insta":k==="sp"?"Shopee":k==="yt"?"YouTube":p;return ` <span class="pltag pl-${k}" title="${esc(p)}">${esc(t)}</span>`}
 (function(){const st=document.createElement("style");st.textContent=`.pltag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:1px 7px;border-radius:99px;vertical-align:1px;margin-left:4px;line-height:1.5;white-space:nowrap}
 .pl-tt{background:#111;color:#25F4EE;box-shadow:inset 0 0 0 1px #FE2C55}.pl-ig{background:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);color:#fff}.pl-sp{background:#EE4D2D;color:#fff}.pl-yt{background:#FF0000;color:#fff}.pl-ot{background:var(--linha2,#444);color:#fff}`;document.head.appendChild(st)})();
+
+
+/* ================= v38 · PROPOSTA: GESTÃO DA MARCA E DE AFILIADOS EDITÁVEIS ================= */
+PRECOS_PADRAO.push(
+ {chave:"gestao.MARCA",grupo:"gestao",categoria:"Gestão da marca",titulo:"Gestão geral da marca no TikTok Shop",descricao:"Gestão geral da marca no TikTok Shop",valor:8000,valor_ref:null,perc:3,perc_max:5,unid:"/mês",ordem:30},
+ {chave:"gestao.AFIL_INI",grupo:"gestao",categoria:"Afiliados · iniciantes",titulo:"Gestão de afiliados · marcas iniciantes",descricao:"Marcas iniciantes no TikTok Shop · envio de amostras e briefing",valor:1000,valor_ref:null,perc:5,lote:70,unid:"/70 envios",ordem:31},
+ {chave:"gestao.AFIL_500",grupo:"gestao",categoria:"Afiliados · acima de R$ 500 mil",titulo:"Gestão de afiliados · marcas acima de R$ 500 mil/mês",descricao:"Marcas acima de R$ 500 mil/mês no TikTok Shop · envio de amostras e briefing",valor:500,valor_ref:null,perc:3,lote:70,unid:"/70 envios",ordem:32});
+GRUPOS.push(["gestao","Gestão de marca e afiliados","Valores das páginas de gestão da proposta · ligue para entrar no resumo e no valor"]);
+function gItem(o,k){const p=preco(k)||{};const it=(o.itens||[]).find(i=>i.k===k)||{k,on:false,valor:p.valor,perc:p.perc};return {p,it,v:Number(it.valor),pc:Number(it.perc),dn:Number(it.valor)<Number(p.valor),dnp:Number(it.perc)<Number(p.perc)}}
+function gMil(v){v=Number(v)||0;return v>=1000&&v%1000===0?"R$ "+(v/1000).toLocaleString("pt-BR")+" mil":brl(v).replace(",00","")}
+function gPerc(g){const{p,pc}=g;return p.perc_max&&pc===Number(p.perc)?`${numIn(p.perc)}% a ${numIn(p.perc_max)}%`:`${numIn(pc)}%`}
+function gestaoPages(o){const out=[];const comp=orcCompleto(o);
+  const M=gItem(o,"gestao.MARCA");
+  if(comp||M.it.on){const L=["Auxílio no cadastro de SKU","Prospecção de afiliados","Aprovação de amostras","Envio de briefing","Conferência de postagens","Recursos de punições e restrições com o TikTok","Parcerias com outras agências e influenciadores shop","Aceleração de vendas","Criação de squad TikTok Shop da marca","Administração de GMV Max","Lista de convidados de eventos para criadores TikTok Shop","Transição de influenciadores externos para criadores shop","Prospecção de criadores para campanhas de awareness","Montagem de squad de live sellers"];
+    out.push(v1page("cream lt vgpg",`<div class="vgk">Proposta de gestão</div><h2>Gestão geral da marca no TikTok Shop</h2>
+     <div class="vgrow"><div class="vgc dk" style="width:362px;flex:none"><div class="vgt v">Investimento mensal</div>${M.dn?`<div class="vgs">${gMil(M.p.valor)}</div>`:""}<div class="vgbig">${gMil(M.v)}</div><div class="vgsub">por mês</div>
+      <div class="vgt v vgmais">Mais ${M.dnp&&!M.p.perc_max?`<s>${numIn(M.p.perc)}%</s> `:""}${gPerc(M)}</div><div class="vgsub">das vendas${M.p.perc_max&&M.pc===Number(M.p.perc)?", a depender da marca":""}</div>
+      <div class="vgnote v">Valores pagos a criadores não estão embutidos no valor cobrado pela gestão.</div></div>
+     <div class="vgc lm" style="flex:1"><div class="vgt">O que a gestão inclui</div><ul class="vgl">${L.map(x=>`<li>${x}</li>`).join("")}</ul></div></div>`))}
+  const A=gItem(o,"gestao.AFIL_INI"),B=gItem(o,"gestao.AFIL_500");
+  if(comp||A.it.on||B.it.on){const card=(g,cls,tit)=>`<div class="vgc ${cls}"><div class="vgt">${tit}</div><div class="vgsub">Envio de amostras e briefing</div><div style="flex:1"></div>${g.dn?`<div class="vgs">${brl(g.p.valor).replace(",00","")}</div>`:""}<div class="vgbig">${brl(g.v).replace(",00","")}</div><div class="vgsub">a cada ${g.p.lote||70} envios de amostras</div><div style="flex:1"></div><div class="vgt vgmais">Mais ${g.dnp?`<s>${numIn(g.p.perc)}%</s> `:""}${numIn(g.pc)}% das vendas</div></div>`;
+    out.push(v1page("cream lt vgpg",`<div class="vgk">Proposta de gestão</div><h2>Gestão de afiliados</h2>
+     <div class="vgrow">${card(A,"lm","Marcas iniciantes no TikTok Shop")}${card(B,"pk","Marcas acima de R$ 500 mil/mês no TikTok Shop")}
+      <div class="vgc dk"><div class="vgt v">Prospecção de afiliados</div><ul class="vgl w"><li>Envio de amostras e briefing</li><li>Cobrança de postagem</li></ul><div style="flex:1"></div><div class="vgnote v">Valores pagos a criadores não estão incluídos.</div></div></div>`))}
+  return out}
+(function(){const st=document.createElement("style");st.textContent=`.pg.v1.vgpg{padding:62px 80px 40px;display:flex;flex-direction:column}
+.vgpg .vgk{font-size:13px;font-weight:700}.pg.v1.vgpg h2{font-size:48px;margin:30px 0 26px;max-width:none}
+.vgpg .vgrow{display:flex;gap:16px;flex:1;min-height:0}.vgpg .vgc{border-radius:22px;padding:26px 26px 30px;display:flex;flex-direction:column;flex:1;min-width:0}
+.vgpg .vgc.dk{background:#141414;color:#F3F3EC}.vgpg .vgc.lm{background:#C9DB82;color:#141414}.vgpg .vgc.pk{background:#EF8FC4;color:#561D45}
+.vgpg .vgt{font-weight:800;font-size:19px;line-height:1.3}.vgpg .v{color:#D5FF3F}
+.vgpg .vgbig{font-family:"Bricolage Grotesque",Figtree,sans-serif;font-weight:700;font-size:46px;letter-spacing:-.02em;line-height:1.05;margin-top:22px}
+.vgpg .vgs{text-decoration:line-through;opacity:.55;font-size:18px;margin-top:14px;font-weight:700}.vgpg .vgs+.vgbig{margin-top:2px}
+.vgpg .vgsub{font-size:16px;margin-top:6px}.vgpg .vgmais{font-size:24px;margin-top:42px}.vgpg .vgmais s{opacity:.55;font-size:.7em}
+.vgpg .vgnote{font-size:12.5px;font-weight:700;margin-top:auto;line-height:1.45}
+.vgpg .vgl{columns:2;column-gap:28px;margin:18px 0 0;padding-left:20px;font-size:15px;line-height:1.35}.vgpg .vgl li{break-inside:avoid;margin:0 0 14px}
+.vgpg .vgl.w{columns:1;font-size:18px}.vgpg .dk .vgc .vgsub{color:#F3F3EC}`;document.head.appendChild(st)})();
+const _orcValorTxt8=orcValorTxt;orcValorTxt=function(o){const it=(o.itens||[]).filter(i=>i.on);const gs=it.filter(i=>(preco(i.k)||{}).grupo==="gestao");if(!gs.length)return _orcValorTxt8(o);const t=gs.map(i=>brl(i.valor)+((preco(i.k)||{}).unid||"")).join(" + ");return it.length>gs.length?_orcValorTxt8(o)+" + "+t:t};
 
 if(!orcPreviewBoot())boot();
 </script>
