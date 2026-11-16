@@ -1648,7 +1648,7 @@ function temaAplica(){if(S.tema===undefined){try{S.tema=localStorage.getItem(tem
 function openTemas(){openSheet(`<h3>Cores do sistema</h3><div class="hint">Escolha a sua. Vale só para você, neste aparelho.</div><div class="temas">${TEMAS.map(([k,n,d,bg,a,b])=>`<button type="button" class="tema ${S.tema===k?"on":""}" data-act="temaSet" data-v="${k}"><div class="sw" style="background:${bg};border:1px solid var(--linha)"><i style="background:${a}"></i><i style="background:${b}"></i></div><b>${n}</b><small>${d}</small></button>`).join("")}</div><div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`)}
 document.addEventListener("click",e=>{const a=e.target.closest("[data-act=temaSet],[data-act=temas]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();
   if(a.dataset.act==="temas")return openTemas();S.tema=a.dataset.v;try{localStorage.setItem(temaKey(),S.tema)}catch(_){};temaAplica();closeSheet();render();openTemas()},true);
-const _render=render;render=function(){if(S.me)temaAplica();_render();const sf=$(".sfoot");if(sf)sf.insertAdjacentHTML("afterbegin",`<div class="row" style="gap:6px;margin-bottom:10px;flex-wrap:nowrap"><button class="btn sm ${S.demo?"f":""}" data-act="demo" style="flex:1" title="Mostra dados fictícios para apresentar o sistema. Nada é salvo.">${S.demo?"Sair da demonstração":"Demonstração"}</button><button class="btn sm" data-act="temas" title="Cores do sistema">🎨 Cores</button></div>`);
+const _render=render;render=function(){if(S.me)temaAplica();_render();const sf=$(".sfoot");if(sf)sf.insertAdjacentHTML("afterbegin",`<div class="row" style="gap:6px;margin-bottom:10px;flex-wrap:nowrap">${S.demo?`<button class="btn sm f" data-act="demo" style="flex:1">Sair da demonstração</button>`:""}<button class="btn sm" data-act="temas" title="Cores do sistema" style="flex:1">🎨 Cores</button></div>`);
   if(S.demo){const c=$(".content");if(c)c.insertAdjacentHTML("beforebegin",`<div class="demobar">MODO DEMONSTRAÇÃO · dados fictícios para apresentação · nada é salvo <button class="btn sm" data-act="demo">Sair</button></div>`)}};
 const _showDoc=showDoc;showDoc=function(p){setPage("landscape");_showDoc(p)};
 
@@ -2514,8 +2514,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="39";const APP_DATA="29/10/2026";
+const APP_VERSAO="40";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["40","16/11","Menu: botão Demonstração removido. Fica só 🎨 Cores."],
  ["39","13/11","Agenda e Lives: cada live mostra a plataforma bem visível (faixa e fundo azul-turquesa para TikTok, rosa para Instagram, etiqueta ♪ TikTok / ◎ Insta). Filtro no topo: Todas · TikTok · Instagram, com a quantidade de cada. Lives antigas sem plataforma: botão para marcar todas como TikTok de uma vez (sócios)."],
  ["38","13/11","Proposta: as páginas 'Gestão geral da marca' e 'Gestão de afiliados' agora usam os valores da proposta. No editor, novo grupo 'Gestão de marca e afiliados' (gestão R$ 8 mil/mês + 3% a 5%; afiliados R$ 1.000 e R$ 500 a cada 70 envios + 5% e 3%): altere valor e %, e ligue para entrar no resumo e no valor (venda casada). Baixou o preço? O valor antigo aparece riscado."],
  ["37","13/11","Lives: novo campo 'Onde é a live' (TikTok, Instagram, Shopee, YouTube ou outra). A plataforma aparece como etiqueta colorida na agenda (dia, semana, mês e lista) e no resumo, para diferenciar lives da mesma marca no TikTok e no Instagram."],
