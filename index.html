@@ -567,6 +567,20 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 #sheetIn .sbox.eqoff{display:none!important}
 #sheetIn .fld input:not([type=checkbox]):not([type=file]):not([type=radio]),#sheetIn .fld select{min-height:34px;padding:6px 10px;font-size:13px;border-radius:9px}
 #sheetIn .fld textarea{padding:7px 10px;font-size:13px;border-radius:9px}
+
+.pkpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}.pkpi>div{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--cinza)}.pkpi b{display:block;font-size:20px;color:inherit;color:var(--chalk);line-height:1.2}.pkpi .w b{color:var(--warn)}
+.psec{margin:16px 0 4px}.psec h2{font-size:14px;margin:0 0 8px}.psec h2 span{color:var(--cinza);font-weight:500;margin-left:4px}
+.plist{background:var(--card);border:1px solid var(--linha);border-radius:12px;overflow:hidden}
+.prow{display:grid;grid-template-columns:34px minmax(150px,1.5fr) 1.3fr .9fr 1.4fr 92px;gap:12px;align-items:center;padding:9px 14px;border-top:1px solid var(--linha);cursor:pointer;font-size:12.5px}
+.prow:first-child{border-top:0}.prow:not(.ph):hover{background:var(--card2)}
+.prow.ph{cursor:default;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza);padding:7px 14px;background:transparent}
+.pav{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:11px;color:#131411}
+.pn b{display:block;font-size:13px}.pn span{color:var(--cinza);font-size:11.5px}
+.pc{color:inherit;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pe{color:var(--cinza)}
+.padm{font-size:10px;border:1px solid var(--linha);border-radius:99px;padding:1px 6px;margin-left:4px;color:var(--cinza)}
+.pst2{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--card2);color:var(--cinza)}.pst2.ok{background:rgba(46,160,90,.14);color:var(--ok)}.pst2.w{background:rgba(220,150,30,.16);color:var(--warn)}
+.palert{font-size:12px;background:var(--card);border:1px dashed var(--warn);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}.pal1{display:inline-flex;gap:6px;align-items:center}
+@media(max-width:760px){.prow{grid-template-columns:34px 1fr 84px}.prow>.pc,.prow.ph>div:nth-child(3),.prow.ph>div:nth-child(4),.prow.ph>div:nth-child(5){display:none}.pkpi{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -2518,8 +2532,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="43";const APP_DATA="16/11/2026";
+const APP_VERSAO="44";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["44","16/11","Equipe: página nova em lista, mais profissional. Totais no topo (sócios, equipe, sellers, aguardando) e uma linha por pessoa com função, cidade, contato e situação do acesso. Inativos ficam só na Lista completa."],
  ["43","16/11","Formulários mais compactos (campos de cliente, marca, contrato etc. menores). Bloco de equipamento da live ficou oculto."],
  ["42","16/11","Acesso: em Equipe › pessoa, sócio tem o botão 🔑 Resetar senha (gera senha temporária, cria o login se não existir, e já monta a mensagem para copiar ou mandar no WhatsApp). No login, link 'Esqueci a senha' orienta a falar com um sócio."],
  ["41","16/11","Acesso: quem entra com senha temporária é obrigado a criar a própria senha no primeiro acesso (mínimo 8 caracteres)."],
@@ -3608,6 +3623,31 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-act=
   const txt=`Seu acesso ao ERP da IMPlay:\nhttps://brunotae.github.io/implay/\nE-mail: ${data.email}\nSenha temporária: ${data.senha}\nNo primeiro acesso o sistema pede para você criar a sua senha.`;
   $("#rsBox").innerHTML=`<label>Senha de acesso</label><div class="warnbox"><b>${data.criado?"Login criado":"Senha resetada"}</b> para ${esc(data.email)}<br>Senha temporária: <b style="font-size:1.15em;letter-spacing:.5px">${esc(data.senha)}</b><div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap"><button type="button" class="btn p sm" id="rsCopia">Copiar mensagem</button>${m&&m.telefone?`<a class="btn sm" target="_blank" href="https://wa.me/${String(m.telefone).replace(/\D/g,"").replace(/^(?!55)/,"55")}?text=${encodeURIComponent(txt)}">Enviar no WhatsApp</a>`:""}</div><div class="small" style="margin-top:6px">Ela some quando fechar esta janela.</div></div>`;
   $("#rsCopia").onclick=()=>{navigator.clipboard.writeText(txt).then(()=>toast("Mensagem copiada"))}},true);
+/* ---------- v44: Equipe em lista profissional ---------- */
+socioMembro=function(s){if(!s||!s.email)return null;const l=S.membros.filter(m=>m.email&&m.email.toLowerCase()===s.email.toLowerCase());return l.find(m=>m.status==="ativo")||l[0]||null};
+const _eqV44=VIEWS.equipe;VIEWS.equipe=()=>{const v=S.f.eq.view||"cards";if(v!=="cards")return _eqV44();
+  const q=S.f.eq.q;const semN=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+  const st=(t,c)=>`<span class="pst2 ${c}">${t}</span>`;
+  const av=(n,c)=>`<div class="pav" style="background:${c}">${esc(iniciais(n))}</div>`;
+  const row=(act,id,a,nm,sub,c3,c4,c5,stt)=>`<div class="prow" data-act="${act}" data-id="${id}">${a}<div class="pn"><b>${nm}</b><span>${sub}</span></div><div class="pc">${c3}</div><div class="pc">${c4}</div><div class="pc pe">${c5}</div><div class="ps">${stt}</div></div>`;
+  const head=`<div class="prow ph"><div></div><div>Nome</div><div>Função</div><div>Cidade</div><div>Contato</div><div>Acesso</div></div>`;
+  const box=(t,n,rows,extra="")=>rows.length?`<div class="psec"><h2>${t} <span>${n}</span></h2>${extra}<div class="plist">${head}${rows.join("")}</div></div>`:"";
+  // sócios
+  const SO=S.socios.filter(x=>has(q,x.apelido,x.nome_completo,x.funcao,x.cidade));
+  const rSo=SO.map(x=>{const m=socioMembro(x);return row("socio",x.id,av(x.nome_completo,"var(--volt)"),esc(x.apelido),esc(x.nome_completo),esc(x.funcao||"—")+(x.administrador?` <span class="padm">admin</span>`:""),esc(x.cidade||"—"),esc(m?m.email:(x.email||"—")),m&&m.status==="ativo"?st("Ativo","ok"):st("Sem acesso",""))});
+  const soltos=S.membros.filter(m=>m.papel==="socio"&&m.status==="ativo"&&!S.socios.some(x=>socioMembro(x)===m));const livres=S.socios.filter(x=>{const m=socioMembro(x);return !m||m.status!=="ativo"});
+  const aviso=isSocio()&&soltos.length&&livres.length?`<div class="palert"><b>Ligar acesso ao sócio:</b> ${soltos.map(m=>{const p1=semN(m.nome).split(/[\s._]+/)[0];const sug=livres.filter(x=>semN(x.apelido)===p1||semN(x.nome_completo).split(/\s+/)[0]===p1||semN(m.email).includes(semN(x.apelido)));const ops=sug.length?sug:livres;return `<span class="pal1">${esc(m.email)} → ${ops.map(x=>`<button class="btn sm ${sug.includes(x)?"p":""}" data-act="socioLigar" data-s="${x.id}" data-m="${m.id}">${esc(x.apelido)}</button>`).join(" ")}</span>`}).join("")}</div>`:"";
+  // demais
+  const M=S.membros.filter(m=>m.status!=="inativo"&&has(q,m.nome,m.email,m.cidade,m.nicho,m.telefone));
+  const stats=m=>{const js=S.jobs.filter(j=>j.principal_id===m.id&&j.status==="realizado");const gm=js.reduce((a,j)=>a+(Number(j.gmv)||0),0);return `${js.length} lives · ${brlK(gm)}`};
+  const stM=m=>m.status==="ativo"?st("Ativo","ok"):m.status==="pendente"?st("Pendente","w"):st(esc(m.status),"");
+  const rEq=M.filter(m=>m.papel==="basico"&&m.status==="ativo").map(m=>row("membro",m.id,av(m.nome,"var(--cobalt)"),esc(m.nome),"Equipe · "+esc(VINC[m.vinculo]||m.vinculo||""),"Operação",esc(m.cidade||"—"),esc(m.email||"—"),stM(m)));
+  const rSe=M.filter(m=>m.papel==="seller"&&m.status==="ativo").map(m=>row("membro",m.id,av(m.nome,"var(--flash)"),esc(m.nome),"Seller · "+esc(VINC[m.vinculo]||m.vinculo||""),stats(m),esc(m.cidade||"—"),esc(m.telefone||m.email||"—"),stM(m)));
+  const rPe=M.filter(m=>m.status==="pendente").map(m=>row("membro",m.id,av(m.nome,"var(--cinza)"),esc(m.nome),m.obs==="PEDIU ACESSO AO ERP"?"Pediu acesso ao ERP":m.papel==="seller"?"Cadastro de seller":"Equipe",m.papel==="seller"?kycTag(m):"",esc(m.cidade||"—"),esc(m.telefone||m.email||"—"),stM(m)));
+  const tot=`<div class="pkpi"><div><b>${SO.length}</b>Sócios</div><div><b>${rEq.length}</b>Equipe</div><div><b>${rSe.length}</b>Sellers</div><div class="${rPe.length?"w":""}"><b>${rPe.length}</b>Aguardando</div></div>`;
+  const tg=`<div class="chips" style="margin-bottom:10px"><button data-act="eqView" data-v="cards" class="on">Visão geral</button><button data-act="eqView" data-v="lista">Lista completa</button></div>`;
+  return tg+tot+`<div class="tool">${qbox("eq","Buscar pessoa…")}</div><div class="hint" style="margin:-4px 0 6px">Cadastro de sellers: <b>brunotae.github.io/implay/seller/</b></div>`
+   +box("Sócios",SO.length,rSo,aviso)+box("Equipe",rEq.length,rEq)+box("Sellers",rSe.length,rSe)+box("Aguardando aprovação",rPe.length,rPe)};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
