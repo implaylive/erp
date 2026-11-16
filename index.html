@@ -2514,8 +2514,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="40";const APP_DATA="16/11/2026";
+const APP_VERSAO="41";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["41","16/11","Acesso: quem entra com senha temporária é obrigado a criar a própria senha no primeiro acesso (mínimo 8 caracteres)."],
  ["40","16/11","Menu: botão Demonstração removido. Fica só 🎨 Cores."],
  ["39","13/11","Agenda e Lives: cada live mostra a plataforma bem visível (faixa e fundo azul-turquesa para TikTok, rosa para Instagram, etiqueta ♪ TikTok / ◎ Insta). Filtro no topo: Todas · TikTok · Instagram, com a quantidade de cada. Lives antigas sem plataforma: botão para marcar todas como TikTok de uma vez (sócios)."],
  ["38","13/11","Proposta: as páginas 'Gestão geral da marca' e 'Gestão de afiliados' agora usam os valores da proposta. No editor, novo grupo 'Gestão de marca e afiliados' (gestão R$ 8 mil/mês + 3% a 5%; afiliados R$ 1.000 e R$ 500 a cada 70 envios + 5% e 3%): altere valor e %, e ligue para entrar no resumo e no valor (venda casada). Baixou o preço? O valor antigo aparece riscado."],
@@ -3572,6 +3573,20 @@ tr.pf{background:none!important;box-shadow:none}
 .platbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
 .platbar .chips button.pc-tt.on{background:#111;color:#25F4EE;border-color:#FE2C55}.platbar .chips button.pc-ig.on{background:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);color:#fff;border-color:transparent}`;document.head.appendChild(st)})();
 
+/* ---------- v41: troca de senha obrigatória no 1º acesso ---------- */
+function openTrocaSenha(){openSheet(`<form id="tsF" onsubmit="return false"><h3>Crie sua senha</h3><p class="small muted" style="margin-top:0">Você entrou com uma senha temporária. Crie a sua para continuar (mínimo 8 caracteres).</p>
+<label>Nova senha<input type="password" name="s1" autocomplete="new-password" required></label>
+<label>Repita a nova senha<input type="password" name="s2" autocomplete="new-password" required></label>
+<div class="acts"><button type="button" class="btn p" data-act="tsSalvar">Salvar minha senha</button></div></form>`)}
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-act=tsSalvar]");if(!b)return;e.preventDefault();e.stopImmediatePropagation();
+  const f=new FormData($("#tsF"));const a=String(f.get("s1")||""),c=String(f.get("s2")||"");
+  if(a.length<8)return toast("A senha precisa ter pelo menos 8 caracteres",true);
+  if(a!==c)return toast("As duas senhas não são iguais",true);
+  if(/^senhatemp/i.test(a))return toast("Use uma senha diferente da temporária",true);
+  b.disabled=true;const {error}=await db.auth.updateUser({password:a});
+  if(error){b.disabled=false;return toast("Não salvou: "+error.message,true)}
+  await db.rpc("imp_senha_trocada");closeSheet();toast("Senha salva. Use a nova a partir de agora.")},true);
+const _bootTS=boot;boot=async function(){await _bootTS();try{if(S.me&&S.me.id){const {data,error}=await db.rpc("imp_precisa_trocar");if(!error&&data===true)openTrocaSenha()}}catch(_){}};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
