@@ -2514,8 +2514,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="41";const APP_DATA="16/11/2026";
+const APP_VERSAO="42";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["42","16/11","Acesso: em Equipe › pessoa, sócio tem o botão 🔑 Resetar senha (gera senha temporária, cria o login se não existir, e já monta a mensagem para copiar ou mandar no WhatsApp). No login, link 'Esqueci a senha' orienta a falar com um sócio."],
  ["41","16/11","Acesso: quem entra com senha temporária é obrigado a criar a própria senha no primeiro acesso (mínimo 8 caracteres)."],
  ["40","16/11","Menu: botão Demonstração removido. Fica só 🎨 Cores."],
  ["39","13/11","Agenda e Lives: cada live mostra a plataforma bem visível (faixa e fundo azul-turquesa para TikTok, rosa para Instagram, etiqueta ♪ TikTok / ◎ Insta). Filtro no topo: Todas · TikTok · Instagram, com a quantidade de cada. Lives antigas sem plataforma: botão para marcar todas como TikTok de uma vez (sócios)."],
@@ -3587,6 +3588,21 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-act=
   if(error){b.disabled=false;return toast("Não salvou: "+error.message,true)}
   await db.rpc("imp_senha_trocada");closeSheet();toast("Senha salva. Use a nova a partir de agora.")},true);
 const _bootTS=boot;boot=async function(){await _bootTS();try{if(S.me&&S.me.id){const {data,error}=await db.rpc("imp_precisa_trocar");if(!error&&data===true)openTrocaSenha()}}catch(_){}};
+/* ---------- v42: Esqueci a senha + Resetar senha (sócio) ---------- */
+document.addEventListener("click",e=>{const a=e.target.closest("#esqueci");if(!a)return;e.preventDefault();
+  toast("Fale com um sócio da IMPlay: ele gera uma senha temporária para você em 1 toque (Equipe › seu nome › Resetar senha).")},true);
+const _renderLoginES=renderLogin;renderLogin=function(...a){_renderLoginES(...a);const h=document.querySelector("#lf .hint");if(h&&!document.getElementById("esqueci"))h.insertAdjacentHTML("beforebegin",`<div style="text-align:center;margin:8px 0"><a href="#" id="esqueci" class="small">Esqueci a senha</a></div>`)};
+const _openMembroRS=openMembro;openMembro=function(id){_openMembroRS(id);const m=id&&S.membros.find(x=>x.id===id);
+  if(!m||!isSocio()||!["socio","basico"].includes(m.papel)||!m.email)return;const acts=document.querySelector("#sheetIn form .acts");if(!acts)return;
+  acts.insertAdjacentHTML("beforebegin",`<div class="fld" id="rsBox"><label>Senha de acesso</label><div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn sm" data-act="rsSenha" data-id="${id}">🔑 Resetar senha</button><span class="small muted">Gera uma senha temporária (cria o login se ainda não existir). A pessoa troca no 1º acesso.</span></div></div>`)};
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-act=rsSenha]");if(!b)return;e.preventDefault();e.stopImmediatePropagation();
+  if(!armed(b))return;const m=S.membros.find(x=>x.id===b.dataset.id);b.disabled=true;b.textContent="Gerando…";
+  const {data,error}=await db.functions.invoke("acessos",{body:{app:"implay",acao:"resetar",membro_id:b.dataset.id}});
+  b.disabled=false;b.textContent="🔑 Resetar senha";
+  if(error||!data||data.erro){let msg=data&&data.erro;try{if(!msg&&error&&error.context)msg=(await error.context.json()).erro}catch(_){}return toast("Não resetou: "+(msg||(error&&error.message)||"erro"),true)}
+  const txt=`Seu acesso ao ERP da IMPlay:\nhttps://brunotae.github.io/implay/\nE-mail: ${data.email}\nSenha temporária: ${data.senha}\nNo primeiro acesso o sistema pede para você criar a sua senha.`;
+  $("#rsBox").innerHTML=`<label>Senha de acesso</label><div class="warnbox"><b>${data.criado?"Login criado":"Senha resetada"}</b> para ${esc(data.email)}<br>Senha temporária: <b style="font-size:1.15em;letter-spacing:.5px">${esc(data.senha)}</b><div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap"><button type="button" class="btn p sm" id="rsCopia">Copiar mensagem</button>${m&&m.telefone?`<a class="btn sm" target="_blank" href="https://wa.me/${String(m.telefone).replace(/\D/g,"").replace(/^(?!55)/,"55")}?text=${encodeURIComponent(txt)}">Enviar no WhatsApp</a>`:""}</div><div class="small" style="margin-top:6px">Ela some quando fechar esta janela.</div></div>`;
+  $("#rsCopia").onclick=()=>{navigator.clipboard.writeText(txt).then(()=>toast("Mensagem copiada"))}},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
