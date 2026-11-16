@@ -563,6 +563,10 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .warnbox{backgr
 html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.railv,.kpi.cob,.stage.c,.mk.c){--voltx:#D5FF3F;--chalk:#F3F3EC;--cinza:#d9c9d4;color:#F3F3EC}
 .sfoot .btn{white-space:nowrap}
 details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;color:var(--cinza);padding:6px 0}
+
+#sheetIn .sbox.eqoff{display:none!important}
+#sheetIn .fld input:not([type=checkbox]):not([type=file]):not([type=radio]),#sheetIn .fld select{min-height:34px;padding:6px 10px;font-size:13px;border-radius:9px}
+#sheetIn .fld textarea{padding:7px 10px;font-size:13px;border-radius:9px}
 </style>
 </head>
 <body>
@@ -795,7 +799,7 @@ function openJob(id,preset={}){
    ${cliSel(j.cliente_id,"Cliente")}${fld("marca","Marca",j.marca)}
    ${pick("plataforma","Onde é a live",j.plataforma||(id?"":"TikTok"),PLAT_LIVE,{ph:"Outra: escreva"})}<div class="hint" style="margin-top:-6px">Mesma marca no TikTok e no Instagram? Cadastre uma live para cada plataforma.</div>
    <div class="fld"><label>Modalidade</label>${seg("modalidade",[["servico","Serviço completo"],["aluguel","Só aluguel do espaço"]],j.modalidade)}</div>
-   <div data-show="modalidade=servico" class="sbox">${pickM("equipamento","Equipamento (pode marcar mais de um)",j.equipamento||"",["Celular","Câmera profissional","2 câmeras","Iluminação extra","Microfone de lapela","Cenário da marca"],{ph:"Outro equipamento: escreva aqui"})}</div>
+   <div data-show="modalidade=servico" class="sbox eqoff">${pickM("equipamento","Equipamento (pode marcar mais de um)",j.equipamento||"",["Celular","Câmera profissional","2 câmeras","Iluminação extra","Microfone de lapela","Cenário da marca"],{ph:"Outro equipamento: escreva aqui"})}</div>
    <div class="sec"><h2>Local</h2></div>
    <div class="fld">${seg("local_tipo",[["estudio","Nosso estúdio"],["cliente","Terceiros"]],j.local_tipo==="online"?"cliente":j.local_tipo)}</div>
    <div class="fld" data-show="local_tipo=estudio"><label>Sala</label><select name="espaco" data-1c="lista" data-self="${id||""}">${espOpts(j.espaco,ini,fim,id)}</select><div class="hint">As salas ocupadas no mesmo horário aparecem marcadas.</div></div>
@@ -2514,8 +2518,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="42";const APP_DATA="16/11/2026";
+const APP_VERSAO="43";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["43","16/11","Formulários mais compactos (campos de cliente, marca, contrato etc. menores). Bloco de equipamento da live ficou oculto."],
  ["42","16/11","Acesso: em Equipe › pessoa, sócio tem o botão 🔑 Resetar senha (gera senha temporária, cria o login se não existir, e já monta a mensagem para copiar ou mandar no WhatsApp). No login, link 'Esqueci a senha' orienta a falar com um sócio."],
  ["41","16/11","Acesso: quem entra com senha temporária é obrigado a criar a própria senha no primeiro acesso (mínimo 8 caracteres)."],
  ["40","16/11","Menu: botão Demonstração removido. Fica só 🎨 Cores."],
