@@ -2540,8 +2540,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="50";const APP_DATA="16/11/2026";
+const APP_VERSAO="51";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["51","17/11","Termo de equipamentos: quem assina pela IMPlay já vem preenchido como Thiago."],
  ["50","17/11","Contratos (e Equipamentos): novo botão Termo de equipamentos. Escolha o cliente (razão social, CNPJ e endereço vêm do cadastro), marque os equipamentos que vão ao local com quantidade e valor de reposição, e gere o termo com o logo da IMPlay e o Anexo I com a lista. Salvar PDF / Imprimir."],
  ["49","17/11","Proposta: 2 cases novos depois da Ticky: Yasmin Beauty (R$ ~100 mil em 5h no 11.11) e LIVE! (25x mais GMV com o treinamento), ambos com ▶ Assistir vídeo clicável no PDF."],
  ["48","17/11","Proposta: slide 4 (Marcas que vendem com a IMPlay) atualizado com LIVE!, Hidratei e Yasmin Beauty."],
@@ -3676,7 +3677,7 @@ const TR_PRESET=[["Iluminador LED Godox LE300Bi 300W",5596.54],["Softbox octagon
 function trItens(){const l=[];S.equip.filter(e=>e.status!=="baixado").forEach(e=>l.push({nome:[e.nome,e.marca,e.modelo].filter(Boolean).join(" "),num:eqn(e.numero),serie:e.serie||"",q:e.quantidade||1,v:e.valor||""}));
   TR_PRESET.forEach(([n,v])=>{if(!l.some(x=>x.nome.toLowerCase()===n.toLowerCase()))l.push({nome:n,num:"",serie:"",q:1,v:v??""})});return l}
 function openTermoEq(){const cl=S.clientes.filter(c=>c.status!=="inativo").sort((a,b)=>(a.marca||"").localeCompare(b.marca||""));const it=trItens();S._trItens=it;
-  const adm=S.socios.filter(x=>x.administrador).map(x=>x.nome_completo);
+  const adm=S.socios.filter(x=>x.administrador).map(x=>x.nome_completo).sort((a,b)=>(/^Thiago/.test(b)?1:0)-(/^Thiago/.test(a)?1:0));
   openSheet(`<form id="trF" onsubmit="return false"><h3>Termo de responsabilidade por equipamentos</h3><p class="small muted" style="margin-top:0">Para lives fora do estúdio: o cliente se responsabiliza pelos nossos equipamentos no local dele.</p>
   <div class="fld"><label>Cliente</label><select name="cli" id="trCli"><option value="">— escolher —</option>${cl.map(c=>`<option value="${c.id}">${esc(c.marca||c.empresa)}</option>`).join("")}</select></div>
   <div class="cols2">${fld("razao","Razão social do cliente","")}${fld("cnpj","CNPJ do cliente","")}</div>
