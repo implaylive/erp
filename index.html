@@ -1837,8 +1837,8 @@ function orcObs(o){return (o.obs||"").replace(/^\[curto\]\s?/,"")}
 const CONTATOS="Caio Riccio · (21) 96590-7894 · Pedro Sallun · (16) 99116-7669 · Bruno Tae · (11) 98964-4378";
 /* ---------- v46: vídeos clicáveis nos slides da proposta ---------- */
 // slide: [link, esquerda%, topo%, largura%, altura%]
-const DECK_VID={10:["https://youtube.com/shorts/769BCTGZLRU",65.5,28,23.5,56],11:["https://youtube.com/shorts/UgEZ8t9crmM",69,15,25.8,70]};
-function deckVid(n){const v=DECK_VID[n];if(!v)return "";return `<a class="vvid" href="${v[0]}" target="_blank" rel="noopener" style="left:${v[1]}%;top:${v[2]}%;width:${v[3]}%;height:${v[4]}%"><span>▶ Assistir vídeo</span></a>`}
+const DECK_VID={10:["https://youtube.com/shorts/769BCTGZLRU",65.5,28,23.5,56],11:["https://youtube.com/shorts/UgEZ8t9crmM",69,15,25.8,70],"14a":["https://youtube.com/shorts/zDhv-_a1zw4",68.3,12.5,25.9,79.8,1],"14b":["https://youtube.com/shorts/pCeEMk2nj-4",68.3,12.5,25.9,79.8,1]};
+function deckVid(n){const v=DECK_VID[n];if(!v)return "";return `<a class="vvid" href="${v[0]}" target="_blank" rel="noopener" style="left:${v[1]}%;top:${v[2]}%;width:${v[3]}%;height:${v[4]}%${v[5]?";align-items:flex-end;padding-bottom:5%":""}"><span>▶ Assistir vídeo</span></a>`}
 function v1page(cls,html,num){return {cls,html,num}}
 function orcDoc(o){S._docO=o;const P=[];const M=esc(o.marca||"Marca");const final=["aprovado","enviado","aceito"].includes(o.status);
   const it=(o.itens||[]).filter(i=>i.on);const grp=g=>it.filter(i=>(preco(i.k)||{}).grupo===g);
@@ -1847,8 +1847,8 @@ function orcDoc(o){S._docO=o;const P=[];const M=esc(o.marca||"Marca");const fina
   const pc=i=>{const p=preco(i.k);const baixou=p.chave&&Number(i.perc)<Number(p.perc);return `${baixou?`<s>${numIn(p.perc)}%</s> `:""}<b>${numIn(i.perc)}%</b>`};
   const mesTxt=o.mes_ref||(ML[emis.getMonth()].charAt(0).toUpperCase()+ML[emis.getMonth()].slice(1)+" de "+emis.getFullYear());
   P.push(v1page("img",`<img class="vbgimg" src="deck3/capa.jpg" alt=""><h1 class="vcapa">Operação de Live Shop para a <span class="hl">${M}</span></h1><div class="vcapaf">${esc(mesTxt)} · proposta válida por ${o.validade_dias||10} dias corridos, até ${dBR(venc)}${o.numero?` · ${on(o.numero)}`:""}</div>`));
-  const DECK_LT=[3, 4, 9, 12, 14, 16, 18, 19, 20, 21, 22, 26, 27];const dimg=n=>v1page("img"+(DECK_LT.includes(n)?" lt":""),`<img class="vbgimg" src="deck3/s${String(n).padStart(2,"0")}.jpg?v=${APP_VERSAO}" alt="">${deckVid(n)}`);
-  if(orcCompleto(o)){for(let n=2;n<=23;n++)P.push(dimg(n))}
+  const DECK_LT=["14a","14b",3, 4, 9, 12, 14, 16, 18, 19, 20, 21, 22, 26, 27];const dimg=n=>v1page("img"+(DECK_LT.includes(n)?" lt":""),`<img class="vbgimg" src="deck3/s${String(n).padStart(2,"0")}.jpg?v=${APP_VERSAO}" alt="">${deckVid(n)}`);
+  if(orcCompleto(o)){for(let n=2;n<=23;n++){P.push(dimg(n));if(n===14){P.push(dimg("14a"));P.push(dimg("14b"))}}}
   if(grp("hora").length){P.push(v1page("dark",`<div class="vk">Investimento</div><h2>Gestão de lives por hora</h2><div class="vpk n${grp("hora").length}">${grp("hora").map(i=>{const p=preco(i.k),h=hrDe(i,p);return `<div class="vc volt">${p.chave?"":`<p style="margin:0 0 4px"><b>${esc(p.nome||"")}</b></p>`}<b class="vpt">${p.chave&&h.vh<Number(p.valor)?`<s style="font-size:.55em;opacity:.6">${brl(p.valor).replace(",00","")}</s> `:""}${brl(h.vh).replace(",00","")} <small>por hora de live</small></b><p>${esc(p.descricao||"")}</p><p>Mínimo de <b>${numIn(h.hmin)} h de live por mês</b>${h.hl?`, com pelo menos <b>${numIn(h.hl)} h por live</b>`:""}${h.freq?`, <b>${esc(h.freq)}</b>`:""}</p><div class="vpv"><b>${brl(h.mensal)}</b><small>/mês</small></div><p>+ ${pc(i)} sobre as vendas feitas nas lives</p></div>`}).join("")}</div>
    <p class="vnote"><b>Inclui:</b> estúdio com áudio e vídeo, live sellers da equipe (treinamento, salário e comissão), operação completa presencial e remota, calendário e incentivos negociados com o TikTok, cadastro de SKUs novos. Hora além do mínimo pelo mesmo valor. Vigência de ${o.vigencia_meses||3} meses, renovável.</p>`))}
   if(grp("pontual").length){const l=grp("pontual");P.push(v1page("cream",`<div class="vk">Investimento</div><h2>Live Pontual: valores e categoria</h2><table class="vtb"><tr><th>Categoria</th><th>Qtd. de lives</th><th>Valor por live</th><th>Variável</th><th>Subtotal</th></tr>
@@ -2538,8 +2538,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="48";const APP_DATA="16/11/2026";
+const APP_VERSAO="49";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["49","17/11","Proposta: 2 cases novos depois da Ticky: Yasmin Beauty (R$ ~100 mil em 5h no 11.11) e LIVE! (25x mais GMV com o treinamento), ambos com ▶ Assistir vídeo clicável no PDF."],
  ["48","17/11","Proposta: slide 4 (Marcas que vendem com a IMPlay) atualizado com LIVE!, Hidratei e Yasmin Beauty."],
  ["47","17/11","Proposta: slide da Haoma (R$ 10 mil nas duas primeiras horas) também ganhou o botão ▶ Assistir vídeo, clicável no PDF."],
  ["46","17/11","Proposta: slide da Hey!Mu (R$ 300 mil em live de 48h) ganhou o botão ▶ Assistir vídeo, clicável no PDF, abrindo o vídeo no YouTube."],
@@ -3510,7 +3511,7 @@ function cdTestOp(){const n=[...(S.socios||[]).map(s=>s.nome_completo||s.nome),.
 #doc:not(.sel) .pgw.off{display:none}
 #doc .bar{flex-wrap:wrap}#pgCnt{color:#bbb;font-size:12px;align-self:center}
 @media print{.pgw.off{display:none!important}.pgx,.pgn{display:none!important}#doc.sel .pgw{display:block!important;margin:0 auto!important}.pgw.lastv .pg{break-after:auto!important;page-break-after:auto!important}}`;document.head.appendChild(st)})();
-function pgKey(p,i){if(i===0)return "capa";const m=p.html.match(/deck\d*\/s(\d+)\.jpg/);if(m)return "s"+m[1];if(/Resumo da proposta/.test(p.html))return "resumo";const h=(p.html.match(/<h2>([^<]+)/)||[])[1]||String(i);return "inv:"+h.slice(0,40)}
+function pgKey(p,i){if(i===0)return "capa";const m=p.html.match(/deck\d*\/s(\d+[a-z]?)\.jpg/);if(m)return "s"+m[1];if(/Resumo da proposta/.test(p.html))return "resumo";const h=(p.html.match(/<h2>([^<]+)/)||[])[1]||String(i);return "inv:"+h.slice(0,40)}
 function pgChave(){const o=S._docO||{};return "implay-pgoff-"+(o.id||(o.numero?"n"+o.numero:"prev"))}
 function pgOff(){try{return new Set(JSON.parse(localStorage.getItem(pgChave())||"[]"))}catch(e){return new Set()}}
 function pgSalva(s){try{localStorage.setItem(pgChave(),JSON.stringify([...s]))}catch(e){}}
