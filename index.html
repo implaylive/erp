@@ -1837,7 +1837,7 @@ function orcObs(o){return (o.obs||"").replace(/^\[curto\]\s?/,"")}
 const CONTATOS="Caio Riccio · (21) 96590-7894 · Pedro Sallun · (16) 99116-7669 · Bruno Tae · (11) 98964-4378";
 /* ---------- v46: vídeos clicáveis nos slides da proposta ---------- */
 // slide: [link, esquerda%, topo%, largura%, altura%]
-const DECK_VID={10:["https://youtube.com/shorts/769BCTGZLRU",65.5,28,23.5,56]};
+const DECK_VID={10:["https://youtube.com/shorts/769BCTGZLRU",65.5,28,23.5,56],11:["https://youtube.com/shorts/UgEZ8t9crmM",69,15,25.8,70]};
 function deckVid(n){const v=DECK_VID[n];if(!v)return "";return `<a class="vvid" href="${v[0]}" target="_blank" rel="noopener" style="left:${v[1]}%;top:${v[2]}%;width:${v[3]}%;height:${v[4]}%"><span>▶ Assistir vídeo</span></a>`}
 function v1page(cls,html,num){return {cls,html,num}}
 function orcDoc(o){S._docO=o;const P=[];const M=esc(o.marca||"Marca");const final=["aprovado","enviado","aceito"].includes(o.status);
@@ -2538,8 +2538,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="46";const APP_DATA="16/11/2026";
+const APP_VERSAO="47";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["47","17/11","Proposta: slide da Haoma (R$ 10 mil nas duas primeiras horas) também ganhou o botão ▶ Assistir vídeo, clicável no PDF."],
  ["46","17/11","Proposta: slide da Hey!Mu (R$ 300 mil em live de 48h) ganhou o botão ▶ Assistir vídeo, clicável no PDF, abrindo o vídeo no YouTube."],
  ["45","17/11","Agenda e Lives viraram uma página só: Lives, com 📅 Calendário (dia, semana, mês) e ☰ Gestão (etapas, sellers, cachê, status). O menu ficou com uma entrada a menos; o sistema lembra a última visão usada."],
  ["44","16/11","Equipe: página nova em lista, mais profissional. Totais no topo (sócios, equipe, sellers, aguardando) e uma linha por pessoa com função, cidade, contato e situação do acesso. Inativos ficam só na Lista completa."],
