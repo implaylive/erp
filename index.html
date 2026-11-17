@@ -581,6 +581,8 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .pst2{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--card2);color:var(--cinza)}.pst2.ok{background:rgba(46,160,90,.14);color:var(--ok)}.pst2.w{background:rgba(220,150,30,.16);color:var(--warn)}
 .palert{font-size:12px;background:var(--card);border:1px dashed var(--warn);border-radius:10px;padding:8px 12px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}.pal1{display:inline-flex;gap:6px;align-items:center}
 @media(max-width:760px){.prow{grid-template-columns:34px 1fr 84px}.prow>.pc,.prow.ph>div:nth-child(3),.prow.ph>div:nth-child(4),.prow.ph>div:nth-child(5){display:none}.pkpi{grid-template-columns:repeat(2,1fr)}}
+
+.vvid{position:absolute;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:3}.vvid span{background:#E6FF3B;color:#2b0f2a;font:700 15px/1 Figtree,system-ui,sans-serif;padding:10px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 </style>
 </head>
 <body>
@@ -1833,6 +1835,10 @@ function orcObs(o){return (o.obs||"").replace(/^\[curto\]\s?/,"")}
 
 /* ---------- documento V1 ---------- */
 const CONTATOS="Caio Riccio · (21) 96590-7894 · Pedro Sallun · (16) 99116-7669 · Bruno Tae · (11) 98964-4378";
+/* ---------- v46: vídeos clicáveis nos slides da proposta ---------- */
+// slide: [link, esquerda%, topo%, largura%, altura%]
+const DECK_VID={10:["https://youtube.com/shorts/769BCTGZLRU",65.5,28,23.5,56]};
+function deckVid(n){const v=DECK_VID[n];if(!v)return "";return `<a class="vvid" href="${v[0]}" target="_blank" rel="noopener" style="left:${v[1]}%;top:${v[2]}%;width:${v[3]}%;height:${v[4]}%"><span>▶ Assistir vídeo</span></a>`}
 function v1page(cls,html,num){return {cls,html,num}}
 function orcDoc(o){S._docO=o;const P=[];const M=esc(o.marca||"Marca");const final=["aprovado","enviado","aceito"].includes(o.status);
   const it=(o.itens||[]).filter(i=>i.on);const grp=g=>it.filter(i=>(preco(i.k)||{}).grupo===g);
@@ -1841,7 +1847,7 @@ function orcDoc(o){S._docO=o;const P=[];const M=esc(o.marca||"Marca");const fina
   const pc=i=>{const p=preco(i.k);const baixou=p.chave&&Number(i.perc)<Number(p.perc);return `${baixou?`<s>${numIn(p.perc)}%</s> `:""}<b>${numIn(i.perc)}%</b>`};
   const mesTxt=o.mes_ref||(ML[emis.getMonth()].charAt(0).toUpperCase()+ML[emis.getMonth()].slice(1)+" de "+emis.getFullYear());
   P.push(v1page("img",`<img class="vbgimg" src="deck3/capa.jpg" alt=""><h1 class="vcapa">Operação de Live Shop para a <span class="hl">${M}</span></h1><div class="vcapaf">${esc(mesTxt)} · proposta válida por ${o.validade_dias||10} dias corridos, até ${dBR(venc)}${o.numero?` · ${on(o.numero)}`:""}</div>`));
-  const DECK_LT=[3, 4, 9, 12, 14, 16, 18, 19, 20, 21, 22, 26, 27];const dimg=n=>v1page("img"+(DECK_LT.includes(n)?" lt":""),`<img class="vbgimg" src="deck3/s${String(n).padStart(2,"0")}.jpg" alt="">`);
+  const DECK_LT=[3, 4, 9, 12, 14, 16, 18, 19, 20, 21, 22, 26, 27];const dimg=n=>v1page("img"+(DECK_LT.includes(n)?" lt":""),`<img class="vbgimg" src="deck3/s${String(n).padStart(2,"0")}.jpg" alt="">${deckVid(n)}`);
   if(orcCompleto(o)){for(let n=2;n<=23;n++)P.push(dimg(n))}
   if(grp("hora").length){P.push(v1page("dark",`<div class="vk">Investimento</div><h2>Gestão de lives por hora</h2><div class="vpk n${grp("hora").length}">${grp("hora").map(i=>{const p=preco(i.k),h=hrDe(i,p);return `<div class="vc volt">${p.chave?"":`<p style="margin:0 0 4px"><b>${esc(p.nome||"")}</b></p>`}<b class="vpt">${p.chave&&h.vh<Number(p.valor)?`<s style="font-size:.55em;opacity:.6">${brl(p.valor).replace(",00","")}</s> `:""}${brl(h.vh).replace(",00","")} <small>por hora de live</small></b><p>${esc(p.descricao||"")}</p><p>Mínimo de <b>${numIn(h.hmin)} h de live por mês</b>${h.hl?`, com pelo menos <b>${numIn(h.hl)} h por live</b>`:""}${h.freq?`, <b>${esc(h.freq)}</b>`:""}</p><div class="vpv"><b>${brl(h.mensal)}</b><small>/mês</small></div><p>+ ${pc(i)} sobre as vendas feitas nas lives</p></div>`}).join("")}</div>
    <p class="vnote"><b>Inclui:</b> estúdio com áudio e vídeo, live sellers da equipe (treinamento, salário e comissão), operação completa presencial e remota, calendário e incentivos negociados com o TikTok, cadastro de SKUs novos. Hora além do mínimo pelo mesmo valor. Vigência de ${o.vigencia_meses||3} meses, renovável.</p>`))}
@@ -2532,8 +2538,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="45";const APP_DATA="16/11/2026";
+const APP_VERSAO="46";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["46","17/11","Proposta: slide da Hey!Mu (R$ 300 mil em live de 48h) ganhou o botão ▶ Assistir vídeo, clicável no PDF, abrindo o vídeo no YouTube."],
  ["45","17/11","Agenda e Lives viraram uma página só: Lives, com 📅 Calendário (dia, semana, mês) e ☰ Gestão (etapas, sellers, cachê, status). O menu ficou com uma entrada a menos; o sistema lembra a última visão usada."],
  ["44","16/11","Equipe: página nova em lista, mais profissional. Totais no topo (sócios, equipe, sellers, aguardando) e uma linha por pessoa com função, cidade, contato e situação do acesso. Inativos ficam só na Lista completa."],
  ["43","16/11","Formulários mais compactos (campos de cliente, marca, contrato etc. menores). Bloco de equipamento da live ficou oculto."],
