@@ -2532,8 +2532,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="44";const APP_DATA="16/11/2026";
+const APP_VERSAO="45";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["45","17/11","Agenda e Lives viraram uma página só: Lives, com 📅 Calendário (dia, semana, mês) e ☰ Gestão (etapas, sellers, cachê, status). O menu ficou com uma entrada a menos; o sistema lembra a última visão usada."],
  ["44","16/11","Equipe: página nova em lista, mais profissional. Totais no topo (sócios, equipe, sellers, aguardando) e uma linha por pessoa com função, cidade, contato e situação do acesso. Inativos ficam só na Lista completa."],
  ["43","16/11","Formulários mais compactos (campos de cliente, marca, contrato etc. menores). Bloco de equipamento da live ficou oculto."],
  ["42","16/11","Acesso: em Equipe › pessoa, sócio tem o botão 🔑 Resetar senha (gera senha temporária, cria o login se não existir, e já monta a mensagem para copiar ou mandar no WhatsApp). No login, link 'Esqueci a senha' orienta a falar com um sócio."],
@@ -3648,6 +3649,15 @@ const _eqV44=VIEWS.equipe;VIEWS.equipe=()=>{const v=S.f.eq.view||"cards";if(v!==
   const tg=`<div class="chips" style="margin-bottom:10px"><button data-act="eqView" data-v="cards" class="on">Visão geral</button><button data-act="eqView" data-v="lista">Lista completa</button></div>`;
   return tg+tot+`<div class="tool">${qbox("eq","Buscar pessoa…")}</div><div class="hint" style="margin:-4px 0 6px">Cadastro de sellers: <b>brunotae.github.io/implay/seller/</b></div>`
    +box("Sócios",SO.length,rSo,aviso)+box("Equipe",rEq.length,rEq)+box("Sellers",rSe.length,rSe)+box("Aguardando aprovação",rPe.length,rPe)};
+/* ---------- v45: Agenda + Lives em uma página ---------- */
+MENU.forEach(g=>{const i=g[1].findIndex(x=>x[0]==="agenda");if(i>=0)g[1].splice(i,1);g[1].forEach(x=>{if(x[0]==="jobs"){x[2]="Calendário e gestão";x[3]="cal"}})});
+S.liveModo=localStorage.getItem("implay-livemodo")||"cal";
+TAB_SUB.jobs="Calendário de lives e gestão de cada live: etapa, sellers, cachê e status";
+const _rV45=render;render=function(){if(S.tab==="agenda"){S.tab="jobs";S.liveModo="cal"}return _rV45()};
+const _vJobs45=VIEWS.jobs;VIEWS.jobs=()=>{const m=S.liveModo==="gestao"?"gestao":"cal";
+  const tg=`<div class="pills" style="margin:0 0 12px"><button data-act="liveModo" data-v="cal" class="${m==="cal"?"on":""}">📅 Calendário</button><button data-act="liveModo" data-v="gestao" class="${m==="gestao"?"on":""}">☰ Gestão</button></div>`;
+  return tg+(m==="cal"?VIEWS.agenda():_vJobs45())};
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=liveModo]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();S.liveModo=a.dataset.v;localStorage.setItem("implay-livemodo",S.liveModo);render()},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
