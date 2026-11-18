@@ -585,6 +585,15 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .vvid{position:absolute;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:3}.vvid span{background:#E6FF3B;color:#2b0f2a;font:700 15px/1 Figtree,system-ui,sans-serif;padding:10px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.35);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
 .trl{display:flex;flex-direction:column;gap:4px;max-height:320px;overflow:auto;border:1px solid var(--linha);border-radius:10px;padding:6px}.tri{display:grid;grid-template-columns:20px 1fr 52px 96px;gap:8px;align-items:center;font-size:12.5px;padding:3px 4px;border-radius:7px}.tri:hover{background:var(--card2)}.tri input.trq,.tri input.trv{min-height:28px!important;padding:3px 6px!important;font-size:12px!important;border:1px solid var(--linha);border-radius:7px;background:var(--card);width:100%}
+
+.matl{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}.mati{display:grid;grid-template-columns:22px 1fr auto auto;gap:8px;align-items:center;font-size:13px;padding:4px 6px;border-radius:8px}.mati:hover{background:var(--card2)}.mati a{font-weight:600}
+.prbox summary{cursor:pointer}.prr{display:grid;grid-template-columns:1.6fr .8fr .8fr .7fr auto 30px;gap:6px;align-items:center;margin-bottom:6px}.prr input{min-height:32px!important;padding:5px 8px!important;font-size:12.5px!important}.prf{font-size:12px;white-space:nowrap;display:flex;gap:4px;align-items:center}
+@media(max-width:640px){.prr{grid-template-columns:1fr 1fr 1fr;}.prr input[data-pr=produto]{grid-column:1/-1}}
+.k53g{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}.k53{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:12px 14px}.k53.done{border-color:var(--ok)}
+.k53h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}.k53t{font-size:14px}.k53p{text-align:right;min-width:70px;font-size:13px}.k53bar{height:6px;border-radius:9px;background:var(--card2);margin-top:4px;overflow:hidden}.k53bar span{display:block;height:100%;background:var(--volt)}
+.k53i{display:flex;flex-direction:column;gap:2px}.k53l{display:flex;gap:8px;align-items:flex-start;font-size:13px;padding:5px 6px;border-radius:8px;cursor:pointer}.k53l:hover{background:var(--card2)}.k53l.ok span{color:var(--cinza);text-decoration:line-through}.k53l.ok small{text-decoration:none}.k53l input{margin-top:2px;width:17px;height:17px}
+.k53d{margin-top:6px;font-size:12.5px}.k53d summary{cursor:pointer;font-weight:600}.k53pt{margin-top:6px}
+.k53{display:block}.prr input:not([type=checkbox]),#matBox input:not([type=file]){background:var(--card2);color:inherit;border:1px solid var(--linha);border-radius:8px;width:100%;min-width:0;padding:6px 9px;font:inherit;font-size:12.5px}.prr{grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,.7fr) auto 30px}
 </style>
 </head>
 <body>
@@ -815,7 +824,7 @@ function openJob(id,preset={}){
    ${id?`<div>${j.status==="realizado"?`<span class="tag o">realizado</span>`:j.status==="cancelado"?`<span class="tag x">cancelado</span>`:`<span class="tag v">aberto</span>`}</div>`:""}
    <div class="fld"><label>Contrato</label><select name="proposta_id" data-act-change="jobContrato" data-1c="lista"><option value="">— sem contrato —</option>${contratos.map(p=>`<option value="${p.id}" ${p.id===j.proposta_id?"selected":""}>${esc(p.contrato_numero||pn(p.numero))} · ${esc(p.marca)}</option>`).join("")}</select><div class="hint">Liga a live às condições de venda da proposta aceita.</div></div>
    ${cliSel(j.cliente_id,"Cliente")}${fld("marca","Marca",j.marca)}
-   ${pick("plataforma","Onde é a live",j.plataforma||(id?"":"TikTok"),PLAT_LIVE,{ph:"Outra: escreva"})}<div class="hint" style="margin-top:-6px">Mesma marca no TikTok e no Instagram? Cadastre uma live para cada plataforma.</div>
+   ${pick("plataforma","Onde é a live",j.plataforma||(id?"":"TikTok"),PLAT_LIVE,{ph:"Outra: escreva"})}<div class="hint" style="margin-top:-6px">Mesma marca no TikTok e no Instagram? Cadastre uma live para cada plataforma.</div>${jobPromosHtml(j)}
    <div class="fld"><label>Modalidade</label>${seg("modalidade",[["servico","Serviço completo"],["aluguel","Só aluguel do espaço"]],j.modalidade)}</div>
    <div data-show="modalidade=servico" class="sbox eqoff">${pickM("equipamento","Equipamento (pode marcar mais de um)",j.equipamento||"",["Celular","Câmera profissional","2 câmeras","Iluminação extra","Microfone de lapela","Cenário da marca"],{ph:"Outro equipamento: escreva aqui"})}</div>
    <div class="sec"><h2>Local</h2></div>
@@ -860,7 +869,7 @@ async function saveJob(id){
   const row={proposta_id:f.proposta_id||null,cliente_id:f.cliente_id||null,marca:f.marca||cliNome(f.cliente_id)||null,equipamento:srv?(f.equipamento||null):null,seller_clt:clt,seller_fora:fora,clt_ids:clt&&f.clt_ids?f.clt_ids.split(","):[],convidados:conv?(f.convidados||null):null,modalidade:f.modalidade,local_tipo:f.local_tipo,
     espaco:f.local_tipo==="estudio"?(f.espaco||null):null,local_endereco:f.local_tipo==="cliente"?f.local_endereco||null:null,inicio:ini.toISOString(),fim:fim.toISOString(),
     valor_seller:app?num(f.valor_seller):null,seller_pago_por:f.seller_pago_por||"cliente",requisitos:app?(f.requisitos||null):null,publicado:app,
-    principal_id:app?(f.principal_id||null):null,substituto_id:app?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null};
+    principal_id:app?(f.principal_id||null):null,substituto_id:app?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null,promocoes:jobPromosLer()};
   if(row.principal_id&&row.principal_id===row.substituto_id)return toast("Principal e substituto precisam ser pessoas diferentes",true);
   if(id&&f.ireal_h!==undefined){const j=S.jobs.find(x=>x.id===id);const base=ymd(new Date(j.inicio));
     let ir=combine(f.data||base,f.ireal_h,f.ireal_m),fr=combine(f.data||base,f.freal_h,f.freal_m);if(fr<=ir)fr=new Date(fr.getTime()+864e5);
@@ -2541,8 +2550,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="52";const APP_DATA="16/11/2026";
+const APP_VERSAO="53";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["53","18/11","1) Clientes: cada cliente ganha 📚 Materiais e treinamentos (sobe PDFs arrastando e cola links). 2) Live: 🔥 Promoções da live (produto, de/por, hora e ⚡ flash sale), com cópia da última live da marca. 3) Lives › ✅ Checklist do dia: todas as lives de hoje/amanhã com 9 itens pré-live para o operador ir marcando (fica registrado quem marcou e a hora), mais as promoções e os materiais da marca."],
  ["52","18/11","Gestão na proposta: o % agora diz o que é de verdade. Gestão da marca = sobre as vendas gerais da marca; Afiliados = sobre as vendas dos afiliados (antes aparecia 'sobre vendas das lives')."],
  ["51","17/11","Termo de equipamentos: quem assina pela IMPlay já vem preenchido como Thiago."],
  ["50","17/11","Contratos (e Equipamentos): novo botão Termo de equipamentos. Escolha o cliente (razão social, CNPJ e endereço vêm do cadastro), marque os equipamentos que vão ao local com quantidade e valor de reposição, e gere o termo com o logo da IMPlay e o Anexo I com a lista. Salvar PDF / Imprimir."],
@@ -3723,6 +3733,70 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-act=trNovo
   S.docNome="Termo equipamentos "+(f.razao||"cliente");closeSheet();showCtr(termoEqHtml(f,itens))},true);
 const _haCtr50=HEADACT.contratos;HEADACT.contratos=()=>`<button class="btn sm" data-act="trNovo">+ Termo de equipamentos</button>`+_haCtr50();
 const _haEq50=HEADACT.equip;HEADACT.equip=()=>`<button class="btn sm" data-act="trNovo">Termo de responsabilidade</button>`+_haEq50();
+/* ---------- v53: materiais do cliente · promoções da live · checklist do dia ---------- */
+const CLI_BUCKET="implay-cli";S.cliMat=S.cliMat||[];
+const _loadAll53=loadAll;loadAll=async function(){await _loadAll53();if(S.demo)return;const r=await db.from("imp_cli_mat").select("*").order("created_at",{ascending:false});S.matSemSQL=!!r.error;S.cliMat=r.data||[]};
+function matDe(cid){return (S.cliMat||[]).filter(m=>m.cliente_id===cid)}
+function matLista(cid,podeApagar=true){const l=matDe(cid);if(!l.length)return `<div class="small muted">Nenhum material ainda.</div>`;
+  return `<div class="matl">${l.map(m=>`<div class="mati"><span class="matic">${m.tipo==="link"?"🔗":/pdf/i.test(m.mime||m.arquivo_nome||"")?"📄":"📎"}</span><a href="#" data-act="matAbrir" data-id="${m.id}">${esc(m.titulo)}</a><span class="small muted">${m.tipo==="link"?esc((m.url||"").replace(/^https?:\/\//,"").slice(0,40)):esc(m.arquivo_nome||"")}</span>${podeApagar?`<button type="button" class="btn d sm" data-act="matDel" data-id="${m.id}">Apagar</button>`:""}</div>`).join("")}</div>`}
+function matBox(cid){if(S.matSemSQL)return `<div class="warnbox">Rode o SQL da Versão 53 para guardar materiais.</div>`;
+  return `<div class="sbox" id="matBox" data-cli="${cid}"><label style="font-weight:700">📚 Materiais e treinamentos dos produtos</label><div class="small muted" style="margin:-2px 0 8px">PDFs, apresentações e links de treinamento. Aparecem na live e no checklist do dia.</div>
+  <div id="matList">${matLista(cid)}</div>
+  <input type="file" id="matFile" multiple accept=".pdf,image/*,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.mp4,.mov">
+  <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><input id="matLT" placeholder="Título do link (ex.: Treinamento linha verão)" style="flex:1;min-width:160px"><input id="matLU" placeholder="https://…" style="flex:1;min-width:160px"><button type="button" class="btn sm" data-act="matLink">+ Link</button></div></div>`}
+function matRefresh(cid){const b=$("#matList");if(b)b.innerHTML=matLista(cid)}
+const _openCli53=openCli;openCli=function(id){_openCli53(id);if(!id)return;const f=$("#cliForm");if(!f)return;const acts=f.querySelector(".acts");const h=matBox(id);acts?acts.insertAdjacentHTML("beforebegin",h):f.insertAdjacentHTML("beforeend",h)};
+document.addEventListener("change",async e=>{if(e.target.id!=="matFile")return;const box=$("#matBox");if(!box)return;const cid=box.dataset.cli;const files=[...e.target.files];e.target.value="";
+  for(const file of files){if(file.size>50*1048576){toast(file.name+": maior que 50 MB",true);continue}
+    toast("Enviando "+file.name+"…");const safe=file.name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w.\-]+/g,"_");const path=`${cid}/${Date.now().toString(36)}_${safe}`;
+    const up=await db.storage.from(CLI_BUCKET).upload(path,file,{contentType:file.type||"application/octet-stream",upsert:false});if(up.error){toast("Não subiu: "+up.error.message,true);continue}
+    const r=await db.from("imp_cli_mat").insert({cliente_id:cid,tipo:"arquivo",titulo:file.name.replace(/\.[^.]+$/,""),caminho:path,arquivo_nome:file.name,mime:file.type||null,tamanho:file.size}).select("*").single();
+    if(r.error){await db.storage.from(CLI_BUCKET).remove([path]);toast("Não salvou: "+r.error.message,true);continue}S.cliMat.unshift(r.data);matRefresh(cid)}
+  if(files.length)toast("Material salvo")},true);
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=matLink],[data-act=matAbrir],[data-act=matDel]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act;
+  if(act==="matLink"){const cid=$("#matBox").dataset.cli;let u=($("#matLU").value||"").trim();const t=($("#matLT").value||"").trim();if(!u)return toast("Cole o link",true);if(!/^https?:\/\//i.test(u))u="https://"+u;
+    const r=await db.from("imp_cli_mat").insert({cliente_id:cid,tipo:"link",titulo:t||u.replace(/^https?:\/\//,"").slice(0,60),url:u}).select("*").single();if(r.error)return toast("Não salvou: "+r.error.message,true);S.cliMat.unshift(r.data);matRefresh(cid);$("#matLT").value="";$("#matLU").value="";return toast("Link salvo")}
+  const m=S.cliMat.find(x=>x.id===a.dataset.id);if(!m)return;
+  if(act==="matAbrir"){if(m.tipo==="link")return window.open(m.url,"_blank");const w=window.open("","_blank");const {data,error}=await db.storage.from(CLI_BUCKET).createSignedUrl(m.caminho,900);if(error||!data){w&&w.close();return toast("Não abriu o arquivo",true)}if(w)w.location=data.signedUrl;else location.href=data.signedUrl;return}
+  if(act==="matDel"){if(!armed(a))return;const r=await db.from("imp_cli_mat").delete().eq("id",m.id);if(r.error)return toast("Não apagou: "+r.error.message,true);if(m.caminho)await db.storage.from(CLI_BUCKET).remove([m.caminho]);S.cliMat=S.cliMat.filter(x=>x.id!==m.id);matRefresh(m.cliente_id);toast("Apagado")}},true);
+
+/* promoções da live */
+function prRow(p={}){return `<div class="prr"><input data-pr="produto" value="${esc(p.produto||"")}" placeholder="Produto"><input data-pr="preco" value="${esc(p.preco||"")}" placeholder="De R$" inputmode="decimal"><input data-pr="preco_live" value="${esc(p.preco_live||"")}" placeholder="Por R$" inputmode="decimal"><input data-pr="hora" value="${esc(p.hora||"")}" placeholder="Hora (opc.)"><label class="prf"><input type="checkbox" data-pr="flash" ${p.flash?"checked":""}> ⚡ Flash</label><button type="button" class="btn sm" data-act="prDel" title="Tirar">×</button></div>`}
+function jobPromosHtml(j){const l=Array.isArray(j.promocoes)?j.promocoes:[];return `<details class="sbox prbox" ${l.length?"open":""}><summary><b>🔥 Promoções da live</b> <span class="small muted">(opcional · ${l.length} produto${l.length===1?"":"s"})</span></summary>
+  <div class="small muted" style="margin:6px 0">Produto, preço normal, preço na live e se é flash sale. Aparece no checklist do dia para o operador cadastrar na plataforma.</div>
+  <div id="prList">${l.map(prRow).join("")}</div>
+  <div class="row" style="gap:6px;margin-top:6px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="prAdd">+ Produto</button><button type="button" class="btn sm" data-act="prCopiar">Copiar da última live desta marca</button></div></details>`}
+function jobPromosLer(){const l=[];document.querySelectorAll("#prList .prr").forEach(r=>{const g=k=>{const el=r.querySelector(`[data-pr=${k}]`);return el.type==="checkbox"?el.checked:el.value.trim()};const o={produto:g("produto"),preco:g("preco"),preco_live:g("preco_live"),hora:g("hora"),flash:g("flash")};if(o.produto)l.push(o)});return l}
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=prAdd],[data-act=prDel],[data-act=prCopiar]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="prAdd"){$("#prList").insertAdjacentHTML("beforeend",prRow());const r=$("#prList").lastElementChild;r&&r.querySelector("input").focus();return}
+  if(a.dataset.act==="prDel"){a.closest(".prr").remove();return}
+  const F=a.closest("form");const marca=(F.querySelector("[name=marca]")||{}).value||"";const cid=(F.querySelector("[name=cliente_id]")||{}).value||"";
+  const ult=S.jobs.filter(j=>Array.isArray(j.promocoes)&&j.promocoes.length&&((cid&&j.cliente_id===cid)||(marca&&(j.marca||"").toLowerCase()===marca.toLowerCase()))).sort((x,y)=>new Date(y.inicio)-new Date(x.inicio))[0];
+  if(!ult)return toast("Nenhuma live anterior dessa marca com promoções",true);$("#prList").innerHTML=ult.promocoes.map(prRow).join("");toast("Copiado da "+jn(ult.numero))},true);
+
+/* checklist do dia */
+const CHECK_ITENS=[["seller","Seller confirmado e no local"],["produtos","Produtos e amostras separados"],["promos","Promoções e flash sales cadastradas na plataforma"],["carrinho","Produtos fixados no carrinho / vitrine"],["roteiro","Roteiro e materiais revisados com o seller"],["cenario","Cenário montado"],["equip","Câmera, luz e microfone testados"],["internet","Internet e transmissão testadas"],["conta","Celular e conta da marca logados e carregados"]];
+S.chkDia=S.chkDia||"hoje";
+function chkCard(j){const ck=j.checklist||{};const ok=CHECK_ITENS.filter(([k])=>ck[k]&&ck[k].ok).length;const pc=Math.round(ok/CHECK_ITENS.length*100);const pr=Array.isArray(j.promocoes)?j.promocoes:[];const mats=j.cliente_id?matDe(j.cliente_id):[];
+  const sel=S.membros.find(m=>m.id===j.principal_id);const i=new Date(j.inicio),f=new Date(j.fim||j.inicio);
+  return `<div class="k53 ${pc===100?"done":""}"><div class="k53h"><div><b class="k53t">${hm(i)}–${hm(f)} · ${esc(j.marca||"Live")}</b> ${typeof platTag==="function"?platTag(j):""}<div class="small muted">${jn(j.numero)} · ${j.local_tipo==="estudio"?"Estúdio"+(j.espaco?" "+esc(j.espaco):""):j.local_tipo==="online"?"Online":"Externa · "+esc(j.local_endereco||"")}${sel?" · 🎤 "+esc(sel.nome):""}</div></div>
+   <div class="k53p"><b>${ok}/${CHECK_ITENS.length}</b><div class="k53bar"><span style="width:${pc}%"></span></div></div></div>
+   <div class="k53i">${CHECK_ITENS.map(([k,t])=>{const c=ck[k];return `<label class="k53l ${c&&c.ok?"ok":""}"><input type="checkbox" data-chk="${k}" data-job="${j.id}" ${c&&c.ok?"checked":""}><span>${t}${k==="promos"&&pr.length?` <b>(${pr.length})</b>`:""}${c&&c.ok?`<small> · ${esc(c.por||"")} ${c.em?new Date(c.em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):""}</small>`:""}</span></label>`}).join("")}</div>
+   ${pr.length?`<details class="k53d"><summary>🔥 Promoções (${pr.length})</summary><table class="atb k53pt"><thead><tr><th>Produto</th><th>De</th><th>Por</th><th>Hora</th><th>Flash</th></tr></thead><tbody>${pr.map(p=>`<tr><td>${esc(p.produto)}</td><td>${esc(p.preco||"—")}</td><td><b>${esc(p.preco_live||"—")}</b></td><td>${esc(p.hora||"—")}</td><td>${p.flash?"⚡ sim":"—"}</td></tr>`).join("")}</tbody></table></details>`:""}
+   ${mats.length?`<details class="k53d"><summary>📚 Materiais da marca (${mats.length})</summary>${matLista(j.cliente_id,false)}</details>`:""}
+   <div class="row" style="gap:6px;margin-top:6px"><button class="btn sm" data-act="job" data-id="${j.id}">Abrir live</button></div></div>`}
+function chkView(){const base=new Date(new Date().toDateString());if(S.chkDia==="amanha")base.setDate(base.getDate()+1);const fim=new Date(base.getTime()+864e5);
+  const l=S.jobs.filter(j=>j.status!=="cancelado"&&new Date(j.inicio)>=base&&new Date(j.inicio)<fim).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));
+  const tot=l.length*CHECK_ITENS.length,ok=l.reduce((s,j)=>s+CHECK_ITENS.filter(([k])=>(j.checklist||{})[k]&&(j.checklist||{})[k].ok).length,0);
+  const tg=`<div class="chips" style="margin:0 0 10px"><button data-act="chkDia" data-v="hoje" class="${S.chkDia==="hoje"?"on":""}">Hoje</button><button data-act="chkDia" data-v="amanha" class="${S.chkDia==="amanha"?"on":""}">Amanhã</button></div>`;
+  if(S.jobs.length&&S.jobs[0].checklist===undefined)return tg+`<div class="warnbox">Rode o SQL da Versão 53 para ligar o checklist.</div>`;
+  return tg+(l.length?`<div class="okbox" style="margin-bottom:10px">${l.length} live${l.length>1?"s":""} · <b>${ok} de ${tot}</b> itens feitos${tot&&ok===tot?" · tudo pronto ✅":""}</div><div class="k53g">${l.map(chkCard).join("")}</div>`:`<div class="empty">Nenhuma live ${S.chkDia==="hoje"?"hoje":"amanhã"}.</div>`)}
+const _vJobs53=VIEWS.jobs;VIEWS.jobs=()=>{if(S.liveModo!=="check")return _vJobs53().replace('<button data-act="liveModo" data-v="gestao"','<button data-act="liveModo" data-v="check">✅ Checklist do dia</button><button data-act="liveModo" data-v="gestao"');
+  return `<div class="pills" style="margin:0 0 12px"><button data-act="liveModo" data-v="cal">📅 Calendário</button><button data-act="liveModo" data-v="check" class="on">✅ Checklist do dia</button><button data-act="liveModo" data-v="gestao">☰ Gestão</button></div>`+chkView()};
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=chkDia]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();S.chkDia=a.dataset.v;render()},true);
+document.addEventListener("change",async e=>{const c=e.target.closest("[data-chk]");if(!c)return;const j=S.jobs.find(x=>x.id===c.dataset.job);if(!j)return;c.disabled=true;
+  const {data,error}=await db.rpc("imp_check_marcar",{p_job:j.id,p_item:c.dataset.chk,p_ok:c.checked});c.disabled=false;
+  if(error){c.checked=!c.checked;return toast("Não marcou: "+traduz(error.message),true)}j.checklist=data||{};render()},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
