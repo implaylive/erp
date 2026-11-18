@@ -700,7 +700,7 @@ async function loadAll(){
   for(const r of [m,c,p,j,f,a]) if(r.error){console.warn(r.error)}
   S.membros=m.data||[];S.clientes=c.data||[];S.propostas=p.data||[];S.jobs=j.data||[];S.fin=f.data||[];S.amostras=a.data||[];
 }
-async function refresh(){if(!S.me)return;try{await loadAll();if($("#sheet").hidden&&$("#doc").hidden)render()}catch(e){console.warn(e)}}
+async function refresh(){if(!S.me||document.hidden)return;try{await loadAll();if($("#sheet").hidden&&$("#doc").hidden)render()}catch(e){console.warn(e)}}
 
 /* ---------- login ---------- */
 function renderLogin(msg){
@@ -2550,8 +2550,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="53";const APP_DATA="16/11/2026";
+const APP_VERSAO="54";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["54","18/11","Economia de dados: o ERP parou de baixar o texto de todos os contratos a cada minuto (agora baixa uma vez por sessão) e não atualiza quando a aba está escondida. Reduz ~90% do tráfego com o Supabase."],
  ["53","18/11","1) Clientes: cada cliente ganha 📚 Materiais e treinamentos (sobe PDFs arrastando e cola links). 2) Live: 🔥 Promoções da live (produto, de/por, hora e ⚡ flash sale), com cópia da última live da marca. 3) Lives › ✅ Checklist do dia: todas as lives de hoje/amanhã com 9 itens pré-live para o operador ir marcando (fica registrado quem marcou e a hora), mais as promoções e os materiais da marca."],
  ["52","18/11","Gestão na proposta: o % agora diz o que é de verdade. Gestão da marca = sobre as vendas gerais da marca; Afiliados = sobre as vendas dos afiliados (antes aparecia 'sobre vendas das lives')."],
  ["51","17/11","Termo de equipamentos: quem assina pela IMPlay já vem preenchido como Thiago."],
@@ -2939,7 +2940,12 @@ const CST={aguardando:["aguardando aprovação","w"],aprovado:["aprovado · pron
 const ctrTag=st=>`<span class="tag ${(CST[st]||["",""])[1]}">${(CST[st]||[st])[0]}</span>`;
 function ctrUltimas(){const g={};(S.ctrs||[]).forEach(c=>{if(!g[c.numero]||c.versao>g[c.numero].versao)g[c.numero]=c});return Object.values(g).sort((a,b)=>b.numero-a.numero)}
 function ctrVersoes(num){return (S.ctrs||[]).filter(c=>c.numero===num).sort((a,b)=>b.versao-a.versao)}
-async function ctrLoad(){const [a,b]=await Promise.all([db.from("imp_ctr").select("*").order("gerado_em",{ascending:false}),db.from("imp_ctr_ev").select("*").order("em",{ascending:true})]);S.ctrSemSQL=!!a.error;S.ctrs=a.data||[];S.ctrEv=b.data||[]}
+const CTR_META="id,numero,versao,anterior_id,orcamento_id,cliente_id,marca,opcoes,editado_manual,motivo,status,gerado_por,gerado_nome,gerado_em,aprovado_por,aprovado_nome,aprovado_em,enviado_em,enviado_via,enviado_para,assinado_em,arquivo_assinado,created_by";S._ctrHtml=S._ctrHtml||{};
+async function ctrLoad(){/* v54: o texto (html) de cada versão só é baixado uma vez por sessão; nas atualizações vem só o resumo */
+  const [a,b]=await Promise.all([db.from("imp_ctr").select(CTR_META).order("gerado_em",{ascending:false}),db.from("imp_ctr_ev").select("*").order("em",{ascending:true})]);S.ctrSemSQL=!!a.error;
+  const l=a.data||[];const falta=l.filter(c=>S._ctrHtml[c.id]===undefined).map(c=>c.id);
+  for(let i=0;i<falta.length;i+=20){const r=await db.from("imp_ctr").select("id,html").in("id",falta.slice(i,i+20));(r.data||[]).forEach(x=>S._ctrHtml[x.id]=x.html||"")}
+  l.forEach(c=>c.html=S._ctrHtml[c.id]);S.ctrs=l;S.ctrEv=b.data||[]}
 function ctrGeradosView(){if(S.ctrSemSQL&&!S.demo)return `<div class="warnbox">Falta rodar o SQL <b>implay_contratos_marca.sql</b> no Supabase. Depois recarregue a página.</div>`;
   const f=S.f.ctr,st=f.st||"todos";let l=ctrUltimas().filter(c=>has(f.q,c.marca,ctn(c.numero),cliNome(c.cliente_id)));const c=k=>l.filter(x=>x.status===k).length;
   const lf=st==="todos"?l.filter(x=>x.status!=="cancelado"):l.filter(x=>x.status===st);
@@ -3029,7 +3035,7 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
   case"ctrEditTxt":H();showCtrDoc(id,true);break;
   case"ctrSalvaEd":{H();const c=S.ctrs.find(x=>x.id===id);const mot=($("#ctrMot").value||"").trim();if(!mot)return toast("Escreva o motivo da alteração",true);
     const html=$("#ctrBody").innerHTML;const ult=ctrVersoes(c.numero)[0];const r=await run(db.from("imp_ctr").insert({orcamento_id:c.orcamento_id,cliente_id:c.cliente_id,marca:c.marca,opcoes:c.opcoes,anterior_id:ult.id,motivo:mot,editado_manual:true}).select().single());
-    const html2=html.replace(new RegExp(ctn(c.numero)+" · versão \\d+"),ctn(r.numero)+" · versão "+r.versao);await run(db.from("imp_ctr").update({html:html2}).eq("id",r.id),"Versão "+r.versao+" salva");
+    const html2=html.replace(new RegExp(ctn(c.numero)+" · versão \\d+"),ctn(r.numero)+" · versão "+r.versao);await run((delete S._ctrHtml[r.id],db).from("imp_ctr").update({html:html2}).eq("id",r.id),"Versão "+r.versao+" salva");
     await ctrLoad();showCtrDoc(r.id);break}
   case"ctrCancelar":{H();if(!armed(a))return;await run(db.from("imp_ctr").update({status:"cancelado"}).eq("id",id),"Contrato cancelado");await ctrLoad();closeSheet();render();break}
   case"goCtr":H();S.tab="contratos";S.f.ctr.tipo="gerados";S.f.ctr.st=v||"todos";render();break;
@@ -3154,7 +3160,7 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
   case"ctrMarca":e.stopImmediatePropagation();e.preventDefault();openCtrm(id);break;
   case"ctrmGerar":{e.stopImmediatePropagation();const o=S.ctrmO&&(S.ctrmO.id||"")===(id||"")?S.ctrmO:S.orcs.find(x=>x.id===id);const f=formData();const antId=a.dataset.v||null;if(antId&&!(f.motivo||"").trim())return toast("Escreva o motivo da alteração",true);const op=Object.assign(ctrmOpts(o),{inicio:f.inicio||ymd(new Date()),local:f.local,plataforma:f.plataforma||"TikTok Shop",exclusividade:f.exclusividade,aviso:parseInt(f.aviso)||30,multa:f.multa,renovacao:f.renovacao,horas_sobra:f.horas_sobra||"cobra",rep_nome:f.rep_nome,rep_cpf:f.rep_cpf,rep_cargo:f.rep_cargo,implay_rep:f.implay_rep,t1:f.t1||"",t2:f.t2||"",foro:f.foro||"São Paulo/SP",cidade:f.foro||"São Paulo/SP",especiais:f.especiais||"",gerado_em:new Date().toISOString(),gerado_por:S.me.nome});if(o.direto){op.cond=JSON.parse(JSON.stringify(o.cond));delete op.cond.antId;delete op.cond.op}
     if(!S.ctrSemSQL||S.demo){a.disabled=true;const row=await run(db.from("imp_ctr").insert({orcamento_id:o.id||null,cliente_id:o.cliente_id||null,marca:o.marca,opcoes:op,anterior_id:antId,motivo:antId?f.motivo:null}).select().single());
-      await run(db.from("imp_ctr").update({html:ctrmDoc(o,op,row)}).eq("id",row.id));if(o.id)await db.from("imp_orcamentos").update({contrato:op}).eq("id",id);o.contrato=op;S.cd=null;
+      await run((delete S._ctrHtml[row.id],db).from("imp_ctr").update({html:ctrmDoc(o,op,row)}).eq("id",row.id));if(o.id)await db.from("imp_orcamentos").update({contrato:op}).eq("id",id);o.contrato=op;S.cd=null;
       closeSheet();await ctrLoad();toast(row.status==="aprovado"?ctn(row.numero)+" v"+row.versao+" gerado e aprovado":ctn(row.numero)+" gerado · aguardando aprovação de um sócio");showCtrDoc(row.id);break}
     const r=await db.from("imp_orcamentos").update({contrato:op}).eq("id",id);if(r.error)console.warn(r.error);else o.contrato=op;
     closeSheet();showCtr(ctrmDoc(o,op));if(r.error&&/contrato/.test(r.error.message||""))toast("Contrato gerado. Para guardar as escolhas, rode o SQL implay_contrato_marca.sql",true);break}
