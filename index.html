@@ -1796,11 +1796,12 @@ function oeCard(k){const p=preco(k),it=oeItem(k);const mud=Number(it.valor)!==Nu
    <div class="oedit" ${it.edit?"":"hidden"}><div class="cols2"><div class="fld" style="margin-top:6px"><label>${p.grupo==="hora"?"Valor da hora (R$)":"Valor (R$)"}</label><input inputmode="decimal" data-oe="valor" data-k="${k}" value="${numIn(it.valor)}"></div><div class="fld" style="margin-top:6px"><label>% sobre vendas</label><input inputmode="decimal" data-oe="perc" data-k="${k}" value="${numIn(it.perc)}"></div></div>${p.grupo==="hora"?`<div class="cols2"><div class="fld" style="margin-top:6px"><label>Mín. horas por mês</label><input inputmode="numeric" data-oe="hmin" data-k="${k}" value="${numIn(hrDe(it,p).hmin)}"></div><div class="fld" style="margin-top:6px"><label>Mín. lives por semana</label><input inputmode="numeric" data-oe="lsem" data-k="${k}" value="${hrDe(it,p).lsem}"></div></div>`:""}
    <button type="button" class="lnk" data-act="oeReset" data-k="${k}">Voltar ao preço de tabela</button></div>
    <button type="button" class="open" data-act="oeEdit" data-k="${k}">${it.edit?"Fechar ✓":"✏️ Alterar valor ou %"}${mud||mudp?" · alterado":""}</button></div>`}
+function percAlvo(p){const k=String(p&&p.chave||"");return k==="gestao.MARCA"?"sobre as vendas gerais da marca":k.startsWith("gestao.AFIL")?"sobre as vendas dos afiliados":"sobre vendas das lives"}
 function oePriceHtml(k){const p=preco(k),it=oeItem(k);const mud=Number(it.valor)!==Number(p.valor),mudp=Number(it.perc)!==Number(p.perc);
   const suf=p.unid?p.unid:p.grupo==="hora"?"/hora":p.grupo==="pacote"?"/mês":p.grupo==="pontual"?"/live":"";
   const dn=Number(it.valor)<Number(p.valor),dnp=Number(it.perc)<Number(p.perc);
   return `${p.valor_ref&&!mud?`<s>${brl(p.valor_ref)}</s> `:""}${mud&&dn?`<s>${brl(p.valor)}</s> `:""}<b class="${mud?(dn?"dn":"up"):""}">${brl(it.valor)}</b><small>${suf}</small>${mud&&!dn?`<div class="op" style="color:var(--ok)">acima da tabela (${brl(p.valor)}) · o cliente vê só o novo</div>`:""}
-   <div class="op">${mudp&&dnp?`<s>${numIn(p.perc)}%</s> `:""}<b class="${mudp?(Number(it.perc)<Number(p.perc)?"dn":"up"):""}">+ ${numIn(it.perc)}%</b> sobre vendas das lives</div>${p.grupo==="hora"?(h=>`<div class="op">mínimo de <b>${numIn(h.hmin)} h</b> por mês · ${h.lsem} lives por semana<br>= <b>${brl(h.mensal)}</b> fixo por mês</div>`)(hrDe(it,p)):""}`}
+   <div class="op">${mudp&&dnp?`<s>${numIn(p.perc)}%</s> `:""}<b class="${mudp?(Number(it.perc)<Number(p.perc)?"dn":"up"):""}">+ ${numIn(it.perc)}%</b> ${percAlvo(p)}</div>${p.grupo==="hora"?(h=>`<div class="op">mínimo de <b>${numIn(h.hmin)} h</b> por mês · ${h.lsem} lives por semana<br>= <b>${brl(h.mensal)}</b> fixo por mês</div>`)(hrDe(it,p)):""}`}
 function oeSumHtml(){const o=S.oe;const it=o.itens.filter(i=>i.on);const desc=orcTemDesc(o);
   let regra;if(!it.length)regra=`<div class="warnbox">Ligue pelo menos uma categoria, pacote ou a Live Drop.</div>`;
   else if(!isSocio())regra=`<div class="warnbox">Você é da equipe: esta proposta vai para <b>aprovação de um sócio</b> antes de gerar a versão final.</div>`;
@@ -2540,8 +2541,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="51";const APP_DATA="16/11/2026";
+const APP_VERSAO="52";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["52","18/11","Gestão na proposta: o % agora diz o que é de verdade. Gestão da marca = sobre as vendas gerais da marca; Afiliados = sobre as vendas dos afiliados (antes aparecia 'sobre vendas das lives')."],
  ["51","17/11","Termo de equipamentos: quem assina pela IMPlay já vem preenchido como Thiago."],
  ["50","17/11","Contratos (e Equipamentos): novo botão Termo de equipamentos. Escolha o cliente (razão social, CNPJ e endereço vêm do cadastro), marque os equipamentos que vão ao local com quantidade e valor de reposição, e gere o termo com o logo da IMPlay e o Anexo I com a lista. Salvar PDF / Imprimir."],
  ["49","17/11","Proposta: 2 cases novos depois da Ticky: Yasmin Beauty (R$ ~100 mil em 5h no 11.11) e LIVE! (25x mais GMV com o treinamento), ambos com ▶ Assistir vídeo clicável no PDF."],
@@ -3560,11 +3562,11 @@ function gestaoPages(o){const out=[];const comp=orcCompleto(o);
   if(comp||M.it.on){const L=["Auxílio no cadastro de SKU","Prospecção de afiliados","Aprovação de amostras","Envio de briefing","Conferência de postagens","Recursos de punições e restrições com o TikTok","Parcerias com outras agências e influenciadores shop","Aceleração de vendas","Criação de squad TikTok Shop da marca","Administração de GMV Max","Lista de convidados de eventos para criadores TikTok Shop","Transição de influenciadores externos para criadores shop","Prospecção de criadores para campanhas de awareness","Montagem de squad de live sellers"];
     out.push(v1page("cream lt vgpg",`<div class="vgk">Proposta de gestão</div><h2>Gestão geral da marca no TikTok Shop</h2>
      <div class="vgrow"><div class="vgc dk" style="width:362px;flex:none"><div class="vgt v">Investimento mensal</div>${M.dn?`<div class="vgs">${gMil(M.p.valor)}</div>`:""}<div class="vgbig">${gMil(M.v)}</div><div class="vgsub">por mês</div>
-      <div class="vgt v vgmais">Mais ${M.dnp&&!M.p.perc_max?`<s>${numIn(M.p.perc)}%</s> `:""}${gPerc(M)}</div><div class="vgsub">das vendas${M.p.perc_max&&M.pc===Number(M.p.perc)?", a depender da marca":""}</div>
+      <div class="vgt v vgmais">Mais ${M.dnp&&!M.p.perc_max?`<s>${numIn(M.p.perc)}%</s> `:""}${gPerc(M)}</div><div class="vgsub">das vendas gerais da marca no TikTok Shop${M.p.perc_max&&M.pc===Number(M.p.perc)?", a depender da marca":""}</div>
       <div class="vgnote v">Valores pagos a criadores não estão embutidos no valor cobrado pela gestão.</div></div>
      <div class="vgc lm" style="flex:1"><div class="vgt">O que a gestão inclui</div><ul class="vgl">${L.map(x=>`<li>${x}</li>`).join("")}</ul></div></div>`))}
   const A=gItem(o,"gestao.AFIL_INI"),B=gItem(o,"gestao.AFIL_500");
-  if(comp||A.it.on||B.it.on){const card=(g,cls,tit)=>`<div class="vgc ${cls}"><div class="vgt">${tit}</div><div class="vgsub">Envio de amostras e briefing</div><div style="flex:1"></div>${g.dn?`<div class="vgs">${brl(g.p.valor).replace(",00","")}</div>`:""}<div class="vgbig">${brl(g.v).replace(",00","")}</div><div class="vgsub">a cada ${g.p.lote||70} envios de amostras</div><div style="flex:1"></div><div class="vgt vgmais">Mais ${g.dnp?`<s>${numIn(g.p.perc)}%</s> `:""}${numIn(g.pc)}% das vendas</div></div>`;
+  if(comp||A.it.on||B.it.on){const card=(g,cls,tit)=>`<div class="vgc ${cls}"><div class="vgt">${tit}</div><div class="vgsub">Envio de amostras e briefing</div><div style="flex:1"></div>${g.dn?`<div class="vgs">${brl(g.p.valor).replace(",00","")}</div>`:""}<div class="vgbig">${brl(g.v).replace(",00","")}</div><div class="vgsub">a cada ${g.p.lote||70} envios de amostras</div><div style="flex:1"></div><div class="vgt vgmais">Mais ${g.dnp?`<s>${numIn(g.p.perc)}%</s> `:""}${numIn(g.pc)}% das vendas dos afiliados</div></div>`;
     out.push(v1page("cream lt vgpg",`<div class="vgk">Proposta de gestão</div><h2>Gestão de afiliados</h2>
      <div class="vgrow">${card(A,"lm","Marcas iniciantes no TikTok Shop")}${card(B,"pk","Marcas acima de R$ 500 mil/mês no TikTok Shop")}
       <div class="vgc dk"><div class="vgt v">Prospecção de afiliados</div><ul class="vgl w"><li>Envio de amostras e briefing</li><li>Cobrança de postagem</li></ul><div style="flex:1"></div><div class="vgnote v">Valores pagos a criadores não estão incluídos.</div></div></div>`))}
