@@ -594,6 +594,9 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .k53i{display:flex;flex-direction:column;gap:2px}.k53l{display:flex;gap:8px;align-items:flex-start;font-size:13px;padding:5px 6px;border-radius:8px;cursor:pointer}.k53l:hover{background:var(--card2)}.k53l.ok span{color:var(--cinza);text-decoration:line-through}.k53l.ok small{text-decoration:none}.k53l input{margin-top:2px;width:17px;height:17px}
 .k53d{margin-top:6px;font-size:12.5px}.k53d summary{cursor:pointer;font-weight:600}.k53pt{margin-top:6px}
 .k53{display:block}.prr input:not([type=checkbox]),#matBox input:not([type=file]){background:var(--card2);color:inherit;border:1px solid var(--linha);border-radius:8px;width:100%;min-width:0;padding:6px 9px;font:inherit;font-size:12.5px}.prr{grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,.7fr) auto 30px}
+
+/* v55: tela mais compacta no computador */
+@media(min-width:1100px){body{zoom:.88}}
 </style>
 </head>
 <body>
@@ -2550,8 +2553,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="54";const APP_DATA="16/11/2026";
+const APP_VERSAO="55";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["55","18/11","Visual mais compacto no computador: letras, números e botões ~12% menores em todas as telas (no celular nada muda)."],
  ["54","18/11","Economia de dados: o ERP parou de baixar o texto de todos os contratos a cada minuto (agora baixa uma vez por sessão) e não atualiza quando a aba está escondida. Reduz ~90% do tráfego com o Supabase."],
  ["53","18/11","1) Clientes: cada cliente ganha 📚 Materiais e treinamentos (sobe PDFs arrastando e cola links). 2) Live: 🔥 Promoções da live (produto, de/por, hora e ⚡ flash sale), com cópia da última live da marca. 3) Lives › ✅ Checklist do dia: todas as lives de hoje/amanhã com 9 itens pré-live para o operador ir marcando (fica registrado quem marcou e a hora), mais as promoções e os materiais da marca."],
  ["52","18/11","Gestão na proposta: o % agora diz o que é de verdade. Gestão da marca = sobre as vendas gerais da marca; Afiliados = sobre as vendas dos afiliados (antes aparecia 'sobre vendas das lives')."],
