@@ -91,6 +91,7 @@ h1,h2,h3{font-weight:800}
 .kvs{display:grid;grid-template-columns:100px 1fr;gap:6px 10px;font-size:13px;margin-top:10px}.kvs span{color:var(--cinza)}.btn.sm{padding:6px 12px;min-height:0;font-size:13px;width:auto}
 .tchk{display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:13.5px;background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:12px;cursor:pointer}.tchk input{width:20px;height:20px;flex:none;accent-color:var(--volt);margin-top:1px}.tchk.dis{opacity:.5;cursor:not-allowed}
 #ctrSheet{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;overflow:auto;padding:20px}#ctrSheet .in{margin:0 auto}
+.cen summary{cursor:pointer;list-style:none}.cen summary::-webkit-details-marker{display:none}.cs{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13.5px;line-height:1.5}.cs h4{margin:0 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza)}.cs.ok{border-color:rgba(124,227,139,.5)}.cs.no{border-color:rgba(239,100,120,.6)}.cs a{color:var(--volt)}.cp{padding:4px 0;border-top:1px solid var(--linha)}.cp:first-of-type{border-top:0}
 </style>
 </head>
 <body>
@@ -104,7 +105,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="2";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="3";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -314,9 +315,9 @@ document.addEventListener("change",e=>{const i=e.target;if(i.dataset&&i.dataset.
 
 /* ---------- dados ---------- */
 async function load(){
-  const [a,b]=await Promise.all([db.rpc("imp_mural"),db.rpc("imp_meus_jobs")]);
+  const [a,b,c]=await Promise.all([db.rpc("imp_mural"),db.rpc("imp_meus_jobs"),db.rpc("imp_central_seller")]);
   if(a.error||b.error){toast(erro(a.error||b.error),true)}
-  S.mural=a.data||[];S.meus=b.data||[];
+  S.mural=a.data||[];S.meus=b.data||[];S.marcas=(c&&!c.error&&c.data)||[];
 }
 async function refresh(){if(!S.me||S.me.status!=="ativo"||!S.me.termo_aceito_em||S.me.termo_versao!==TERMO_VERSAO)return;await load();if($("#sheet").hidden)render()}
 
@@ -325,9 +326,9 @@ function render(){
   const conv=S.meus.filter(j=>j.status==="aberto"&&j.situacao!=="aguardando"&&j.minha_vaga==="substituto"&&j.principal_livre&&new Date(j.inicio)>new Date()&&!S.meus.some(x=>x.id===j.id&&x.situacao==="aguardando"));
   const prox=S.meus.filter(j=>j.status==="aberto"&&new Date(j.fim)>new Date());
   $("#app").innerHTML=`<div class="wrap"><div class="top"><div><img class="logoimg" src="${LOGO_LIMA}" alt="IMPlay" data-act="tab" data-v="mural" style="cursor:pointer" title="Início"><div class="live" style="margin-top:8px">● app do seller</div></div><div class="small muted" style="text-align:right">${esc(S.me.nome)}</div></div>
-  <div class="tabs">${[["mural","Lives abertas"],["meus","Minha agenda"+(prox.length?" ("+prox.length+")":"")],["perfil","Perfil"]].map(([k,l])=>`<button data-act="tab" data-v="${k}" class="${S.tab===k?"on":""}">${l}</button>`).join("")}</div>
+  <div class="tabs">${[["mural","Lives abertas"],["meus","Minha agenda"+(prox.length?" ("+prox.length+")":"")],["marcas","Marcas"+((S.marcas||[]).length?" ("+S.marcas.length+")":"")],["perfil","Perfil"]].map(([k,l])=>`<button data-act="tab" data-v="${k}" class="${S.tab===k?"on":""}">${l}</button>`).join("")}</div>
   ${conv.map(j=>`<div class="banner"><b>A vaga de principal abriu.</b><br>${esc(j.marca)} · ${dExt(j.inicio)}, ${hm(j.inicio)}. Quer assumir? (você decide)<button class="btn" style="margin-top:10px;background:#fff;color:#000" data-act="pegar" data-id="${j.id}" data-v="principal">Quero ser o principal</button></div>`).join("")}
-  ${S.tab==="mural"?mural():S.tab==="meus"?meus():perfil()}
+  ${S.tab==="mural"?mural():S.tab==="meus"?meus():S.tab==="marcas"?marcasView():perfil()}
   <div class="foot">Conectado como ${esc(S.email)} · <a href="#" data-act="sair" style="color:var(--cinza)">Sair desta conta</a> · Versão ${APP_VERSAO}</div></div>`;
 }
 function vaga(j,tipo){const livre=tipo==="principal"?j.principal_livre:j.substituto_livre;const minha=j.minha_vaga===tipo;const ped=j.meu_pedido===tipo;
@@ -433,6 +434,20 @@ document.addEventListener("drop",e=>{document.querySelectorAll(".dzon").forEach(
   const dt=new DataTransfer();[...e.dataTransfer.files].slice(0,i.multiple?50:1).forEach(f=>dt.items.add(f));i.files=dt.files;i.dispatchEvent(new Event("change",{bubbles:true}))});
 document.addEventListener("dragover",e=>{if(e.dataTransfer&&[...e.dataTransfer.types].includes("Files"))e.preventDefault()});document.addEventListener("drop",e=>{if(!e.defaultPrevented&&!dropAlvo(e))e.preventDefault()});
 
+
+/* ---------- Central da marca (sellers escaladas) ---------- */
+const CEN_T=[["sobre","Sobre a marca"],["tom","Tom de voz"],["falar","✅ O que destacar"],["nao_falar","⛔ O que NÃO falar"],["roteiro","Roteiro base"],["cupons","Cupons e ofertas fixas"],["links","Links úteis"]];
+function marcasView(){const l=S.marcas||[];if(!l.length)return `<div class="card"><p class="muted" style="margin:0">Quando você for escalada numa live, a central da marca aparece aqui: briefing, produtos, o que falar e o que não falar, roteiro e treinamentos.</p></div>`;
+  const lk=t=>esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>");
+  return l.map(m=>{const v=m.central||{};const pr=Array.isArray(v.produtos)?v.produtos:[];const mats=Array.isArray(m.materiais)?m.materiais:[];
+    const sec=CEN_T.filter(([k])=>(v[k]||"").trim()).map(([k,t])=>`<div class="cs ${k==="falar"?"ok":k==="nao_falar"?"no":""}"><h4>${t}</h4><div>${lk(v[k])}</div></div>`).join("");
+    return `<details class="card cen" ${l.length===1?"open":""}><summary><b class="marca">${esc(m.marca||"Marca")}</b> <span class="small muted">· toque para abrir</span></summary>
+    ${sec}${pr.length?`<div class="cs"><h4>Produtos</h4>${pr.map(p=>`<div class="cp"><b>${esc(p.nome)}</b>${p.preco?` · ${esc(p.preco)}`:""}${p.destaque?`<div class="small muted">${esc(p.destaque)}</div>`:""}</div>`).join("")}</div>`:""}
+    ${mats.length?`<div class="cs"><h4>📚 Materiais e treinamentos</h4>${mats.map(x=>`<div class="cp"><a href="#" data-act="matSel" data-tipo="${x.tipo}" data-url="${esc(x.url||"")}" data-cam="${esc(x.caminho||"")}">${x.tipo==="link"?"🔗":"📄"} ${esc(x.titulo)}</a></div>`).join("")}</div>`:""}
+    ${!sec&&!pr.length&&!mats.length?`<p class="muted">A central desta marca ainda está sendo preparada.</p>`:""}</details>`}).join("")}
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=matSel]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.tipo==="link")return window.open(a.dataset.url,"_blank");const w=window.open("","_blank");const {data,error}=await db.storage.from("implay-cli").createSignedUrl(a.dataset.cam,900);
+  if(error||!data){w&&w.close();return toast("Não abriu o arquivo",true)}if(w)w.location=data.signedUrl;else location.href=data.signedUrl},true);
 </script>
 </body>
 </html>

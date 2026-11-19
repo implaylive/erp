@@ -597,6 +597,10 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 
 /* v55: tela mais compacta no computador */
 @media(min-width:1100px){body{zoom:.88}}
+
+.cpr{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.6fr) minmax(0,2fr) 30px;gap:6px;margin-bottom:6px}.cpr input{background:var(--card2);color:inherit;border:1px solid var(--linha);border-radius:8px;width:100%;min-width:0;padding:6px 9px;font:inherit;font-size:12.5px}
+.cen{display:flex;flex-direction:column;gap:10px}.cen-h h3{margin:2px 0 4px;font-size:20px}.cen-s{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5}.cen-s h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza)}.cen-s.ok{border-color:rgba(46,160,90,.5)}.cen-s.no{border-color:rgba(220,70,90,.55)}.cen-s a{text-decoration:underline}
+@media(max-width:640px){.cpr{grid-template-columns:1fr 90px 30px}.cpr input[data-cp=destaque]{grid-column:1/-1;grid-row:2}}
 </style>
 </head>
 <body>
@@ -2553,8 +2557,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="55";const APP_DATA="16/11/2026";
+const APP_VERSAO="56";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["56","19/11","🏷 Central da marca: cada cliente ganha uma página com sobre a marca, tom de voz, o que destacar, o que NÃO falar, produtos, roteiro base, cupons, links e os materiais. Abre pela ficha do cliente, pela live e pelo Checklist do dia. As sellers escaladas veem no app delas (aba Marcas)."],
  ["55","18/11","Visual mais compacto no computador: letras, números e botões ~12% menores em todas as telas (no celular nada muda)."],
  ["54","18/11","Economia de dados: o ERP parou de baixar o texto de todos os contratos a cada minuto (agora baixa uma vez por sessão) e não atualiza quando a aba está escondida. Reduz ~90% do tráfego com o Supabase."],
  ["53","18/11","1) Clientes: cada cliente ganha 📚 Materiais e treinamentos (sobe PDFs arrastando e cola links). 2) Live: 🔥 Promoções da live (produto, de/por, hora e ⚡ flash sale), com cópia da última live da marca. 3) Lives › ✅ Checklist do dia: todas as lives de hoje/amanhã com 9 itens pré-live para o operador ir marcando (fica registrado quem marcou e a hora), mais as promoções e os materiais da marca."],
@@ -3807,6 +3812,39 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-act=chkDia
 document.addEventListener("change",async e=>{const c=e.target.closest("[data-chk]");if(!c)return;const j=S.jobs.find(x=>x.id===c.dataset.job);if(!j)return;c.disabled=true;
   const {data,error}=await db.rpc("imp_check_marcar",{p_job:j.id,p_item:c.dataset.chk,p_ok:c.checked});c.disabled=false;
   if(error){c.checked=!c.checked;return toast("Não marcou: "+traduz(error.message),true)}j.checklist=data||{};render()},true);
+/* ---------- v56: Central da marca ---------- */
+const CEN_CAMPOS=[["sobre","Sobre a marca","Quem é a marca, história, diferenciais, público"],["tom","Tom de voz","Ex.: alegre, próximo, usa gírias leves, chama a cliente de 'amiga'"],["falar","O que destacar","Benefícios, provas, frases que vendem, perguntas frequentes"],["nao_falar","O que NÃO falar","Promessas proibidas, termos de saúde, concorrentes, preços fora da tabela"],["roteiro","Roteiro base da live","Abertura · apresentação dos produtos · ofertas relâmpago · encerramento"],["cupons","Cupons e ofertas fixas","Ex.: cupom LIVE10 = 10% · frete grátis acima de R$ 99"],["links","Links úteis","Loja, Instagram, catálogo, pasta de fotos"]];
+function cenProdRow(p={}){return `<div class="cpr"><input data-cp="nome" value="${esc(p.nome||"")}" placeholder="Produto"><input data-cp="preco" value="${esc(p.preco||"")}" placeholder="Preço" inputmode="decimal"><input data-cp="destaque" value="${esc(p.destaque||"")}" placeholder="Benefício principal / como usar"><button type="button" class="btn sm" data-act="cpDel">×</button></div>`}
+function openCentral(cid){const c=S.clientes.find(x=>x.id===cid);if(!c)return;const v=c.central||{};const pr=Array.isArray(v.produtos)?v.produtos:[];
+  openSheet(`<form id="cenF" onsubmit="return false" data-cli="${cid}"><h3>🏷 Central da marca · ${esc(c.marca||c.empresa||"")}</h3><p class="small muted" style="margin-top:0">Tudo que a seller e o operador precisam saber da marca. As sellers escaladas veem esta página no app delas.</p>
+  ${CEN_CAMPOS.map(([k,t,ph])=>`<div class="fld"><label>${t}</label><textarea name="${k}" rows="${k==="roteiro"||k==="sobre"?4:3}" placeholder="${esc(ph)}">${esc(v[k]||"")}</textarea></div>`).join("")}
+  <div class="fld"><label>Produtos</label><div id="cpList">${pr.map(cenProdRow).join("")}</div><button type="button" class="btn sm" data-act="cpAdd" style="margin-top:6px">+ Produto</button></div>
+  ${matBox(cid)}
+  <div class="acts"><button type="button" class="btn p" data-act="cenSalvar">Salvar</button><button type="button" class="btn" data-act="cenVer" data-id="${cid}">👁 Ver como a seller vê</button><button type="button" class="btn" data-act="fechar">Fechar</button></div></form>`)}
+function centralTem(c){const v=(c&&c.central)||{};return CEN_CAMPOS.some(([k])=>(v[k]||"").trim())||(Array.isArray(v.produtos)&&v.produtos.length)}
+function centralView(c,mats){const v=c.central||{};const pr=Array.isArray(v.produtos)?v.produtos:[];const lk=t=>esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>");
+  const sec=(k,t,cls="")=>(v[k]||"").trim()?`<div class="cen-s ${cls}"><h4>${t}</h4><div>${lk(v[k])}</div></div>`:"";
+  return `<div class="cen"><div class="cen-h"><span class="small muted">Central da marca</span><h3>${esc(c.marca||"")}</h3></div>
+  ${sec("sobre","Sobre a marca")}${sec("tom","Tom de voz")}${sec("falar","✅ O que destacar","ok")}${sec("nao_falar","⛔ O que NÃO falar","no")}
+  ${pr.length?`<div class="cen-s"><h4>Produtos</h4><table class="atb"><thead><tr><th>Produto</th><th>Preço</th><th>Destaque / como usar</th></tr></thead><tbody>${pr.map(p=>`<tr><td><b>${esc(p.nome)}</b></td><td>${esc(p.preco||"—")}</td><td>${esc(p.destaque||"")}</td></tr>`).join("")}</tbody></table></div>`:""}
+  ${sec("roteiro","Roteiro base")}${sec("cupons","Cupons e ofertas fixas")}${sec("links","Links úteis")}
+  ${mats&&mats.length?`<div class="cen-s"><h4>📚 Materiais e treinamentos</h4>${matLista(c.id,false)}</div>`:""}
+  ${!centralTem(c)&&!(mats&&mats.length)?`<div class="empty">A central desta marca ainda está vazia.</div>`:""}</div>`}
+function openCentralVer(cid){const c=S.clientes.find(x=>x.id===cid);if(!c)return;openSheet(centralView(c,matDe(cid))+`<div class="acts"><button type="button" class="btn p" data-act="cenEditar" data-id="${cid}">Editar</button><button type="button" class="btn" data-act="fechar">Fechar</button></div>`)}
+function cenLer(){const F=$("#cenF");const o={};CEN_CAMPOS.forEach(([k])=>o[k]=(F.querySelector(`[name=${k}]`).value||"").trim());o.produtos=[];F.querySelectorAll("#cpList .cpr").forEach(r=>{const g=k=>r.querySelector(`[data-cp=${k}]`).value.trim();const p={nome:g("nome"),preco:g("preco"),destaque:g("destaque")};if(p.nome)o.produtos.push(p)});return o}
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=cenAbrir],[data-act=cenEditar],[data-act=cenVer],[data-act=cenSalvar],[data-act=cpAdd],[data-act=cpDel],[data-act=cenVerLive]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act;
+  if(act==="cpAdd"){$("#cpList").insertAdjacentHTML("beforeend",cenProdRow());$("#cpList").lastElementChild.querySelector("input").focus();return}
+  if(act==="cpDel"){a.closest(".cpr").remove();return}
+  if(act==="cenAbrir"||act==="cenEditar"){closeSheet();return openCentral(a.dataset.id)}
+  if(act==="cenVerLive"){return openCentralVer(a.dataset.id)}
+  if(act==="cenVer"||act==="cenSalvar"){const cid=$("#cenF").dataset.cli;const o=cenLer();a.disabled=true;const r=await db.from("imp_clientes").update({central:o}).eq("id",cid).select("id,central").single();a.disabled=false;
+    if(r.error)return toast(/central/.test(r.error.message)?"Rode o SQL da Versão 56 (implay_central_marca.sql)":"Não salvou: "+r.error.message,true);
+    const c=S.clientes.find(x=>x.id===cid);if(c)c.central=r.data.central;toast("Central salva");if(act==="cenVer")openCentralVer(cid);else closeSheet()}},true);
+/* botão na ficha do cliente */
+const _openCli56=openCli;openCli=function(id){_openCli56(id);if(!id)return;const b=$("#matBox");if(b)b.insertAdjacentHTML("beforebegin",`<div class="sbox" style="display:flex;align-items:center;gap:10px;justify-content:space-between"><div><b>🏷 Central da marca</b><div class="small muted">Briefing, produtos, roteiro e regras para sellers e operadores${centralTem(S.clientes.find(x=>x.id===id))?" · <b style='color:var(--ok)'>preenchida</b>":" · vazia"}</div></div><button type="button" class="btn sm p" data-act="cenAbrir" data-id="${id}">Abrir</button></div>`)};
+/* atalho no checklist e na live */
+const _chkCard56=chkCard;chkCard=function(j){let h=_chkCard56(j);if(j.cliente_id)h=h.replace(`<button class="btn sm" data-act="job" data-id="${j.id}">Abrir live</button>`,`<button class="btn sm" data-act="job" data-id="${j.id}">Abrir live</button><button class="btn sm" data-act="cenVerLive" data-id="${j.cliente_id}">🏷 Central da marca</button>`);return h};
+const _jobPromos56=jobPromosHtml;jobPromosHtml=function(j){const c=j&&j.cliente_id&&S.clientes.find(x=>x.id===j.cliente_id);return (c?`<div class="small" style="margin:-4px 0 8px"><a href="#" data-act="cenVerLive" data-id="${c.id}">🏷 Ver central da marca ${esc(c.marca||"")}</a></div>`:"")+_jobPromos56(j)};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
