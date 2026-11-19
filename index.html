@@ -602,6 +602,12 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .cen{display:flex;flex-direction:column;gap:10px}.cen-h h3{margin:2px 0 4px;font-size:20px}.cen-s{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5}.cen-s h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza)}.cen-s.ok{border-color:rgba(46,160,90,.5)}.cen-s.no{border-color:rgba(220,70,90,.55)}.cen-s a{text-decoration:underline}
 @media(max-width:640px){.cpr{grid-template-columns:1fr 90px 30px}.cpr input[data-cp=destaque]{grid-column:1/-1;grid-row:2}}
 .mag{padding:12px 14px;margin-bottom:12px}.magr{display:grid;grid-template-columns:70px 100px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 4px;border-top:1px solid var(--linha);cursor:pointer;font-size:13px}.magr:hover{background:var(--card2)}.magr b.hj{color:var(--volt)}
+.dvbar{display:flex;align-items:center;gap:8px;margin:4px 0 10px}.dvbar b{margin-left:6px;font-size:15px}
+.dvw{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:10px 10px 10px 0;overflow:auto;max-height:72vh}
+.dv{position:relative;margin-left:58px}.dvh{position:absolute;left:0;right:0;border-top:1px solid var(--linha)}.dvh span{position:absolute;left:-54px;top:-8px;font-size:11px;color:var(--cinza)}
+.dvc{position:absolute;inset:0}.dvb{position:absolute;border-radius:8px;padding:5px 8px;color:#fff;overflow:hidden;cursor:pointer;font-size:12px;line-height:1.3;display:flex;flex-direction:column;gap:1px;box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.dvb b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvb span{opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvb .vg{background:rgba(0,0,0,.25);border-radius:6px;padding:0 5px;align-self:flex-start}.dvb:hover{filter:brightness(1.1)}
+.dvnow{position:absolute;left:-6px;right:0;height:2px;background:#ff4d4d;z-index:2}.dvnow:before{content:"";position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:50%;background:#ff4d4d}
 </style>
 </head>
 <body>
@@ -2558,8 +2564,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="57";const APP_DATA="16/11/2026";
+const APP_VERSAO="58";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["58","19/11","🕒 Lives · visão Dia: a agenda do dia em blocos por horário, no estilo Google Agenda. Cada marca tem uma cor, e lives no mesmo horário ficam lado a lado. Use ‹ Hoje › para mudar de dia."],
  ["57","19/11","👤 Minha agenda: no Painel aparecem as suas lives dos próximos 7 dias. Em Lives, o botão \"Só as minhas\" filtra só as lives em que você está escalado."],
  ["56","19/11","🏷 Central da marca: cada cliente ganha uma página com sobre a marca, tom de voz, o que destacar, o que NÃO falar, produtos, roteiro base, cupons, links e os materiais. Abre pela ficha do cliente, pela live e pelo Checklist do dia. As sellers escaladas veem no app delas (aba Marcas)."],
  ["55","18/11","Visual mais compacto no computador: letras, números e botões ~12% menores em todas as telas (no celular nada muda)."],
@@ -3859,6 +3866,33 @@ function minhaAgendaHtml(){const now=new Date(),hj=new Date(now);hj.setHours(0,0
   return `<div class="card mag"><div class="sec" style="margin:0 0 6px"><h2>👤 Minha agenda</h2><span class="small muted">próximos 7 dias</span></div>${l.map(j=>`<div class="magr" data-act="job" data-id="${j.id}"><b class="${dia(j.inicio)==="Hoje"?"hj":""}">${dia(j.inicio)}</b><span>${h(j.inicio)}${j.fim?"–"+h(j.fim):""}</span><span class="m">${esc(j.marca||"")}${platTag?platTag(j):""}</span><span class="small muted">${j.substituto_id===S.me.id?"substituta":esc(j.espaco||j.local_tipo||"")}</span></div>`).join("")}</div>`}
 const _painel57=VIEWS.painel;VIEWS.painel=()=>{const h=_painel57();const m=minhaAgendaHtml();if(!m)return h;const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+m+h.slice(i):m+h};
 document.addEventListener("click",e=>{const a=e.target.closest("[data-act=soMinhas]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();S.soMinhas=!S.soMinhas;localStorage.setItem("implay-sominhas",S.soMinhas?"1":"0");render()},true);
+/* ---------- v58: Lives · visão Dia (estilo Google Agenda) ---------- */
+const DIA_CORES=["#E8613A","#8E3BBF","#2E8B57","#E0B43C","#2F6FD6","#D6457E","#1FA3A3","#7A8A2E","#C2552B","#5B5BD6"];
+function corMarca(m){let h=0;for(const c of String(m||""))h=(h*31+c.charCodeAt(0))>>>0;return DIA_CORES[h%DIA_CORES.length]}
+S.diaSel=S.diaSel||null;
+function diaView(){const base=S.diaSel?new Date(S.diaSel+"T00:00"):new Date(new Date().toDateString());const fim=new Date(base.getTime()+864e5);
+  const l=S.jobs.filter(j=>j.status!=="cancelado"&&platPass(j)&&new Date(j.fim||j.inicio)>base&&new Date(j.inicio)<fim).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio)||new Date(b.fim)-new Date(a.fim));
+  const hr=d=>Math.max(0,Math.min(24,(new Date(d)-base)/36e5));
+  let h0=8,h1=23;l.forEach(j=>{h0=Math.min(h0,Math.floor(hr(j.inicio)));h1=Math.max(h1,Math.ceil(hr(j.fim||j.inicio)+.01))});h1=Math.min(24,h1);
+  const PX=56;const ev=l.map(j=>({j,a:hr(j.inicio),b:Math.max(hr(j.fim||j.inicio),hr(j.inicio)+.5)}));
+  /* colunas para lives no mesmo horário */
+  let grp=[],end=-1;const grupos=[];ev.forEach(e=>{if(e.a>=end&&grp.length){grupos.push(grp);grp=[]}grp.push(e);end=Math.max(end,e.b)});if(grp.length)grupos.push(grp);
+  grupos.forEach(g=>{const cols=[];g.forEach(e=>{let c=cols.findIndex(x=>x<=e.a);if(c<0){c=cols.length;cols.push(0)}cols[c]=e.b;e.c=c});g.forEach(e=>e.n=cols.length)});
+  const hm2=d=>new Date(d).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  const plat=j=>{const k=platKey(j);return k==="tt"?"TikTok":k==="ig"?"Instagram":(j.plataforma||"")};
+  const agora=new Date();const nowH=(agora-base)/36e5;
+  const dLab=base.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"});
+  const hoje=new Date(new Date().toDateString()).getTime()===base.getTime();
+  let grid="";for(let h=h0;h<h1;h++)grid+=`<div class="dvh" style="top:${(h-h0)*PX}px"><span>${String(h).padStart(2,"0")}:00</span></div>`;
+  const blocos=ev.map(e=>{const j=e.j;const top=(e.a-h0)*PX,ht=Math.max(22,(e.b-e.a)*PX-3);const w=100/e.n;const sel=[nome(j.principal_id),j.substituto_id?nome(j.substituto_id)+" (sub)":""].filter(Boolean).join(" · ");
+    return `<div class="dvb" data-act="job" data-id="${j.id}" style="top:${top}px;height:${ht}px;left:calc(${e.c*w}% + 2px);width:calc(${w}% - 4px);background:${corMarca(j.marca)}"><b>${platKey(j)==="tt"?"♪ ":platKey(j)==="ig"?"◎ ":""}${esc(j.marca||"Live")}${plat(j)?" · "+esc(plat(j)):""}</b><span>${hm2(j.inicio)}–${j.fim?hm2(j.fim):""}${j.espaco?" · "+esc(j.espaco):""}</span>${sel?`<span>👤 ${esc(sel)}</span>`:`<span class="vg">sem seller</span>`}</div>`}).join("");
+  return `<div class="dvbar"><button class="btn sm" data-act="diaNav" data-v="-1">‹</button><button class="btn sm ${hoje?"p":""}" data-act="diaNav" data-v="0">Hoje</button><button class="btn sm" data-act="diaNav" data-v="1">›</button><b>${dLab.charAt(0).toUpperCase()+dLab.slice(1)}</b><span class="small muted">${l.length} live${l.length===1?"":"s"}</span></div>
+  <div class="dvw"><div class="dv" style="height:${(h1-h0)*PX}px">${grid}<div class="dvc">${blocos}${hoje&&nowH>h0&&nowH<h1?`<div class="dvnow" style="top:${(nowH-h0)*PX}px"></div>`:""}</div></div></div>${l.length?"":`<div class="empty">Nenhuma live neste dia.</div>`}`}
+const _vJobs58=VIEWS.jobs;VIEWS.jobs=()=>{const pill='<button data-act="liveModo" data-v="dia">🕒 Dia</button>';
+  if(S.liveModo!=="dia")return _vJobs58().replace('<button data-act="liveModo" data-v="gestao"',pill+'<button data-act="liveModo" data-v="gestao"');
+  return `<div class="pills" style="margin:0 0 12px"><button data-act="liveModo" data-v="cal">📅 Calendário</button><button data-act="liveModo" data-v="check">✅ Checklist do dia</button><button data-act="liveModo" data-v="dia" class="on">🕒 Dia</button><button data-act="liveModo" data-v="gestao">☰ Gestão</button></div>`+platChips()+diaView()};
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=diaNav]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();const v=+a.dataset.v;
+  if(!v)S.diaSel=null;else{const d=S.diaSel?new Date(S.diaSel+"T00:00"):new Date(new Date().toDateString());d.setDate(d.getDate()+v);S.diaSel=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}render()},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
