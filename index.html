@@ -608,6 +608,7 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .dvc{position:absolute;inset:0}.dvb{position:absolute;border-radius:8px;padding:5px 8px;color:#fff;overflow:hidden;cursor:pointer;font-size:12px;line-height:1.3;display:flex;flex-direction:column;gap:1px;box-shadow:0 1px 0 rgba(0,0,0,.25)}
 .dvb b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvb span{opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvb .vg{background:rgba(0,0,0,.25);border-radius:6px;padding:0 5px;align-self:flex-start}.dvb:hover{filter:brightness(1.1)}
 .dvnow{position:absolute;left:-6px;right:0;height:2px;background:#ff4d4d;z-index:2}.dvnow:before{content:"";position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:50%;background:#ff4d4d}
+.accR{display:grid;grid-template-columns:110px minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--linha);font-size:13px}.accV{font-family:ui-monospace,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.accG{display:grid;grid-template-columns:140px minmax(0,1fr) minmax(0,1fr);gap:6px;margin-top:8px}.accG input{background:var(--card2);color:inherit;border:1px solid var(--linha);border-radius:8px;padding:6px 9px;font:inherit;font-size:12.5px;min-width:0}.accG input[name=ob]{grid-column:1/-1}@media(max-width:700px){.accR{grid-template-columns:1fr 1fr}.accR>.row{grid-column:1/-1;flex-wrap:wrap}.accG{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -2564,8 +2565,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="59";const APP_DATA="16/11/2026";
+const APP_VERSAO="60";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["60","19/11","🔐 Acessos do cliente: na ficha do cliente, os sócios guardam logins e senhas (TikTok, Shop, Instagram…). Só sócios veem, a senha fica oculta até clicar em 👁 e dá para copiar com um clique."],
  ["59","19/11","📝 Contrato de live seller mensal (modelo 2026 do Caio: fixo + % sobre vendas). Gere em Contratos → + Contrato de seller, ou na ficha da seller → Gerar contrato. Ali você escolhe entre o mensal e o avulso (por live)."],
  ["58","19/11","🕒 Lives · visão Dia: a agenda do dia em blocos por horário, no estilo Google Agenda. Cada marca tem uma cor, e lives no mesmo horário ficam lado a lado. Use ‹ Hoje › para mudar de dia."],
  ["57","19/11","👤 Minha agenda: no Painel aparecem as suas lives dos próximos 7 dias. Em Lives, o botão \"Só as minhas\" filtra só as lives em que você está escalado."],
@@ -3943,6 +3945,27 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-act=csmAbr
   S.docNome="Contrato live seller "+(f.razao||(m&&m.nome)||"");closeSheet();showCtr(ctrSellerMensal(f))},true);
 document.addEventListener("change",e=>{if(e.target.id==="csmSel")csmPreencher(e.target.value)},true);
 const _haCtr59=HEADACT.contratos;HEADACT.contratos=()=>`<button class="btn sm" data-act="csmNovo">+ Contrato de seller</button>`+_haCtr59();
+/* ---------- v60: Acessos dos clientes (só sócios) ---------- */
+S._acc={};
+async function accLoad(cid){const r=await db.from("imp_cli_acessos").select("id,plataforma,login,senha,obs,updated_at").eq("cliente_id",cid).order("plataforma");S._accErr=r.error?r.error.message:null;S._acc[cid]=r.data||[];accRender(cid)}
+function accRender(cid){const b=$("#accBox");if(!b||b.dataset.cli!==cid)return;const l=S._acc[cid]||[];
+  b.querySelector(".accL").innerHTML=S._accErr?`<div class="warnbox" style="margin:0">Rode o SQL da Versão 60 (implay_acessos_clientes.sql).</div>`:l.length?l.map(a=>`<div class="accR" data-id="${a.id}"><b>${esc(a.plataforma||"")}</b><span class="accV">${esc(a.login||"—")}</span><span class="accV accS" data-on="0">••••••••</span>
+   <span class="row" style="gap:4px"><button type="button" class="btn sm" data-act="accVer">👁</button><button type="button" class="btn sm" data-act="accCop" data-k="login">Copiar login</button><button type="button" class="btn sm" data-act="accCop" data-k="senha">Copiar senha</button><button type="button" class="btn sm" data-act="accEd">Editar</button><button type="button" class="btn sm d" data-act="accDel">Apagar</button></span>${a.obs?`<div class="small muted" style="grid-column:1/-1">${esc(a.obs)}</div>`:""}</div>`).join(""):`<div class="small muted">Nenhum acesso salvo.</div>`}
+function accForm(cid,a={}){const f=$("#accBox .accF");f.hidden=false;f.dataset.id=a.id||"";f.innerHTML=`<div class="accG"><input name="pl" list="accPl" value="${esc(a.plataforma||"TikTok")}" placeholder="Plataforma"><datalist id="accPl">${["TikTok","TikTok Shop","Instagram","Shopee","YouTube","Mercado Livre","Site / e-commerce","E-mail"].map(x=>`<option value="${x}">`).join("")}</datalist><input name="lg" placeholder="Login / e-mail / @" value="${esc(a.login||"")}" autocomplete="off"><input name="sn" type="password" placeholder="Senha" value="${esc(a.senha||"")}" autocomplete="new-password"><input name="ob" placeholder="Obs. (2FA no celular de quem, etc.)" value="${esc(a.obs||"")}"></div><div class="row" style="gap:6px;margin-top:6px"><button type="button" class="btn sm p" data-act="accSalvar">Salvar</button><button type="button" class="btn sm" data-act="accCancel">Cancelar</button></div>`}
+const _openCli60=openCli;openCli=function(id){_openCli60(id);if(!id||!isSocio())return;const b=$("#matBox");if(!b)return;
+  b.insertAdjacentHTML("beforebegin",`<div class="sbox" id="accBox" data-cli="${id}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>🔐 Acessos do cliente</b><div class="small muted">Logins e senhas (TikTok, Shop…). Só sócios veem. Senha fica oculta até clicar em 👁.</div></div><button type="button" class="btn sm" data-act="accNovo">+ Acesso</button></div><div class="accF" hidden></div><div class="accL" style="margin-top:8px"><div class="small muted">Carregando…</div></div></div>`);accLoad(id)};
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act^=acc]");if(!a||!a.closest("#accBox"))return;e.preventDefault();e.stopImmediatePropagation();
+  const box=$("#accBox"),cid=box.dataset.cli,act=a.dataset.act,row=a.closest(".accR"),it=row&&(S._acc[cid]||[]).find(x=>x.id===row.dataset.id);
+  if(act==="accNovo")return accForm(cid);
+  if(act==="accCancel"){box.querySelector(".accF").hidden=true;return}
+  if(act==="accEd")return accForm(cid,it);
+  if(act==="accVer"){const s=row.querySelector(".accS");const on=s.dataset.on==="1";s.dataset.on=on?"0":"1";s.textContent=on?"••••••••":(it.senha||"—");return}
+  if(act==="accCop"){const v=it[a.dataset.k]||"";try{await navigator.clipboard.writeText(v);toast(a.dataset.k==="senha"?"Senha copiada":"Login copiado")}catch(_){toast("Não copiou",true)}return}
+  if(act==="accDel"){if(!armed(a))return;const r=await db.from("imp_cli_acessos").delete().eq("id",it.id);if(r.error)return toast(r.error.message,true);toast("Apagado");return accLoad(cid)}
+  if(act==="accSalvar"){const f=box.querySelector(".accF");const g=n=>f.querySelector(`[name=${n}]`).value.trim();const row2={cliente_id:cid,plataforma:g("pl"),login:g("lg")||null,senha:g("sn")||null,obs:g("ob")||null,updated_at:new Date().toISOString(),updated_by:S.me&&S.me.user_id||undefined};
+    if(!row2.login&&!row2.senha)return toast("Preencha login ou senha",true);
+    const r=f.dataset.id?await db.from("imp_cli_acessos").update(row2).eq("id",f.dataset.id):await db.from("imp_cli_acessos").insert(row2);
+    if(r.error)return toast(/imp_cli_acessos/.test(r.error.message)?"Rode o SQL da Versão 60":r.error.message,true);f.hidden=true;f.innerHTML="";toast("Acesso salvo");return accLoad(cid)}},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
