@@ -2565,8 +2565,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="60";const APP_DATA="16/11/2026";
+const APP_VERSAO="61";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["61","19/11","Correção: os materiais do cliente agora aparecem mesmo se a ficha for aberta logo depois de entrar."],
  ["60","19/11","🔐 Acessos do cliente: na ficha do cliente, os sócios guardam logins e senhas (TikTok, Shop, Instagram…). Só sócios veem, a senha fica oculta até clicar em 👁 e dá para copiar com um clique."],
  ["59","19/11","📝 Contrato de live seller mensal (modelo 2026 do Caio: fixo + % sobre vendas). Gere em Contratos → + Contrato de seller, ou na ficha da seller → Gerar contrato. Ali você escolhe entre o mensal e o avulso (por live)."],
  ["58","19/11","🕒 Lives · visão Dia: a agenda do dia em blocos por horário, no estilo Google Agenda. Cada marca tem uma cor, e lives no mesmo horário ficam lado a lado. Use ‹ Hoje › para mudar de dia."],
@@ -3762,7 +3763,7 @@ const _haCtr50=HEADACT.contratos;HEADACT.contratos=()=>`<button class="btn sm" d
 const _haEq50=HEADACT.equip;HEADACT.equip=()=>`<button class="btn sm" data-act="trNovo">Termo de responsabilidade</button>`+_haEq50();
 /* ---------- v53: materiais do cliente · promoções da live · checklist do dia ---------- */
 const CLI_BUCKET="implay-cli";S.cliMat=S.cliMat||[];
-const _loadAll53=loadAll;loadAll=async function(){await _loadAll53();if(S.demo)return;const r=await db.from("imp_cli_mat").select("*").order("created_at",{ascending:false});S.matSemSQL=!!r.error;S.cliMat=r.data||[]};
+const _loadAll53=loadAll;loadAll=async function(){await _loadAll53();if(S.demo)return;const r=await db.from("imp_cli_mat").select("*").order("created_at",{ascending:false});S.matSemSQL=!!r.error;S.cliMat=r.data||[];const mb=document.getElementById("matBox");if(mb&&mb.dataset.cli)matRefresh(mb.dataset.cli)};
 function matDe(cid){return (S.cliMat||[]).filter(m=>m.cliente_id===cid)}
 function matLista(cid,podeApagar=true){const l=matDe(cid);if(!l.length)return `<div class="small muted">Nenhum material ainda.</div>`;
   return `<div class="matl">${l.map(m=>`<div class="mati"><span class="matic">${m.tipo==="link"?"🔗":/pdf/i.test(m.mime||m.arquivo_nome||"")?"📄":"📎"}</span><a href="#" data-act="matAbrir" data-id="${m.id}">${esc(m.titulo)}</a><span class="small muted">${m.tipo==="link"?esc((m.url||"").replace(/^https?:\/\//,"").slice(0,40)):esc(m.arquivo_nome||"")}</span>${podeApagar?`<button type="button" class="btn d sm" data-act="matDel" data-id="${m.id}">Apagar</button>`:""}</div>`).join("")}</div>`}
