@@ -105,7 +105,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="3";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="4";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -370,6 +370,9 @@ function mural(){
   return `<p class="small muted" style="margin-top:0">Escolha só o que quiser fazer e toque em <b>Quero</b>. A IMPlay confirma quem faz cada live, e você vê a resposta em Minha agenda. O substituto entra se o principal não puder.</p>`+calView(S.mural,cardMural,"Nenhuma live aberta agora. Volte mais tarde ✦")}
 function meus(){
   const now=new Date();const prox=S.meus.filter(j=>j.status==="aberto"&&new Date(j.fim)>now).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));const pass=S.meus.filter(j=>!(j.status==="aberto"&&new Date(j.fim)>now));
+  const passCard=j=>`<div class="card job" style="opacity:.8"><div class="marca">${esc(j.marca||"Live")}</div><div class="quando">${dExt(j.inicio)} · ${hm(j.inicio)}–${hm(j.fim)}</div><span class="tag ${j.status==="realizado"?"o":""}">${j.status==="aberto"?"passou":j.status}</span><span class="tag">${j.minha_vaga}</span></div>`;
+  if(S.cal.view!=="lista"){const todas=S.meus.filter(j=>j.status!=="cancelado").sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));if(!S.cal.mes){const n=new Date();S.cal.mes=new Date(n.getFullYear(),n.getMonth(),1).toISOString()}
+    return calView(todas,j=>prox.includes(j)?cardMeu(j):passCard(j),"Você ainda não escolheu nenhuma live. Veja em Lives abertas.")}
   return calView(prox,cardMeu,"Você ainda não escolheu nenhuma live. Veja em Lives abertas.")
    +(pass.length?`<h3 style="font-size:15px;margin:20px 0 10px">Anteriores</h3>`+pass.map(j=>`<div class="card job" style="opacity:.8"><b>${esc(j.marca||"")}</b> · ${dExt(j.inicio)}<br><span class="tag ${j.status==="realizado"?"o":""}">${j.status==="aberto"?"passou":j.status}</span><span class="tag">${j.minha_vaga}</span></div>`).join(""):"")}
 const EV={candidatou:"Você pediu uma vaga",desistiu_candidatura:"Você desistiu de um pedido",candidatura_recusada:"Pedido não aprovado",escolheu_principal:"Você escolheu ser principal",escolheu_substituto:"Você escolheu ser substituto",substituto_assumiu_principal:"Você assumiu como principal",cancelou:"Você cancelou",
