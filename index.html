@@ -601,6 +601,7 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .cpr{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.6fr) minmax(0,2fr) 30px;gap:6px;margin-bottom:6px}.cpr input{background:var(--card2);color:inherit;border:1px solid var(--linha);border-radius:8px;width:100%;min-width:0;padding:6px 9px;font:inherit;font-size:12.5px}
 .cen{display:flex;flex-direction:column;gap:10px}.cen-h h3{margin:2px 0 4px;font-size:20px}.cen-s{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5}.cen-s h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza)}.cen-s.ok{border-color:rgba(46,160,90,.5)}.cen-s.no{border-color:rgba(220,70,90,.55)}.cen-s a{text-decoration:underline}
 @media(max-width:640px){.cpr{grid-template-columns:1fr 90px 30px}.cpr input[data-cp=destaque]{grid-column:1/-1;grid-row:2}}
+.mag{padding:12px 14px;margin-bottom:12px}.magr{display:grid;grid-template-columns:70px 100px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 4px;border-top:1px solid var(--linha);cursor:pointer;font-size:13px}.magr:hover{background:var(--card2)}.magr b.hj{color:var(--volt)}
 </style>
 </head>
 <body>
@@ -2557,8 +2558,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="56";const APP_DATA="16/11/2026";
+const APP_VERSAO="57";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["57","19/11","👤 Minha agenda: no Painel aparecem as suas lives dos próximos 7 dias. Em Lives, o botão \"Só as minhas\" filtra só as lives em que você está escalado."],
  ["56","19/11","🏷 Central da marca: cada cliente ganha uma página com sobre a marca, tom de voz, o que destacar, o que NÃO falar, produtos, roteiro base, cupons, links e os materiais. Abre pela ficha do cliente, pela live e pelo Checklist do dia. As sellers escaladas veem no app delas (aba Marcas)."],
  ["55","18/11","Visual mais compacto no computador: letras, números e botões ~12% menores em todas as telas (no celular nada muda)."],
  ["54","18/11","Economia de dados: o ERP parou de baixar o texto de todos os contratos a cada minuto (agora baixa uma vez por sessão) e não atualiza quando a aba está escondida. Reduz ~90% do tráfego com o Supabase."],
@@ -3845,6 +3847,18 @@ const _openCli56=openCli;openCli=function(id){_openCli56(id);if(!id)return;const
 /* atalho no checklist e na live */
 const _chkCard56=chkCard;chkCard=function(j){let h=_chkCard56(j);if(j.cliente_id)h=h.replace(`<button class="btn sm" data-act="job" data-id="${j.id}">Abrir live</button>`,`<button class="btn sm" data-act="job" data-id="${j.id}">Abrir live</button><button class="btn sm" data-act="cenVerLive" data-id="${j.cliente_id}">🏷 Central da marca</button>`);return h};
 const _jobPromos56=jobPromosHtml;jobPromosHtml=function(j){const c=j&&j.cliente_id&&S.clientes.find(x=>x.id===j.cliente_id);return (c?`<div class="small" style="margin:-4px 0 8px"><a href="#" data-act="cenVerLive" data-id="${c.id}">🏷 Ver central da marca ${esc(c.marca||"")}</a></div>`:"")+_jobPromos56(j)};
+/* ---------- v57: Minha agenda + Só as minhas ---------- */
+function minhaLive(j){const me=S.me&&S.me.id;return !!me&&(j.principal_id===me||j.substituto_id===me||(Array.isArray(j.clt_ids)&&j.clt_ids.includes(me)))}
+S.soMinhas=localStorage.getItem("implay-sominhas")==="1";
+const _platPass57=platPass;platPass=function(j){return _platPass57(j)&&(!S.soMinhas||minhaLive(j))};
+const _platChips57=platChips;platChips=function(){const n=S.jobs.filter(j=>j.status!=="cancelado"&&minhaLive(j)).length;return _platChips57().replace('<div class="chips">',`<div class="chips"><button type="button" class="${S.soMinhas?"on":""}" data-act="soMinhas">👤 Só as minhas<span class="c">${n}</span></button>`)};
+function minhaAgendaHtml(){const now=new Date(),hj=new Date(now);hj.setHours(0,0,0,0);const fim=new Date(hj);fim.setDate(fim.getDate()+7);
+  const l=S.jobs.filter(j=>j.status!=="cancelado"&&minhaLive(j)&&new Date(j.fim||j.inicio)>=now&&new Date(j.inicio)<fim).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));
+  if(!l.length)return "";const dia=d=>{const x=new Date(d);x.setHours(0,0,0,0);const k=(x-hj)/864e5;return k===0?"Hoje":k===1?"Amanhã":x.toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit"})};
+  const h=d=>new Date(d).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  return `<div class="card mag"><div class="sec" style="margin:0 0 6px"><h2>👤 Minha agenda</h2><span class="small muted">próximos 7 dias</span></div>${l.map(j=>`<div class="magr" data-act="job" data-id="${j.id}"><b class="${dia(j.inicio)==="Hoje"?"hj":""}">${dia(j.inicio)}</b><span>${h(j.inicio)}${j.fim?"–"+h(j.fim):""}</span><span class="m">${esc(j.marca||"")}${platTag?platTag(j):""}</span><span class="small muted">${j.substituto_id===S.me.id?"substituta":esc(j.espaco||j.local_tipo||"")}</span></div>`).join("")}</div>`}
+const _painel57=VIEWS.painel;VIEWS.painel=()=>{const h=_painel57();const m=minhaAgendaHtml();if(!m)return h;const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+m+h.slice(i):m+h};
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=soMinhas]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();S.soMinhas=!S.soMinhas;localStorage.setItem("implay-sominhas",S.soMinhas?"1":"0");render()},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
