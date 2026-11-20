@@ -609,6 +609,16 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .dvb b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvb span{opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dvb .vg{background:rgba(0,0,0,.25);border-radius:6px;padding:0 5px;align-self:flex-start}.dvb:hover{filter:brightness(1.1)}
 .dvnow{position:absolute;left:-6px;right:0;height:2px;background:#ff4d4d;z-index:2}.dvnow:before{content:"";position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:50%;background:#ff4d4d}
 .accR{display:grid;grid-template-columns:110px minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--linha);font-size:13px}.accV{font-family:ui-monospace,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.accG{display:grid;grid-template-columns:140px minmax(0,1fr) minmax(0,1fr);gap:6px;margin-top:8px}.accG input{background:var(--card2);color:inherit;border:1px solid var(--linha);border-radius:8px;padding:6px 9px;font:inherit;font-size:12.5px;min-width:0}.accG input[name=ob]{grid-column:1/-1}@media(max-width:700px){.accR{grid-template-columns:1fr 1fr}.accR>.row{grid-column:1/-1;flex-wrap:wrap}.accG{grid-template-columns:1fr}}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}.ccard{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px}.ccard:hover{border-color:var(--volt)}.cc-h{display:flex;justify-content:space-between;align-items:center;gap:8px}.cc-h b{font-size:15px}.cc-l{display:flex;flex-direction:column;font-size:12.5px;gap:2px}.cc-f{font-size:12px}
+.tagc{font-size:10.5px;border:1px solid var(--linha2);border-radius:999px;padding:2px 8px;color:var(--cinza)}.tagc.ok{border-color:var(--ok);color:var(--ok)}.okt{color:var(--ok)}.wt{color:var(--warn)}
+.chead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ch-t{flex:1;min-width:180px}.ch-t h2{margin:0;font-size:22px}
+.cgrid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:800px){.cgrid2{grid-template-columns:1fr}}
+.cbox{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:12px 14px;margin-bottom:10px}.cbox h4{margin:0 0 8px;font-size:13px;color:var(--chalk)}.crow{font-size:13px;padding:3px 0}
+.cbig{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:6px}.cbig>div{background:var(--card2);border-radius:10px;padding:8px 10px}.cbig .k{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--cinza)}.cbig b{font-size:18px}
+.cbar{height:8px;border-radius:99px;background:var(--card2);overflow:hidden;margin:6px 0 4px}.cbar i{display:block;height:100%;background:var(--voltx)}
+.clv{display:grid;grid-template-columns:90px 110px minmax(0,1fr) minmax(0,1fr);gap:8px;padding:6px 2px;border-top:1px solid var(--linha);font-size:12.5px;cursor:pointer;align-items:center}.clv:hover{background:var(--card2)}
+.cenlink{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--linha);border-radius:14px;padding:12px 14px;margin:12px 0}.cenlink b{color:var(--chalk)}
+html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.cdsub,.dzauto .dzn,.cdcalc .cdv,.magr b.hj){color:var(--voltx)}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .dropz b{color:var(--voltx)}
 </style>
 </head>
 <body>
@@ -2565,8 +2575,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="61";const APP_DATA="16/11/2026";
+const APP_VERSAO="62";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["62","20/11","🏷 Central do cliente: nova página no menu, separada do cadastro. Cada marca tem as abas Resumo (o que está no contrato, horas por mês e por live, e quantas horas já foram usadas no mês), Briefing, Acessos (só sócios), Materiais e Lives. A ficha de cadastro ficou só com os dados da empresa. As cores dos temas claros foram corrigidas."],
  ["61","19/11","Correção: os materiais do cliente agora aparecem mesmo se a ficha for aberta logo depois de entrar."],
  ["60","19/11","🔐 Acessos do cliente: na ficha do cliente, os sócios guardam logins e senhas (TikTok, Shop, Instagram…). Só sócios veem, a senha fica oculta até clicar em 👁 e dá para copiar com um clique."],
  ["59","19/11","📝 Contrato de live seller mensal (modelo 2026 do Caio: fixo + % sobre vendas). Gere em Contratos → + Contrato de seller, ou na ficha da seller → Gerar contrato. Ali você escolhe entre o mensal e o avulso (por live)."],
@@ -3967,6 +3978,51 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act^
     if(!row2.login&&!row2.senha)return toast("Preencha login ou senha",true);
     const r=f.dataset.id?await db.from("imp_cli_acessos").update(row2).eq("id",f.dataset.id):await db.from("imp_cli_acessos").insert(row2);
     if(r.error)return toast(/imp_cli_acessos/.test(r.error.message)?"Rode o SQL da Versão 60":r.error.message,true);f.hidden=true;f.innerHTML="";toast("Acesso salvo");return accLoad(cid)}},true);
+/* ---------- v62: Central do cliente (página própria no menu) ---------- */
+{const g=MENU.find(x=>x[0]==="Operação");if(g&&!g[1].some(x=>x[0]==="central")){const i=g[1].findIndex(x=>x[0]==="jobs");g[1].splice(i+1,0,["central","Central do cliente","Briefing, acessos e lives","brand"])}}
+TAB_NOME.central="Central do cliente";TAB_SUB.central="Tudo da operação de cada marca: contrato, briefing, acessos, materiais e lives";
+S.cenCli=null;S.cenAba="resumo";S.cenQ="";
+function cliContrato(cid){const o=(S.orcs||[]).filter(x=>x.cliente_id===cid&&x.status==="aprovado").sort((a,b)=>new Date(b.aprovado_em||b.created_at)-new Date(a.aprovado_em||a.created_at))[0];if(!o)return null;
+  const itens=(o.itens||[]).filter(i=>i.on).map(i=>{const p=preco(i.k)||{};const h=p.grupo==="hora"?hrDe(i,p):null;return {i,p,h}});return {o,itens}}
+function horasJob(j){return Math.max(0,(new Date(j.fim||j.inicio)-new Date(j.inicio))/36e5)}
+function cenMes(cid){const mk=monthKey(new Date());const l=S.jobs.filter(j=>j.cliente_id===cid&&j.status!=="cancelado"&&monthKey(new Date(j.inicio))===mk);const agora=new Date();
+  const feitas=l.filter(j=>j.status==="realizado"||new Date(j.fim||j.inicio)<agora);return {l,hTot:l.reduce((a,j)=>a+horasJob(j),0),hFeitas:feitas.reduce((a,j)=>a+horasJob(j),0),nFeitas:feitas.length}}
+const fH=n=>(Math.round(n*10)/10).toLocaleString("pt-BR")+" h";
+function cenLista(){const q=(S.cenQ||"").toLowerCase();const l=S.clientes.filter(c=>c.status!=="cancelado"&&(!q||(c.marca+" "+(c.empresa||"")).toLowerCase().includes(q))).sort((a,b)=>(a.marca||"").localeCompare(b.marca||""));
+  return `<div class="tool"><div class="q">${ic("search")}<input id="cenQ" value="${esc(S.cenQ||"")}" placeholder="Buscar marca…"></div></div><div class="cgrid">${l.map(c=>{const ct=cliContrato(c.id);const m=cenMes(c.id);const h=ct&&ct.itens.find(x=>x.h);const prox=S.jobs.filter(j=>j.cliente_id===c.id&&j.status!=="cancelado"&&new Date(j.inicio)>new Date()).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio))[0];
+    return `<div class="ccard" data-act="cenCli" data-id="${c.id}"><div class="cc-h"><b>${esc(c.marca||"")}</b>${ct?`<span class="tagc ok">contrato</span>`:`<span class="tagc">sem contrato</span>`}</div>
+    <div class="cc-l">${h?`<span><b>${fH(m.hTot)}</b> de ${fH(h.h.hmin)} no mês</span>`:`<span><b>${m.l.length}</b> lives no mês</span>`}<span>${prox?"próxima: "+new Date(prox.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"}):"sem live marcada"}</span></div>
+    <div class="cc-f">${centralTem(c)?`<span class="okt">✓ briefing</span>`:`<span class="muted">briefing vazio</span>`} · ${matDe(c.id).length} materiais</div></div>`}).join("")||`<div class="empty">Nenhum cliente.</div>`}</div>`}
+function cenResumo(c){const ct=cliContrato(c.id);const m=cenMes(c.id);const mesN=new Date().toLocaleDateString("pt-BR",{month:"long"});
+  let ctr=`<div class="cbox"><h4>📄 O que está no contrato</h4><div class="muted small">Nenhuma proposta aprovada para esta marca.</div></div>`;
+  if(ct){ctr=`<div class="cbox"><h4>📄 O que está no contrato <span class="small muted">· proposta ${String(ct.o.numero||"").padStart(4,"0")}${ct.o.vigencia_meses?` · ${ct.o.vigencia_meses} meses`:""}</span></h4>${ct.itens.map(({i,p,h})=>h?`<div class="cbig"><div><span class="k">Horas por mês</span><b>${fH(h.hmin)}</b></div><div><span class="k">Lives por semana</span><b>${h.lsem||"—"}</b></div><div><span class="k">Horas por live</span><b>${h.hl?fH(h.hl):"—"}</b></div><div><span class="k">Frequência</span><b>${esc(h.freq||"—")}</b></div></div><div class="small muted">${esc(p.categoria||"Hora de live")} · ${brl(i.valor)}/hora · + ${i.perc}% ${percAlvo(p)}</div>`
+      :`<div class="crow"><b>${esc(p.categoria||i.k)}</b>${i.qtd>1?` × ${i.qtd}`:""} <span class="muted">· ${brl(i.valor)}${i.perc?` + ${i.perc}% ${percAlvo(p)}`:""}</span></div>`).join("")}</div>`}
+  const h=ct&&ct.itens.find(x=>x.h);const pct=h&&h.h.hmin?Math.min(100,m.hTot/h.h.hmin*100):0;
+  const uso=`<div class="cbox"><h4>⏱ Uso em ${mesN}</h4><div class="cbig"><div><span class="k">Lives no mês</span><b>${m.l.length}</b></div><div><span class="k">Horas agendadas</span><b>${fH(m.hTot)}</b></div><div><span class="k">Horas já feitas</span><b>${fH(m.hFeitas)}</b></div>${h?`<div><span class="k">Faltam p/ o mínimo</span><b class="${m.hTot>=h.h.hmin?"okt":"wt"}">${fH(Math.max(0,h.h.hmin-m.hTot))}</b></div>`:""}</div>${h?`<div class="cbar"><i style="width:${pct}%"></i></div><div class="small muted">${Math.round(pct)}% do mínimo contratado (${fH(h.h.hmin)}) já está na agenda</div>`:""}</div>`;
+  const ct2=`<div class="cbox"><h4>👤 Contato</h4><div class="crow"><b>${esc(c.contato_nome||"—")}</b> ${c.contato_tel?`<span class="muted">· ${esc(c.contato_tel)}</span>`:""}</div>${c.email?`<div class="crow muted">${esc(c.email)}</div>`:""}${c.instagram?`<div class="crow muted">Instagram ${esc(c.instagram)}</div>`:""}</div>`;
+  return `<div class="cgrid2">${ctr}${uso}${ct2}<div class="cbox"><h4>📅 Próximas lives</h4>${cenLives(c.id,true)}</div></div>`}
+function cenLives(cid,curto){const agora=new Date();let l=S.jobs.filter(j=>j.cliente_id===cid&&j.status!=="cancelado");const fut=l.filter(j=>new Date(j.fim||j.inicio)>=agora).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));const pas=l.filter(j=>new Date(j.fim||j.inicio)<agora).sort((a,b)=>new Date(b.inicio)-new Date(a.inicio)).slice(0,15);
+  const row=j=>`<div class="clv" data-act="job" data-id="${j.id}"><span>${new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})}</span><span>${new Date(j.inicio).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})} · ${fH(horasJob(j))}</span><span>${platTag(j)}</span><span class="muted">${esc(nome(j.principal_id)||"sem seller")}</span></div>`;
+  if(curto)return fut.slice(0,5).map(row).join("")||`<div class="muted small">Nenhuma live marcada.</div>`;
+  return `<div class="cbox"><h4>📅 Próximas (${fut.length})</h4>${fut.map(row).join("")||`<div class="muted small">Nenhuma.</div>`}</div><div class="cbox"><h4>🕘 Últimas</h4>${pas.map(row).join("")||`<div class="muted small">Nenhuma.</div>`}</div>`}
+function cenDetalhe(){const c=S.clientes.find(x=>x.id===S.cenCli);if(!c){S.cenCli=null;return cenLista()}
+  const abas=[["resumo","Resumo"],["briefing","Briefing"],...(isSocio()?[["acessos","🔐 Acessos"]]:[]),["materiais","Materiais"],["lives","Lives"]];if(!abas.some(a=>a[0]===S.cenAba))S.cenAba="resumo";
+  let corpo="";if(S.cenAba==="resumo")corpo=cenResumo(c);
+  else if(S.cenAba==="briefing")corpo=`<div class="row" style="justify-content:flex-end;margin-bottom:8px"><button class="btn sm p" data-act="cenAbrir" data-id="${c.id}">✏️ Editar briefing</button></div>${centralView(c,matDe(c.id))}`;
+  else if(S.cenAba==="acessos")corpo=`<div class="sbox" id="accBox" data-cli="${c.id}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div class="small muted">Só sócios veem. A senha fica oculta até clicar em 👁.</div><button type="button" class="btn sm p" data-act="accNovo">+ Acesso</button></div><div class="accF" hidden></div><div class="accL" style="margin-top:8px"><div class="small muted">Carregando…</div></div></div>`;
+  else if(S.cenAba==="materiais")corpo=matBox(c.id);
+  else corpo=cenLives(c.id,false);
+  return `<div class="chead"><button class="btn sm" data-act="cenVoltar">← Clientes</button><div class="ch-t"><h2>${esc(c.marca||"")}</h2><div class="small muted">${esc(c.empresa||"")}${c.cnpj?" · "+esc(c.cnpj):""}</div></div><div class="row" style="gap:6px"><button class="btn sm" data-act="cli" data-id="${c.id}">✏️ Cadastro</button><button class="btn sm" data-act="orcNovo" data-cli="${c.id}">+ Proposta</button></div></div>
+  <div class="pills" style="margin:10px 0 12px">${abas.map(([k,l])=>`<button data-act="cenAba" data-v="${k}" class="${S.cenAba===k?"on":""}">${l}</button>`).join("")}</div>${corpo}`}
+VIEWS.central=()=>S.cenCli?cenDetalhe():cenLista();
+const _render62=render;render=function(){_render62.apply(this,arguments);if(S.tab==="central"&&S.cenCli&&S.cenAba==="acessos"&&$("#accBox"))accLoad(S.cenCli)};
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=cenCli],[data-act=cenAba],[data-act=cenVoltar],[data-act=cenIr]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act;
+  if(act==="cenCli"||act==="cenIr"){closeSheet();S.cenCli=a.dataset.id;S.cenAba="resumo";S.tab="central"}else if(act==="cenAba")S.cenAba=a.dataset.v;else S.cenCli=null;render();window.scrollTo(0,0)},true);
+document.addEventListener("input",e=>{if(e.target.id!=="cenQ")return;S.cenQ=e.target.value;const p=e.target.selectionStart;render();const i=$("#cenQ");if(i){i.focus();i.setSelectionRange(p,p)}},true);
+/* ficha de cadastro: só cadastro + atalho para a Central */
+const _openCli62=openCli;openCli=function(id){_openCli62(id);if(!id)return;const f=$("#cliForm");if(!f)return;
+  ["#accBox","#matBox"].forEach(s=>{const el=f.querySelector(s);if(el)el.remove()});const cb=f.querySelector("[data-act=cenAbrir]");if(cb){const b=cb.closest(".sbox");if(b)b.remove()}
+  const foot=f.querySelector(".cdfoot");const h=`<div class="cenlink"><div><b>🏷 Central do cliente</b><div class="small muted">Contrato, briefing, acessos, materiais e lives desta marca</div></div><button type="button" class="btn sm p" data-act="cenIr" data-id="${id}">Abrir</button></div>`;foot?foot.insertAdjacentHTML("beforebegin",h):f.insertAdjacentHTML("beforeend",h)};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
