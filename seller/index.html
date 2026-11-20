@@ -92,6 +92,7 @@ h1,h2,h3{font-weight:800}
 .tchk{display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:13.5px;background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:12px;cursor:pointer}.tchk input{width:20px;height:20px;flex:none;accent-color:var(--volt);margin-top:1px}.tchk.dis{opacity:.5;cursor:not-allowed}
 #ctrSheet{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;overflow:auto;padding:20px}#ctrSheet .in{margin:0 auto}
 .cen summary{cursor:pointer;list-style:none}.cen summary::-webkit-details-marker{display:none}.cs{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13.5px;line-height:1.5}.cs h4{margin:0 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza)}.cs.ok{border-color:rgba(124,227,139,.5)}.cs.no{border-color:rgba(239,100,120,.6)}.cs a{color:var(--volt)}.cp{padding:4px 0;border-top:1px solid var(--linha)}.cp:first-of-type{border-top:0}
+.agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -105,7 +106,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="4";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="5";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -451,6 +452,20 @@ function marcasView(){const l=S.marcas||[];if(!l.length)return `<div class="card
 document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=matSel]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();
   if(a.dataset.tipo==="link")return window.open(a.dataset.url,"_blank");const w=window.open("","_blank");const {data,error}=await db.storage.from("implay-cli").createSignedUrl(a.dataset.cam,900);
   if(error||!data){w&&w.close();return toast("Não abriu o arquivo",true)}if(w)w.location=data.signedUrl;else location.href=data.signedUrl},true);
+/* ---------- Agenda no Google / iPhone (link pessoal) ---------- */
+const _meus5=meus;meus=function(){return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px"><span class="small">📲 Quer suas lives na agenda do celular?</span><button class="btn sm" data-act="agOpen">Pôr na agenda</button></div>`+_meus5()};
+const armed=(typeof window.armed==="function")?window.armed:(a=>{if(a.dataset.ok)return true;a.dataset.ok="1";a.textContent="Toque de novo para confirmar";return false});
+async function openAgendaGoogle(){openSheet(`<h3>📲 Lives na sua agenda do celular</h3><div id="agBody" class="small muted">Gerando seu link…</div><div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`);
+  const r=await db.rpc("imp_agenda_token");const b=$("#agBody");if(!b)return;
+  if(r.error||!r.data){b.innerHTML=`<div class="warnbox">${r.error&&/imp_agenda_token/.test(r.error.message)?"Falta rodar o SQL da agenda (implay_agenda_google.sql).":"Não achei seu cadastro ativo."}</div>`;return}
+  const url=(typeof SB_URL!=="undefined"?SB_URL:"https://agdqlnaedojcgivwluty.supabase.co").replace(/^https:/,"")+"/functions/v1/agenda?t="+r.data;const https="https:"+url,webcal="webcal:"+url;
+  b.innerHTML=`<p style="margin-top:0">As lives entram sozinhas na sua agenda, com marca, plataforma e seller, e se atualizam quando algo muda no ERP. O Google demora algumas horas para atualizar; o iPhone, cerca de 1 hora.</p>
+  <div class="agbtn"><a class="btn p" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}" target="_blank" rel="noopener">Adicionar no Google Agenda</a><a class="btn" href="${webcal}">Adicionar no iPhone / Mac</a><button type="button" class="btn" data-act="agCopiar" data-u="${esc(https)}">Copiar link</button></div>
+  <ol class="agst"><li><b>Google:</b> faça no computador e entre com o seu Gmail. Depois a agenda aparece no app do celular.</li><li><b>iPhone:</b> toque em "Adicionar no iPhone" e confirme "Assinar".</li><li>O link é pessoal: não compartilhe. Se vazar, <a href="#" data-act="agNovo">gere um link novo</a>.</li></ol>`}
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=agOpen],[data-act=agCopiar],[data-act=agNovo]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="agOpen")return openAgendaGoogle();
+  if(a.dataset.act==="agCopiar"){try{await navigator.clipboard.writeText(a.dataset.u);toast("Link copiado")}catch(_){prompt("Copie o link:",a.dataset.u)}return}
+  if(!armed(a))return;const r=await db.rpc("imp_agenda_token_novo");if(r.error)return toast(r.error.message,true);toast("Link novo gerado. Assine de novo na agenda.");openAgendaGoogle()},true);
 </script>
 </body>
 </html>

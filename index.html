@@ -619,6 +619,7 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .clv{display:grid;grid-template-columns:90px 110px minmax(0,1fr) minmax(0,1fr);gap:8px;padding:6px 2px;border-top:1px solid var(--linha);font-size:12.5px;cursor:pointer;align-items:center}.clv:hover{background:var(--card2)}
 .cenlink{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--linha);border-radius:14px;padding:12px 14px;margin:12px 0}.cenlink b{color:var(--chalk)}
 html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.cdsub,.dzauto .dzn,.cdcalc .cdv,.magr b.hj){color:var(--voltx)}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .dropz b{color:var(--voltx)}
+.agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -2575,8 +2576,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="62";const APP_DATA="16/11/2026";
+const APP_VERSAO="63";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["63","20/11","📲 Lives no Google Agenda e no iPhone: em Lives → 📲 Na minha agenda, cada pessoa pega o seu link. Sócios veem todas as lives; sellers e CLT veem só as suas. A agenda se atualiza sozinha."],
  ["62","20/11","🏷 Central do cliente: nova página no menu, separada do cadastro. Cada marca tem as abas Resumo (o que está no contrato, horas por mês e por live, e quantas horas já foram usadas no mês), Briefing, Acessos (só sócios), Materiais e Lives. A ficha de cadastro ficou só com os dados da empresa. As cores dos temas claros foram corrigidas."],
  ["61","19/11","Correção: os materiais do cliente agora aparecem mesmo se a ficha for aberta logo depois de entrar."],
  ["60","19/11","🔐 Acessos do cliente: na ficha do cliente, os sócios guardam logins e senhas (TikTok, Shop, Instagram…). Só sócios veem, a senha fica oculta até clicar em 👁 e dá para copiar com um clique."],
@@ -4023,6 +4025,20 @@ document.addEventListener("input",e=>{if(e.target.id!=="cenQ")return;S.cenQ=e.ta
 const _openCli62=openCli;openCli=function(id){_openCli62(id);if(!id)return;const f=$("#cliForm");if(!f)return;
   ["#accBox","#matBox"].forEach(s=>{const el=f.querySelector(s);if(el)el.remove()});const cb=f.querySelector("[data-act=cenAbrir]");if(cb){const b=cb.closest(".sbox");if(b)b.remove()}
   const foot=f.querySelector(".cdfoot");const h=`<div class="cenlink"><div><b>🏷 Central do cliente</b><div class="small muted">Contrato, briefing, acessos, materiais e lives desta marca</div></div><button type="button" class="btn sm p" data-act="cenIr" data-id="${id}">Abrir</button></div>`;foot?foot.insertAdjacentHTML("beforebegin",h):f.insertAdjacentHTML("beforeend",h)};
+/* ---------- Agenda no Google / iPhone (link pessoal) ---------- */
+async function openAgendaGoogle(){openSheet(`<h3>📲 Lives na sua agenda do celular</h3><div id="agBody" class="small muted">Gerando seu link…</div><div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`);
+  const r=await db.rpc("imp_agenda_token");const b=$("#agBody");if(!b)return;
+  if(r.error||!r.data){b.innerHTML=`<div class="warnbox">${r.error&&/imp_agenda_token/.test(r.error.message)?"Falta rodar o SQL da agenda (implay_agenda_google.sql).":"Não achei seu cadastro ativo."}</div>`;return}
+  const url=SB_URL.replace(/^https:/,"")+"/functions/v1/agenda?t="+r.data;const https="https:"+url,webcal="webcal:"+url;
+  b.innerHTML=`<p style="margin-top:0">As lives entram sozinhas na sua agenda, com marca, plataforma e seller, e se atualizam quando algo muda no ERP. O Google demora algumas horas para atualizar; o iPhone, cerca de 1 hora.</p>
+  <div class="agbtn"><a class="btn p" href="https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}" target="_blank" rel="noopener">Adicionar no Google Agenda</a><a class="btn" href="${webcal}">Adicionar no iPhone / Mac</a><button type="button" class="btn" data-act="agCopiar" data-u="${esc(https)}">Copiar link</button></div>
+  <ol class="agst"><li><b>Google:</b> faça no computador e entre com o seu Gmail. Depois a agenda aparece no app do celular.</li><li><b>iPhone:</b> toque em "Adicionar no iPhone" e confirme "Assinar".</li><li>O link é pessoal: não compartilhe. Se vazar, <a href="#" data-act="agNovo">gere um link novo</a>.</li></ol>`}
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=agOpen],[data-act=agCopiar],[data-act=agNovo]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="agOpen")return openAgendaGoogle();
+  if(a.dataset.act==="agCopiar"){try{await navigator.clipboard.writeText(a.dataset.u);toast("Link copiado")}catch(_){prompt("Copie o link:",a.dataset.u)}return}
+  if(!armed(a))return;const r=await db.rpc("imp_agenda_token_novo");if(r.error)return toast(r.error.message,true);toast("Link novo gerado. Assine de novo na agenda.");openAgendaGoogle()},true);
+const _hJobs63=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm" data-act="agOpen">📲 Na minha agenda</button>`+(_hJobs63?_hJobs63():"");
+const _magH63=minhaAgendaHtml;minhaAgendaHtml=function(){const h=_magH63();return h?h.replace('<span class="small muted">próximos 7 dias</span>','<span class="small muted">próximos 7 dias · <a href="#" data-act="agOpen">📲 pôr no celular</a></span>'):h};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
