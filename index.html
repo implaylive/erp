@@ -620,6 +620,7 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 .cenlink{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--linha);border-radius:14px;padding:12px 14px;margin:12px 0}.cenlink b{color:var(--chalk)}
 html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.cdsub,.dzauto .dzn,.cdcalc .cdv,.magr b.hj){color:var(--voltx)}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .dropz b{color:var(--voltx)}
 .agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
+.sominfo{margin:-4px 0 10px;font-size:12.5px;background:rgba(255,181,71,.14);border:1px solid var(--warn);border-radius:10px;padding:6px 10px}.sominfo a{font-weight:700;text-decoration:underline}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .pills button.on{color:#fff}
 </style>
 </head>
 <body>
@@ -2576,8 +2577,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="63";const APP_DATA="16/11/2026";
+const APP_VERSAO="64";const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["64","20/11","Quando o filtro \"Só as minhas\" está ligado, agora aparece um aviso com o link \"mostrar todas\", e o botão \"Todas\" desliga o filtro. Os botões selecionados ficaram legíveis nos temas claros."],
  ["63","20/11","📲 Lives no Google Agenda e no iPhone: em Lives → 📲 Na minha agenda, cada pessoa pega o seu link. Sócios veem todas as lives; sellers e CLT veem só as suas. A agenda se atualiza sozinha."],
  ["62","20/11","🏷 Central do cliente: nova página no menu, separada do cadastro. Cada marca tem as abas Resumo (o que está no contrato, horas por mês e por live, e quantas horas já foram usadas no mês), Briefing, Acessos (só sócios), Materiais e Lives. A ficha de cadastro ficou só com os dados da empresa. As cores dos temas claros foram corrigidas."],
  ["61","19/11","Correção: os materiais do cliente agora aparecem mesmo se a ficha for aberta logo depois de entrar."],
@@ -4039,6 +4041,9 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=
   if(!armed(a))return;const r=await db.rpc("imp_agenda_token_novo");if(r.error)return toast(r.error.message,true);toast("Link novo gerado. Assine de novo na agenda.");openAgendaGoogle()},true);
 const _hJobs63=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm" data-act="agOpen">📲 Na minha agenda</button>`+(_hJobs63?_hJobs63():"");
 const _magH63=minhaAgendaHtml;minhaAgendaHtml=function(){const h=_magH63();return h?h.replace('<span class="small muted">próximos 7 dias</span>','<span class="small muted">próximos 7 dias · <a href="#" data-act="agOpen">📲 pôr no celular</a></span>'):h};
+/* ---------- v64: filtro "Só as minhas" mais claro ---------- */
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=agPlat]");if(a&&a.dataset.v===""&&S.soMinhas){S.soMinhas=false;localStorage.setItem("implay-sominhas","0")}},true);
+const _platChips64=platChips;platChips=function(){let h=_platChips64();if(S.soMinhas){h=h.replace(/class="on ([^"]*)" data-act="agPlat" data-v=""/,'class=" $1" data-act="agPlat" data-v=""');const n=S.jobs.filter(j=>j.status!=="cancelado"&&minhaLive(j)).length;h+=`<div class="sominfo">👤 Mostrando só as lives em que você está escalado${n?"":" (nenhuma)"} · <a href="#" data-act="soMinhas">mostrar todas</a></div>`}return h};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
