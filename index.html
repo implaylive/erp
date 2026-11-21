@@ -630,6 +630,7 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .tnota{margin-top:8px;font-size:12.5px;background:var(--card2);border-radius:8px;padding:6px 10px}.tprio{display:flex;flex-wrap:wrap;gap:6px}.tprio div{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--linha);border-radius:999px;padding:4px 12px 4px 4px;font-size:13px}.tprio span{background:var(--volt);color:#000;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-weight:800;font-size:12px}
 .tobs{border:1px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:13px}
 .cpsum{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.cpsum>div{background:var(--card2);border:1px solid var(--linha);border-radius:10px;padding:6px 12px;min-width:110px}.cpsum span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--cinza)}.cpsum b{font-size:17px}.cpgrp{border:1px dashed var(--linha2);border-radius:12px;padding:8px 12px;font-size:13px;margin-top:4px}.cpi.cpin{margin-left:14px;border-left:3px solid var(--voltx)}.cpprev td{font-size:12.5px}.cpprev .cpgh td{background:var(--card2)}.cpprev .cpoff td{opacity:.45;text-decoration:line-through}
+.cpusd{border:1px solid var(--linha2);background:var(--card2);border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:13px}.cpusd input{background:var(--card);color:inherit;border:1px solid var(--linha);border-radius:8px;padding:5px 8px;font:inherit}
 </style>
 </head>
 <body>
@@ -2586,8 +2587,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="71";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
+const APP_VERSAO="72";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["72","21/11","💵 Importar comprovantes em dólar (Amazon EUA e outros): o ERP lê o total em US$ (que já inclui o sales tax), a data em inglês e o nº do pedido, e converte para reais pelo câmbio do dia. O câmbio aparece no topo e dá para trocar (ex.: 5,90); tudo é recalculado na hora."],
  ["71","21/11","📎 Importar comprovantes: comprovante com vários produtos vira um item por produto, todos ligados ao mesmo comprovante (o desconto é dividido proporcionalmente). No topo aparecem o número de comprovantes, de itens e o total a lançar. Novo botão 👁 Gerar prévia, para conferir tudo numa tabela (e copiar para o Excel) antes de lançar. Placa de captura, webcam, hub e softbox agora entram como Equipamentos."],
  ["70","21/11","✅ Tarefas: nova seção no menu com listas de compras e checklists. Cada lista é uma página só, com ícones por seção, o que já temos, quantidades e a barra de progresso; é só marcar cada item. Já entrou a lista de compras das 5 lives simultâneas."],
  ["69","21/11","Escala da semana separada por dia (segunda, terça…), para facilitar a leitura."],
@@ -4138,7 +4140,7 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act^
     const r=await db.from("imp_tarefas").insert({titulo:g("titulo"),data:g("data")||new Date().toISOString().slice(0,10),icone:g("icone")||"📋",dados:{objetivo:g("objetivo"),secoes}}).select("*").single();if(r.error)return toast(r.error.message,true);
     S.tarefas=[r.data,...(S.tarefas||[])];S.tarSel=r.data.id;closeSheet();return render()}},true);
 /* ---------- v71: comprovantes com vários itens · total · prévia ---------- */
-CP_CAT.forEach(c=>{if(c[0]==="equipamentos")c[1]=new RegExp(c[1].source+"|captura|webcam|obsbot|hub|adaptador|softbox|ring|hdmi|usb|ezcap|hollyland|lark|gimbal|refletor|fundo infinito","i")});
+CP_CAT.forEach(c=>{if(c[0]==="equipamentos")c[1]=new RegExp(c[1].source+"|captura|webcam|obsbot|hub|adaptador|softbox|ring|hdmi|usb|ezcap|hollyland|lark|gimbal|refletor|fundo infinito|camera|microphone|headset|studio light|led|lens|tripod|adapter|plug|cable|charger|sony|shure|amaran","i")});
 const CP_RS="R\\s?[\\$S5]\\s?";
 function cpML(b){const ls=b.split(/\n/).map(x=>x.trim()).filter(Boolean);const out={};const ped=b.match(/#\s?(\d{10,})/);if(ped)out.pedido=ped[1];
   const tot=b.match(new RegExp("total\\s*pago[^\\n]*?"+CP_RS+CP_VAL,"i"));if(tot)out.valor=cpNum(tot[1]);
@@ -4177,6 +4179,35 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=
   if(a.dataset.act==="cpCopiar"){const R=cpResumo();const t=R.sel.map(x=>`${x.data?parseYmd(x.data).toLocaleDateString("pt-BR"):""}\t${(x.descricao||"").replace(/ · pedido #\d+$/,"")}\t${CATN(x.categoria)}\t${numIn(x.valor)}`).join("\n")+`\n\nTotal\t${numIn(R.tot)}`;try{await navigator.clipboard.writeText(t);toast("Lista copiada (cola no Excel)")}catch(_){prompt("Copie:",t)}return}
   S.cp.preview=a.dataset.act==="cpPrev";cpRender()},true);
 document.addEventListener("click",e=>{const a=e.target.closest("[data-act=cpLancar]");if(a&&S.cp)S.cp.preview=false},true);
+/* ---------- v72: comprovantes em dólar (Amazon EUA etc.) ---------- */
+S.cpCambio=S.cpCambio||5.9;S.cpCambioFonte="padrão";
+(async()=>{try{const r=await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL");const j=await r.json();const v=+(j.USDBRL&&j.USDBRL.bid);if(v>3&&v<10){S.cpCambio=Math.round(v*100)/100;S.cpCambioFonte="cotação de hoje"}}catch(e){}})();
+const MES_EN={january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11,jan:0,feb:1,mar:2,apr:3,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11};
+function cpUSD(txt,nomeArq){const t=txt.replace(/\r/g,"");if(!(/order\s*placed|amazon|ship\s*to|order\s*total|subtotal|sales\s*tax|\bUSD\b/i.test(t)&&/\$\s?\d/.test(t)))return null;if(/R\s?\$/.test(t))return null;
+  const ped=(t.match(/\b(\d{3}-\d{7}-\d{7})\b/)||[])[1]||"";
+  const dm=t.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?\s+(\d{1,2}),?\s+(20\d\d)/i);
+  let data=null,dataTipo="arquivo";if(dm){data=ymd(new Date(+dm[3],MES_EN[dm[1].toLowerCase()],+dm[2]));dataTipo="ok"}else{const c=cpData("",nomeArq);data=c.d}
+  const num=s=>Number(String(s).replace(/,/g,""));
+  let usd=null;const gt=t.match(/(?:grand\s*total|order\s*total|total\s*(?:paid|charged)?)[^\n$]{0,40}\$\s?([\d,]+\.\d{2})/i);if(gt)usd=num(gt[1]);
+  if(usd===null){const ls=t.split("\n");const hi=ls.findIndex(l=>/order\s*placed/i.test(l)&&/total/i.test(l));if(hi>=0){for(let k=hi;k<Math.min(ls.length,hi+4);k++){const m=ls[k].match(/\$\s?([\d,]+\.\d{2})/);if(m){usd=num(m[1]);break}}}}
+  if(usd===null){const all=[...t.matchAll(/\$\s?([\d,]+\.\d{2})/g)].map(m=>num(m[1]));if(all.length)usd=Math.max(...all)}
+  const tax=(t.match(/(?:estimated\s*)?(?:sales\s*)?tax[^\n$]{0,30}\$\s?([\d,]+\.\d{2})/i)||[])[1];
+  const ruim=/package|left\s*near|front\s*door|alexa|protection|support|more\s*options|tae\s*w|order\s*placed|ship\s*to|order\s*#|view\s*(order|invoice)|invoice|return|eligible|buy\s*it\s*again|track|write\s*a\s*product|delivered|arriving|your\s*orders|archive|problem|leave\s*seller|get\s*product|share\s*gift|subtotal|shipping|total|tax|payment|visa|mastercard|^\W*$/i;
+  const prods=t.split("\n").map(x=>x.replace(/\(?\s*(get product support|problem with order|track package|add a protection plan|more options|buy it again|return or replace items?|view order details|view invoice)\s*\)?/ig," ").replace(/^[^A-Za-z0-9]+/,"").replace(/\s+/g," ").trim()).filter(l=>l.length>=18&&!ruim.test(l)&&(l.match(/[A-Za-z]{3,}/g)||[]).length>=3&&!/\$\s?\d/.test(l));
+  let desc=prods[0]||"Compra";desc=desc.replace(/[|].*$/,"").trim();if(desc.length>70)desc=desc.slice(0,68).replace(/\s+\S*$/,"")+"…";
+  return {usd,tax:tax?num(tax):null,data,dataTipo,desc,pedido:ped,plat:/amazon|114-\d/i.test(t)?"Amazon (EUA)":"Compra em US$"}}
+function cpUsdDesc(x){return `${x.descBase}${x.pedido?` · pedido #${x.pedido}`:""} · US$ ${numIn(x.usd)} × ${numIn(S.cpCambio)}${x.tax?` (inclui sales tax US$ ${numIn(x.tax)})`:""}`}
+const _cpParse72=cpParse;cpParse=function(txt,nomeArq){const u=cpUSD(txt,nomeArq);if(!u)return _cpParse72(txt,nomeArq);
+  const cat=(CP_CAT.find(([c,re])=>re.test(u.desc))||["outra_saida"])[0];const x={usd:u.usd,tax:u.tax,descBase:u.desc,pedido:u.pedido,valor:u.usd?Math.round(u.usd*S.cpCambio*100)/100:null,data:u.data,dataTipo:u.dataTipo,contraparte:u.plat,categoria:cat,forma:"Cartão",plat:u.plat,grupo:"g"+(++CP_G),gN:1};
+  x.descricao=x.usd?cpUsdDesc(x):u.desc+(u.pedido?` · pedido #${u.pedido}`:"");x.gTotal=x.valor;return [x]};
+function cpUsdRecalc(){(S.cp&&S.cp.items||[]).forEach(x=>{if(x.usd){x.valor=Math.round(x.usd*S.cpCambio*100)/100;x.gTotal=x.valor;x.descricao=cpUsdDesc(x)}})}
+const _cpRender72=cpRender;cpRender=function(){_cpRender72();const C=S.cp;const f=$("#cpForm");if(!f||!C||C.preview)return;const us=C.items.filter(x=>x.usd||(x.contraparte||"").includes("EUA"));if(!us.length)return;
+  const tot=us.filter(x=>x.on&&x.usd).reduce((t,x)=>t+x.usd,0);const box=`<div class="cpusd">💵 <b>Compras em dólar</b> · ${us.length} comprovante${us.length>1?"s":""} · US$ ${numIn(tot)}<div class="row" style="gap:8px;align-items:center;margin-top:6px"><label class="small">Câmbio US$ → R$</label><input id="cpCambio" inputmode="decimal" value="${numIn(S.cpCambio)}" style="width:90px"><span class="small muted">${esc(S.cpCambioFonte)} · troque se quiser usar outra taxa (ex.: 5,90)</span></div><div class="small muted">O valor em dólar já inclui o sales tax da Califórnia (é o total cobrado no pedido).</div></div>`;
+  const sum=f.querySelector(".cpsum");(sum||f.querySelector(".cpl")).insertAdjacentHTML(sum?"afterend":"beforebegin",box);
+  const cards=f.querySelectorAll(".cpl > .cpi");C.items.forEach((x,i)=>{if(!x.usd||!cards[i])return;const v=cards[i].querySelector("[data-f=valor]");if(v)v.insertAdjacentHTML("afterend",`<span class="small" style="align-self:center;white-space:nowrap">= US$ ${numIn(x.usd)}</span>`)});
+  C.items.forEach((x,i)=>{if((x.contraparte||"").includes("EUA")&&!x.usd&&cards[i]){const v=cards[i].querySelector("[data-f=valor]");if(v){v.placeholder="Valor em US$";v.dataset.usd="1"}}})};
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="cpCambio"){const v=num(t.value);if(v>0){S.cpCambio=v;S.cpCambioFonte="taxa digitada";cpUsdRecalc();cpRender()}return}
+  if(t.dataset&&t.dataset.usd==="1"&&t.dataset.cp!==undefined){const x=S.cp.items[+t.dataset.cp];const u=num(t.value);if(u>0){x.usd=u;x.descBase=x.descBase||(x.descricao||"").replace(/ · pedido #.*$/,"");setTimeout(()=>{cpUsdRecalc();cpRender()},0)}}},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
