@@ -629,6 +629,7 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .titem{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid var(--linha);font-size:13.5px;cursor:pointer}.titem input{width:18px;height:18px;accent-color:var(--ok);flex:none}.titem.ok span{text-decoration:line-through;opacity:.55}.tq{font-weight:800;background:var(--card2);border-radius:6px;padding:1px 6px;font-size:12px}
 .tnota{margin-top:8px;font-size:12.5px;background:var(--card2);border-radius:8px;padding:6px 10px}.tprio{display:flex;flex-wrap:wrap;gap:6px}.tprio div{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--linha);border-radius:999px;padding:4px 12px 4px 4px;font-size:13px}.tprio span{background:var(--volt);color:#000;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-weight:800;font-size:12px}
 .tobs{border:1px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:13px}
+.cpsum{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.cpsum>div{background:var(--card2);border:1px solid var(--linha);border-radius:10px;padding:6px 12px;min-width:110px}.cpsum span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--cinza)}.cpsum b{font-size:17px}.cpgrp{border:1px dashed var(--linha2);border-radius:12px;padding:8px 12px;font-size:13px;margin-top:4px}.cpi.cpin{margin-left:14px;border-left:3px solid var(--voltx)}.cpprev td{font-size:12.5px}.cpprev .cpgh td{background:var(--card2)}.cpprev .cpoff td{opacity:.45;text-decoration:line-through}
 </style>
 </head>
 <body>
@@ -2585,8 +2586,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="70";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
+const APP_VERSAO="71";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["71","21/11","📎 Importar comprovantes: comprovante com vários produtos vira um item por produto, todos ligados ao mesmo comprovante (o desconto é dividido proporcionalmente). No topo aparecem o número de comprovantes, de itens e o total a lançar. Novo botão 👁 Gerar prévia, para conferir tudo numa tabela (e copiar para o Excel) antes de lançar. Placa de captura, webcam, hub e softbox agora entram como Equipamentos."],
  ["70","21/11","✅ Tarefas: nova seção no menu com listas de compras e checklists. Cada lista é uma página só, com ícones por seção, o que já temos, quantidades e a barra de progresso; é só marcar cada item. Já entrou a lista de compras das 5 lives simultâneas."],
  ["69","21/11","Escala da semana separada por dia (segunda, terça…), para facilitar a leitura."],
  ["68","21/11","Escala da semana: cada live mostra o horário de início e de fim."],
@@ -4135,6 +4137,46 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act^
     g("itens").split("\n").map(x=>x.trim()).filter(Boolean).forEach(l=>{if(l.startsWith("#")){const s=l.replace(/^#+\s*/,"");const m=s.match(/^(\p{Extended_Pictographic}️?)\s*(.*)$/u);cur={ic:m?m[1]:"📦",t:m?m[2]:s,itens:[]};secoes.push(cur)}else{if(!cur){cur={ic:"📦",t:"Itens",itens:[]};secoes.push(cur)}const m=l.match(/^(\d+)\s*x?\s+(.*)$/i);cur.itens.push(m?{t:m[2],q:+m[1],ok:false}:{t:l,ok:false})}});
     const r=await db.from("imp_tarefas").insert({titulo:g("titulo"),data:g("data")||new Date().toISOString().slice(0,10),icone:g("icone")||"📋",dados:{objetivo:g("objetivo"),secoes}}).select("*").single();if(r.error)return toast(r.error.message,true);
     S.tarefas=[r.data,...(S.tarefas||[])];S.tarSel=r.data.id;closeSheet();return render()}},true);
+/* ---------- v71: comprovantes com vários itens · total · prévia ---------- */
+CP_CAT.forEach(c=>{if(c[0]==="equipamentos")c[1]=new RegExp(c[1].source+"|captura|webcam|obsbot|hub|adaptador|softbox|ring|hdmi|usb|ezcap|hollyland|lark|gimbal|refletor|fundo infinito","i")});
+const CP_RS="R\\s?[\\$S5]\\s?";
+function cpML(b){const ls=b.split(/\n/).map(x=>x.trim()).filter(Boolean);const out={};const ped=b.match(/#\s?(\d{10,})/);if(ped)out.pedido=ped[1];
+  const tot=b.match(new RegExp("total\\s*pago[^\\n]*?"+CP_RS+CP_VAL,"i"));if(tot)out.valor=cpNum(tot[1]);
+  const fimPreco=new RegExp(CP_RS+CP_VAL+"\\s*$");const ruim=/desconto|cupo|frete|total|retirada|tarifa|juros|detalhes|transa/i;const itens=[];
+  ls.forEach((l,i)=>{const q=l.match(/^(\d{1,3})\s*unidades?\b/i);if(!q)return;let j=i-1;while(j>=0&&ruim.test(ls[j]))j--;if(j<0)return;let nome=ls[j],m=nome.match(fimPreco);
+    if(!m&&j>0){const pj=ls[j].match(new RegExp("^"+CP_RS+CP_VAL+"$"));if(pj){m=pj;nome=ls[j-1]}}
+    nome=nome.replace(new RegExp("\\s*-?\\s*"+CP_RS+CP_VAL+"\\s*$"),"").replace(/[.…]+\s*$/,"").trim();if(nome.length<3)return;itens.push({nome,preco:m?cpNum(m[1]):null,qtd:+q[1]})});
+  if(!itens.length){ls.filter(l=>fimPreco.test(l)&&!ruim.test(l)).forEach(l=>{const m=l.match(fimPreco);const nome=l.replace(new RegExp("\\s*-?\\s*"+CP_RS+CP_VAL+"\\s*$"),"").replace(/[.…]+\s*$/,"").trim();if(nome.length>3)itens.push({nome,preco:cpNum(m[1]),qtd:1})})}
+  if(itens.length){out.itens=itens;const i0=itens[0];out.desc=i0.nome+(itens.length>1?` + ${itens.length-1} ${itens.length-1===1?"item":"itens"}`:"");if(itens.length===1&&i0.qtd>1)out.qtd=i0.qtd}
+  return out}
+const _cpOcr71=cpOcrWorker;cpOcrWorker=async function(){const w=await _cpOcr71();if(w&&!S.cpPsm6){try{await w.setParameters({tessedit_pageseg_mode:"6"});S.cpPsm6=1}catch(e){console.warn(e)}}return w};
+let CP_G=0;
+const _cpParse71=cpParse;cpParse=function(txt,nomeArq){const base=_cpParse71(txt,nomeArq);if(!(/detalhes da transa/i.test(txt)&&/total\s*pago/i.test(txt)))return base;
+  const o=cpML(txt);const r0=base[0];if(!o.itens||o.itens.length<2)return base.map(r=>Object.assign(r,{grupo:"g"+(++CP_G),gTotal:r.valor,gN:1}));
+  const g="g"+(++CP_G);const tot=o.valor||r0.valor;const soma=o.itens.reduce((t,x)=>t+(x.preco||0),0);let acc=0;
+  return o.itens.map((it,k)=>{let v=null;if(tot&&soma){v=k===o.itens.length-1?Math.round((tot-acc)*100)/100:Math.round(tot*(it.preco||0)/soma*100)/100;acc+=v}
+    const desc=it.nome+(it.qtd>1?` (x${it.qtd})`:"");const cat=(CP_CAT.find(([c,re])=>re.test(desc))||["outra_saida"])[0];
+    return Object.assign({},r0,{valor:v,descricao:desc+(o.pedido?` · pedido #${o.pedido}`:""),categoria:cat,grupo:g,gTotal:tot,gN:o.itens.length,gK:k,preco:it.preco})})};
+const _cpDup71=cpMarcarDup;cpMarcarDup=function(){_cpDup71();const it=S.cp.items;it.forEach(x=>{if(!x.grupo)return;x.flags=x.flags.filter(f=>!(/pedido igual a outro item/.test(f)&&it.some(y=>y!==x&&y.grupo===x.grupo&&y.pedido===x.pedido))&&!(/valor igual a outro item/.test(f)&&it.some(y=>y!==x&&y.grupo===x.grupo&&y.valor===x.valor)))})};
+function cpResumo(){const C=S.cp;const sel=C.items.filter(x=>x.on&&x.valor);const comp=new Set(C.items.map(x=>x.grupo||x.url)).size;return {sel,comp,tot:sel.reduce((t,x)=>t+x.valor,0)}}
+const CATN=k=>(CAT_SAI.find(c=>c[0]===k)||[k,k])[1];
+function cpPrevia(){const C=S.cp;const R=cpResumo();const grupos=[];C.items.forEach(x=>{const k=x.grupo||x.url;let g=grupos.find(z=>z.k===k);if(!g){g={k,itens:[],x};grupos.push(g)}g.itens.push(x)});const pes=S.membros.find(m=>m.id===C.pessoa);
+  return `<form onsubmit="return false" id="cpForm"><h3>👁 Prévia do lançamento</h3><div class="cpsum"><div><span>Comprovantes</span><b>${R.comp}</b></div><div><span>Itens a lançar</span><b>${R.sel.length}</b></div><div><span>Total</span><b>${brl(R.tot)}</b></div><div><span>Quem pagou</span><b>${pes?esc(pes.nome):"—"}</b></div><div><span>Reembolso</span><b>${C.reemb==="sim"?"sim":"não"}</b></div></div>
+  <table class="atb cpprev"><thead><tr><th>#</th><th>Data</th><th>Item</th><th>Categoria</th><th style="text-align:right">Valor</th></tr></thead><tbody>${grupos.map((g,gi)=>{const on=g.itens.filter(x=>x.on&&x.valor);const st=on.reduce((t,x)=>t+x.valor,0);const ped=(g.x.pedido?"#"+g.x.pedido:"");
+    return `<tr class="cpgh"><td>${gi+1}</td><td colspan="3"><b>${esc(g.x.contraparte||"Comprovante")}</b> <span class="muted small">${esc(ped)}${g.x.gTotal?` · total pago ${brl(g.x.gTotal)}`:""}</span></td><td style="text-align:right"><b>${brl(st)}</b>${g.x.gTotal&&Math.abs(st-g.x.gTotal)>0.01&&on.length===g.itens.length?` <span class="neg small">≠</span>`:""}</td></tr>`+g.itens.map(x=>`<tr class="${x.on&&x.valor?"":"cpoff"}"><td></td><td>${x.data?parseYmd(x.data).toLocaleDateString("pt-BR"):"—"}</td><td>${esc((x.descricao||"").replace(/ · pedido #\d+$/,""))}${x.on?"":" <span class='muted small'>(desmarcado)</span>"}</td><td>${esc(CATN(x.categoria))}</td><td style="text-align:right">${x.valor?brl(x.valor):"—"}</td></tr>`).join("")}).join("")}
+  <tr class="cpgh"><td></td><td colspan="3"><b>Total a lançar</b></td><td style="text-align:right"><b>${brl(R.tot)}</b></td></tr></tbody></table>
+  <div class="acts"><button type="button" class="btn" data-act="cpVoltar">← Voltar e editar</button><button type="button" class="btn" data-act="cpCopiar">Copiar lista</button><button type="button" class="btn p" data-act="cpLancar" ${R.sel.length&&C.pessoa&&!C.lendo?"":"disabled"}>${C.pessoa?`Lançar ${R.sel.length} · ${brl(R.tot)}`:"Escolha quem pagou"}</button></div></form>`}
+const _cpRender71=cpRender;cpRender=function(){const C=S.cp;if(C&&C.preview){const html=cpPrevia();if($("#sheet").hidden||!$("#cpForm"))openSheet(html);else{$("#sheetIn").innerHTML=html;$("#sheetIn").scrollTop=0}return}
+  _cpRender71();const f=$("#cpForm");if(!f||!C.items.length)return;const R=cpResumo();
+  const h2=f.querySelector(".sec h2");if(h2)h2.outerHTML=`<div class="cpsum" style="flex:1;margin:0"><div><span>Comprovantes</span><b>${R.comp}</b></div><div><span>Itens a lançar</span><b>${R.sel.length} de ${C.items.length}</b></div><div><span>Total a lançar</span><b>${brl(R.tot)}</b></div></div>`;
+  const cards=f.querySelectorAll(".cpl > .cpi");let last=null;C.items.forEach((x,i)=>{const el=cards[i];if(!el||!x.grupo||x.gN<2)return;
+    if(x.grupo!==last){const its=C.items.filter(y=>y.grupo===x.grupo);const st=its.filter(y=>y.on&&y.valor).reduce((t,y)=>t+y.valor,0);el.insertAdjacentHTML("beforebegin",`<div class="cpgrp">🧾 <b>Mesmo comprovante</b> · ${x.gN} itens${x.pedido?` · pedido #${esc(x.pedido)}`:""} · total pago <b>${brl(x.gTotal||0)}</b>${Math.abs(st-(x.gTotal||0))>0.01?` · <span style="color:var(--warn)">itens marcados somam ${brl(st)}</span>`:""}<div class="small muted">Desconto do pedido dividido entre os itens, proporcional ao preço.</div></div>`)}
+    else{const im=el.querySelector(".cpimg");if(im)im.style.visibility="hidden"}el.classList.add("cpin");last=x.grupo});
+  const acts=f.querySelector(".acts");if(acts&&!acts.querySelector("[data-act=cpPrev]"))acts.insertAdjacentHTML("afterbegin",`<button type="button" class="btn" data-act="cpPrev" ${R.sel.length?"":"disabled"}>👁 Gerar prévia</button>`)};
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=cpPrev],[data-act=cpVoltar],[data-act=cpCopiar]");if(!a||!S.cp)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="cpCopiar"){const R=cpResumo();const t=R.sel.map(x=>`${x.data?parseYmd(x.data).toLocaleDateString("pt-BR"):""}\t${(x.descricao||"").replace(/ · pedido #\d+$/,"")}\t${CATN(x.categoria)}\t${numIn(x.valor)}`).join("\n")+`\n\nTotal\t${numIn(R.tot)}`;try{await navigator.clipboard.writeText(t);toast("Lista copiada (cola no Excel)")}catch(_){prompt("Copie:",t)}return}
+  S.cp.preview=a.dataset.act==="cpPrev";cpRender()},true);
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act=cpLancar]");if(a&&S.cp)S.cp.preview=false},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
