@@ -621,7 +621,7 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.cdsub,.dzauto .dzn,.cdcalc .cdv,.magr b.hj){color:var(--voltx)}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .dropz b{color:var(--voltx)}
 .agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
 .sominfo{margin:-4px 0 10px;font-size:12.5px;background:rgba(255,181,71,.14);border:1px solid var(--warn);border-radius:10px;padding:6px 10px}.sominfo a{font-weight:700;text-decoration:underline}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .pills button.on{color:#fff}
-.escb{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-bottom:8px}.esch{display:flex;align-items:center;gap:8px;margin-bottom:4px}.escr{display:grid;grid-template-columns:24px 160px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--linha);font-size:12.5px;cursor:pointer}.esca{padding:10px 14px;margin-bottom:12px;cursor:pointer;border-color:var(--warn)}.escst{border:1px solid var(--warn);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px}.escst.ok{border-color:var(--ok)}.escst.no{border-color:var(--flash)}
+.escb{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-bottom:8px}.esch{display:flex;align-items:center;gap:8px;margin-bottom:4px}.escd{margin:12px 0 2px;padding:5px 10px;border-radius:8px;background:var(--card);font-weight:800;font-size:12.5px;letter-spacing:.02em}.escd:first-of-type{margin-top:6px}.escr{display:grid;grid-template-columns:24px 110px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--linha);font-size:12.5px;cursor:pointer}.esca{padding:10px 14px;margin-bottom:12px;cursor:pointer;border-color:var(--warn)}.escst{border:1px solid var(--warn);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px}.escst.ok{border-color:var(--ok)}.escst.no{border-color:var(--flash)}
 </style>
 </head>
 <body>
@@ -2578,8 +2578,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="68";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
+const APP_VERSAO="69";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["69","21/11","Escala da semana separada por dia (segunda, terça…), para facilitar a leitura."],
  ["68","21/11","Escala da semana: cada live mostra o horário de início e de fim."],
  ["67","21/11","📤 Escala da semana: em Lives → Escala da semana, mande para cada seller, pelo WhatsApp, a lista das lives dela. A seller confirma cada live no app (✅ Confirmo / ❌ Não posso), e o status aparece na escala, na visão Dia, na ficha da live e no Painel."],
  ["66","21/11","🌐 Endereço novo do ERP: implaylive.github.io/erp. O link antigo leva sozinho para o novo. Se o ERP estava salvo na tela do celular, salve de novo pelo link novo."],
@@ -4057,7 +4058,8 @@ function escSemana(off){const d=new Date();d.setHours(0,0,0,0);const dow=(d.getD
 function escTel(m){const t=String(m&&m.telefone||"").replace(/\D/g,"");return !t?"":t.length<=11?"55"+t:t}
 function escMsg(m,l,a,b){const dd=d=>d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});const fim=new Date(b-1);
   return `Oi ${(m.nome||"").split(" ")[0]}! Sua escala da IMPlay de ${dd(a)} a ${dd(fim)}:\n\n`+l.map(j=>`• ${new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})} · ${new Date(j.inicio).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}–${new Date(j.fim||j.inicio).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})} · ${j.marca||"Live"}${j.plataforma?" ("+j.plataforma+")":""}${j.espaco?" · "+j.espaco:""}`).join("\n")+`\n\n👉 Confirme cada live no app (aba Minha agenda): https://${APP_HOST}seller/`}
-function escHr(j){const h=d=>new Date(d).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});return new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit"})+" · "+h(j.inicio)+"–"+h(j.fim||j.inicio)}
+function escHr(j){const h=d=>new Date(d).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});return h(j.inicio)+"–"+h(j.fim||j.inicio)}
+function escDias(l,row){let h="",dia="";l.forEach(j=>{const d=new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit"});if(d!==dia){dia=d;h+=`<div class="escd">${d.charAt(0).toUpperCase()+d.slice(1)}</div>`}h+=row(j)});return h}
 function escHtml(){const [a,b]=escSemana(S.escSem);const l=S.jobs.filter(j=>j.status!=="cancelado"&&new Date(j.inicio)>=a&&new Date(j.inicio)<b).sort((x,y)=>new Date(x.inicio)-new Date(y.inicio));
   const por={};l.filter(j=>j.principal_id).forEach(j=>(por[j.principal_id]=por[j.principal_id]||[]).push(j));const sem=l.filter(j=>!j.principal_id);
   const n=k=>l.filter(j=>j.principal_id&&OKI(j)===k).length;const dd=d=>d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
@@ -4065,8 +4067,8 @@ function escHtml(){const [a,b]=escSemana(S.escSem);const l=S.jobs.filter(j=>j.st
   <p class="small muted" style="margin-top:0">Toda sexta: mande a escala para cada seller. Ela confirma cada live no app, e o status aparece aqui.</p>
   ${Object.entries(por).map(([mid,js])=>{const m=S.membros.find(x=>x.id===mid)||{nome:"?"};const tel=escTel(m);const env=js.every(j=>j.escala_enviada_em);
     return `<div class="escb"><div class="esch"><b>${esc(m.nome)}</b><span class="small muted">${js.length} live${js.length>1?"s":""}${env?" · enviada":""}</span><span style="flex:1"></span>${tel?`<button class="btn sm p" data-act="escWa" data-id="${mid}">WhatsApp</button>`:`<span class="small muted">sem telefone</span>`}<button class="btn sm" data-act="escCop" data-id="${mid}">Copiar</button></div>
-    ${js.map(j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>${OKI(j)}</span><span>${escHr(j)}</span><span>${esc(j.marca||"")} ${platTag(j)}</span><span class="small muted">${esc(OKT(j))}</span></div>`).join("")}</div>`}).join("")||`<div class="empty">Nenhuma live com seller nesta semana.</div>`}
-  ${sem.length?`<div class="escb"><div class="esch"><b style="color:var(--warn)">Sem seller</b></div>${sem.map(j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>⚠️</span><span>${escHr(j)}</span><span>${esc(j.marca||"")} ${platTag(j)}</span><span></span></div>`).join("")}</div>`:""}
+    ${escDias(js,j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>${OKI(j)}</span><span>${escHr(j)}</span><span>${esc(j.marca||"")} ${platTag(j)}</span><span class="small muted">${esc(OKT(j))}</span></div>`)}</div>`}).join("")||`<div class="empty">Nenhuma live com seller nesta semana.</div>`}
+  ${sem.length?`<div class="escb"><div class="esch"><b style="color:var(--warn)">Sem seller</b></div>${escDias(sem,j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>⚠️</span><span>${escHr(j)}</span><span>${esc(j.marca||"")} ${platTag(j)}</span><span></span></div>`)}</div>`:""}
   <div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
 function openEscala(){openSheet(`<div id="escBox">${escHtml()}</div>`)}
 async function escMarca(mid){const [a,b]=escSemana(S.escSem);const ids=S.jobs.filter(j=>j.principal_id===mid&&j.status!=="cancelado"&&new Date(j.inicio)>=a&&new Date(j.inicio)<b).map(j=>j.id);if(!ids.length)return;const agora=new Date().toISOString();
