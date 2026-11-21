@@ -1416,7 +1416,7 @@ LISTS.eq=()=>{const f=S.f.eq;let l=eqLista();if(f.st!=="inativos")l=l.filter(m=>
    <td data-l="Termo">${kycTag(m)}${m.papel!=="seller"?"—":m.termo_aceito_em?`<span class="tag o">aceito</span>`:`<span class="tag x">pendente</span>`}</td><td data-l="Lives" class="r">${js.length}</td></tr>`}),"Ninguém neste filtro.")};
 VIEWS.equipe=()=>{const l=eqLista(),f=S.f.eq;
   return chips("eq",[["todos","Todas",l.filter(m=>m.status!=="inativo").length],["socios","Sócios",l.filter(m=>m.papel==="socio").length],["equipe","Equipe",l.filter(m=>m.papel==="basico").length],["sellers","Sellers",l.filter(m=>m.papel==="seller"&&m.status==="ativo").length],["pendentes","Aguardando aprovação",l.filter(m=>m.status==="pendente").length],["inativos","Inativos",l.filter(m=>m.status==="inativo").length]],f.st)
-  +`<div class="tool">${qbox("eq","Buscar nome, e-mail, telefone, @…")}${fsel("eq","vinc","Todos os vínculos",Object.entries(VINC))}</div><div class="hint" style="margin:-4px 0 12px">Link para sellers se cadastrarem: <b>brunotae.github.io/implay/seller/</b></div><div id="lst">${LISTS.eq()}</div>`};
+  +`<div class="tool">${qbox("eq","Buscar nome, e-mail, telefone, @…")}${fsel("eq","vinc","Todos os vínculos",Object.entries(VINC))}</div><div class="hint" style="margin:-4px 0 12px">Link para sellers se cadastrarem: <b>${APP_HOST}seller/</b></div><div id="lst">${LISTS.eq()}</div>`};
 
 /* ---------- busca global ---------- */
 function gsearch(q){q=q.trim();const box=$("#gres");if(!q){box.hidden=true;return}
@@ -1621,7 +1621,7 @@ VIEWS.equipe=()=>{const v=S.f.eq.view||"cards";const tg=`<div class="chips" styl
     <div class="s" style="margin-top:6px">${esc(m.telefone||m.email)}</div>${m.obs==="PEDIU ACESSO AO ERP"&&m.status==="pendente"?`<span class="tag f">pediu acesso ao ERP</span>`:m.status!=="ativo"?`<span class="tag w">${m.status}</span>`:""}${m.papel==="seller"&&m.status!=="ativo"?kycTag(m):""}</div>`};
   const grp=(t,l)=>l.length?`<div class="sec"><h2>${t} <span class="muted small">${l.length}</span></h2></div><div class="pgrid">${l.map(card).join("")}</div>`:"";
   const M=S.membros.filter(m=>has(S.f.eq.q,m.nome,m.email,m.cidade,m.nicho));
-  return tg+`<div class="tool">${qbox("eq","Buscar pessoa…")}</div><div class="hint" style="margin:-4px 0 4px">Link para sellers se cadastrarem: <b>brunotae.github.io/implay/seller/</b></div>`+grp("Sócios",M.filter(m=>m.papel==="socio"))+grp("Equipe (CLT)",M.filter(m=>m.papel==="basico"&&m.status!=="pendente"))+grp("Sellers",M.filter(m=>m.papel==="seller"&&m.status==="ativo"))+grp("Aguardando aprovação",M.filter(m=>m.status==="pendente"))};
+  return tg+`<div class="tool">${qbox("eq","Buscar pessoa…")}</div><div class="hint" style="margin:-4px 0 4px">Link para sellers se cadastrarem: <b>${APP_HOST}seller/</b></div>`+grp("Sócios",M.filter(m=>m.papel==="socio"))+grp("Equipe (CLT)",M.filter(m=>m.papel==="basico"&&m.status!=="pendente"))+grp("Sellers",M.filter(m=>m.papel==="seller"&&m.status==="ativo"))+grp("Aguardando aprovação",M.filter(m=>m.status==="pendente"))};
 
 /* ---------- painel compacto ---------- */
 VIEWS.painel=()=>{const now=new Date(),mesK=monthKey(now);const R=rangeOf("mes");
@@ -2577,8 +2577,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="64";const APP_DATA="16/11/2026";
+const APP_VERSAO="65";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["65","21/11","Os links mostrados no ERP (cadastro de sellers e acesso novo) agora seguem o endereço atual do sistema, preparando a mudança de link."],
  ["64","20/11","Quando o filtro \"Só as minhas\" está ligado, agora aparece um aviso com o link \"mostrar todas\", e o botão \"Todas\" desliga o filtro. Os botões selecionados ficaram legíveis nos temas claros."],
  ["63","20/11","📲 Lives no Google Agenda e no iPhone: em Lives → 📲 Na minha agenda, cada pessoa pega o seu link. Sócios veem todas as lives; sellers e CLT veem só as suas. A agenda se atualiza sozinha."],
  ["62","20/11","🏷 Central do cliente: nova página no menu, separada do cadastro. Cada marca tem as abas Resumo (o que está no contrato, horas por mês e por live, e quantas horas já foram usadas no mês), Briefing, Acessos (só sócios), Materiais e Lives. A ficha de cadastro ficou só com os dados da empresa. As cores dos temas claros foram corrigidas."],
@@ -3690,7 +3691,7 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-act=
   const {data,error}=await db.functions.invoke("acessos",{body:{app:"implay",acao:"resetar",membro_id:b.dataset.id}});
   b.disabled=false;b.textContent="🔑 Resetar senha";
   if(error||!data||data.erro){let msg=data&&data.erro;try{if(!msg&&error&&error.context)msg=(await error.context.json()).erro}catch(_){}return toast("Não resetou: "+(msg||(error&&error.message)||"erro"),true)}
-  const txt=`Seu acesso ao ERP da IMPlay:\nhttps://brunotae.github.io/implay/\nE-mail: ${data.email}\nSenha temporária: ${data.senha}\nNo primeiro acesso o sistema pede para você criar a sua senha.`;
+  const txt=`Seu acesso ao ERP da IMPlay:\nhttps://${APP_HOST}\nE-mail: ${data.email}\nSenha temporária: ${data.senha}\nNo primeiro acesso o sistema pede para você criar a sua senha.`;
   $("#rsBox").innerHTML=`<label>Senha de acesso</label><div class="warnbox"><b>${data.criado?"Login criado":"Senha resetada"}</b> para ${esc(data.email)}<br>Senha temporária: <b style="font-size:1.15em;letter-spacing:.5px">${esc(data.senha)}</b><div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap"><button type="button" class="btn p sm" id="rsCopia">Copiar mensagem</button>${m&&m.telefone?`<a class="btn sm" target="_blank" href="https://wa.me/${String(m.telefone).replace(/\D/g,"").replace(/^(?!55)/,"55")}?text=${encodeURIComponent(txt)}">Enviar no WhatsApp</a>`:""}</div><div class="small" style="margin-top:6px">Ela some quando fechar esta janela.</div></div>`;
   $("#rsCopia").onclick=()=>{navigator.clipboard.writeText(txt).then(()=>toast("Mensagem copiada"))}},true);
 /* ---------- v44: Equipe em lista profissional ---------- */
@@ -3716,7 +3717,7 @@ const _eqV44=VIEWS.equipe;VIEWS.equipe=()=>{const v=S.f.eq.view||"cards";if(v!==
   const rPe=M.filter(m=>m.status==="pendente").map(m=>row("membro",m.id,av(m.nome,"var(--cinza)"),esc(m.nome),m.obs==="PEDIU ACESSO AO ERP"?"Pediu acesso ao ERP":m.papel==="seller"?"Cadastro de seller":"Equipe",m.papel==="seller"?kycTag(m):"",esc(m.cidade||"—"),esc(m.telefone||m.email||"—"),stM(m)));
   const tot=`<div class="pkpi"><div><b>${SO.length}</b>Sócios</div><div><b>${rEq.length}</b>Equipe</div><div><b>${rSe.length}</b>Sellers</div><div class="${rPe.length?"w":""}"><b>${rPe.length}</b>Aguardando</div></div>`;
   const tg=`<div class="chips" style="margin-bottom:10px"><button data-act="eqView" data-v="cards" class="on">Visão geral</button><button data-act="eqView" data-v="lista">Lista completa</button></div>`;
-  return tg+tot+`<div class="tool">${qbox("eq","Buscar pessoa…")}</div><div class="hint" style="margin:-4px 0 6px">Cadastro de sellers: <b>brunotae.github.io/implay/seller/</b></div>`
+  return tg+tot+`<div class="tool">${qbox("eq","Buscar pessoa…")}</div><div class="hint" style="margin:-4px 0 6px">Cadastro de sellers: <b>${APP_HOST}seller/</b></div>`
    +box("Sócios",SO.length,rSo,aviso)+box("Equipe",rEq.length,rEq)+box("Sellers",rSe.length,rSe)+box("Aguardando aprovação",rPe.length,rPe)};
 /* ---------- v45: Agenda + Lives em uma página ---------- */
 MENU.forEach(g=>{const i=g[1].findIndex(x=>x[0]==="agenda");if(i>=0)g[1].splice(i,1);g[1].forEach(x=>{if(x[0]==="jobs"){x[2]="Calendário e gestão";x[3]="cal"}})});
