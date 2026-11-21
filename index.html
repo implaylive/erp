@@ -621,6 +621,7 @@ details.adv{margin-top:8px}details.adv summary{cursor:pointer;font-size:12.5px;c
 html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.cdsub,.dzauto .dzn,.cdcalc .cdv,.magr b.hj){color:var(--voltx)}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .dropz b{color:var(--voltx)}
 .agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
 .sominfo{margin:-4px 0 10px;font-size:12.5px;background:rgba(255,181,71,.14);border:1px solid var(--warn);border-radius:10px;padding:6px 10px}.sominfo a{font-weight:700;text-decoration:underline}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .pills button.on{color:#fff}
+.escb{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-bottom:8px}.esch{display:flex;align-items:center;gap:8px;margin-bottom:4px}.escr{display:grid;grid-template-columns:24px 110px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--linha);font-size:12.5px;cursor:pointer}.esca{padding:10px 14px;margin-bottom:12px;cursor:pointer;border-color:var(--warn)}.escst{border:1px solid var(--warn);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px}.escst.ok{border-color:var(--ok)}.escst.no{border-color:var(--flash)}
 </style>
 </head>
 <body>
@@ -2577,8 +2578,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="66";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
+const APP_VERSAO="67";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["67","21/11","📤 Escala da semana: em Lives → Escala da semana, mande para cada seller, pelo WhatsApp, a lista das lives dela. A seller confirma cada live no app (✅ Confirmo / ❌ Não posso), e o status aparece na escala, na visão Dia, na ficha da live e no Painel."],
  ["66","21/11","🌐 Endereço novo do ERP: implaylive.github.io/erp. O link antigo leva sozinho para o novo. Se o ERP estava salvo na tela do celular, salve de novo pelo link novo."],
  ["65","21/11","Os links mostrados no ERP (cadastro de sellers e acesso novo) agora seguem o endereço atual do sistema, preparando a mudança de link."],
  ["64","20/11","Quando o filtro \"Só as minhas\" está ligado, agora aparece um aviso com o link \"mostrar todas\", e o botão \"Todas\" desliga o filtro. Os botões selecionados ficaram legíveis nos temas claros."],
@@ -4046,6 +4048,43 @@ const _magH63=minhaAgendaHtml;minhaAgendaHtml=function(){const h=_magH63();retur
 /* ---------- v64: filtro "Só as minhas" mais claro ---------- */
 document.addEventListener("click",e=>{const a=e.target.closest("[data-act=agPlat]");if(a&&a.dataset.v===""&&S.soMinhas){S.soMinhas=false;localStorage.setItem("implay-sominhas","0")}},true);
 const _platChips64=platChips;platChips=function(){let h=_platChips64();if(S.soMinhas){h=h.replace(/class="on ([^"]*)" data-act="agPlat" data-v=""/,'class=" $1" data-act="agPlat" data-v=""');const n=S.jobs.filter(j=>j.status!=="cancelado"&&minhaLive(j)).length;h+=`<div class="sominfo">👤 Mostrando só as lives em que você está escalado${n?"":" (nenhuma)"} · <a href="#" data-act="soMinhas">mostrar todas</a></div>`}return h};
+/* ---------- v67: Escala da semana + confirmação da seller ---------- */
+const OKI=j=>!j.principal_id?"":j.seller_ok===true?"✅":j.seller_ok===false?"❌":"⏳";
+const OKT=j=>!j.principal_id?"sem seller":j.seller_ok===true?"confirmou":j.seller_ok===false?"não pode"+(j.seller_ok_motivo?` (${j.seller_ok_motivo})`:""):"aguardando confirmação";
+S.escSem=S.escSem??1;
+function escSemana(off){const d=new Date();d.setHours(0,0,0,0);const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow+7*off);const f=new Date(d);f.setDate(f.getDate()+7);return [d,f]}
+function escTel(m){const t=String(m&&m.telefone||"").replace(/\D/g,"");return !t?"":t.length<=11?"55"+t:t}
+function escMsg(m,l,a,b){const dd=d=>d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});const fim=new Date(b-1);
+  return `Oi ${(m.nome||"").split(" ")[0]}! Sua escala da IMPlay de ${dd(a)} a ${dd(fim)}:\n\n`+l.map(j=>`• ${new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})} · ${new Date(j.inicio).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}–${new Date(j.fim||j.inicio).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})} · ${j.marca||"Live"}${j.plataforma?" ("+j.plataforma+")":""}${j.espaco?" · "+j.espaco:""}`).join("\n")+`\n\n👉 Confirme cada live no app (aba Minha agenda): https://${APP_HOST}seller/`}
+function escHtml(){const [a,b]=escSemana(S.escSem);const l=S.jobs.filter(j=>j.status!=="cancelado"&&new Date(j.inicio)>=a&&new Date(j.inicio)<b).sort((x,y)=>new Date(x.inicio)-new Date(y.inicio));
+  const por={};l.filter(j=>j.principal_id).forEach(j=>(por[j.principal_id]=por[j.principal_id]||[]).push(j));const sem=l.filter(j=>!j.principal_id);
+  const n=k=>l.filter(j=>j.principal_id&&OKI(j)===k).length;const dd=d=>d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+  return `<h3>📤 Escala da semana</h3><div class="row" style="gap:6px;align-items:center;margin-bottom:8px"><button class="btn sm" data-act="escNav" data-v="-1">‹</button><b>${dd(a)} a ${dd(new Date(b-1))}</b><button class="btn sm" data-act="escNav" data-v="1">›</button><span class="small muted">${l.length} lives · ✅ ${n("✅")} · ⏳ ${n("⏳")} · ❌ ${n("❌")}${sem.length?` · <b style="color:var(--warn)">${sem.length} sem seller</b>`:""}</span></div>
+  <p class="small muted" style="margin-top:0">Toda sexta: mande a escala para cada seller. Ela confirma cada live no app, e o status aparece aqui.</p>
+  ${Object.entries(por).map(([mid,js])=>{const m=S.membros.find(x=>x.id===mid)||{nome:"?"};const tel=escTel(m);const env=js.every(j=>j.escala_enviada_em);
+    return `<div class="escb"><div class="esch"><b>${esc(m.nome)}</b><span class="small muted">${js.length} live${js.length>1?"s":""}${env?" · enviada":""}</span><span style="flex:1"></span>${tel?`<button class="btn sm p" data-act="escWa" data-id="${mid}">WhatsApp</button>`:`<span class="small muted">sem telefone</span>`}<button class="btn sm" data-act="escCop" data-id="${mid}">Copiar</button></div>
+    ${js.map(j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>${OKI(j)}</span><span>${new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit"})} ${new Date(j.inicio).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span><span>${esc(j.marca||"")} ${platTag(j)}</span><span class="small muted">${esc(OKT(j))}</span></div>`).join("")}</div>`}).join("")||`<div class="empty">Nenhuma live com seller nesta semana.</div>`}
+  ${sem.length?`<div class="escb"><div class="esch"><b style="color:var(--warn)">Sem seller</b></div>${sem.map(j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>⚠️</span><span>${new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit"})} ${new Date(j.inicio).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span><span>${esc(j.marca||"")} ${platTag(j)}</span><span></span></div>`).join("")}</div>`:""}
+  <div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
+function openEscala(){openSheet(`<div id="escBox">${escHtml()}</div>`)}
+async function escMarca(mid){const [a,b]=escSemana(S.escSem);const ids=S.jobs.filter(j=>j.principal_id===mid&&j.status!=="cancelado"&&new Date(j.inicio)>=a&&new Date(j.inicio)<b).map(j=>j.id);if(!ids.length)return;const agora=new Date().toISOString();
+  const r=await db.from("imp_jobs").update({escala_enviada_em:agora}).in("id",ids);if(!r.error)S.jobs.forEach(j=>{if(ids.includes(j.id))j.escala_enviada_em=agora});const bx=$("#escBox");if(bx)bx.innerHTML=escHtml()}
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=escOpen],[data-act=escNav],[data-act=escWa],[data-act=escCop]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act;
+  if(act==="escOpen")return openEscala();
+  if(act==="escNav"){S.escSem+=Number(a.dataset.v);$("#escBox").innerHTML=escHtml();return}
+  const [x,y]=escSemana(S.escSem);const m=S.membros.find(z=>z.id===a.dataset.id);const l=S.jobs.filter(j=>j.principal_id===m.id&&j.status!=="cancelado"&&new Date(j.inicio)>=x&&new Date(j.inicio)<y).sort((p,q)=>new Date(p.inicio)-new Date(q.inicio));const txt=escMsg(m,l,x,y);
+  if(act==="escWa"){window.open(`https://wa.me/${escTel(m)}?text=${encodeURIComponent(txt)}`,"_blank");escMarca(m.id);return}
+  try{await navigator.clipboard.writeText(txt);toast("Mensagem copiada")}catch(_){prompt("Copie:",txt)}escMarca(m.id)},true);
+const _hJobs67=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm" data-act="escOpen">📤 Escala da semana</button>`+(_hJobs67?_hJobs67():"");
+/* status nos blocos da visão Dia */
+const _diaView67=diaView;diaView=function(){let h=_diaView67();S.jobs.forEach(j=>{if(!j.principal_id)return;h=h.replace(`data-act="job" data-id="${j.id}" style=`,`data-act="job" data-id="${j.id}" title="${esc(OKT(j))}" style=`).replace(new RegExp(`(data-id="${j.id}"[^>]*><b>)`),`$1${OKI(j)} `)});return h};
+/* aviso no Painel */
+const _painel67=VIEWS.painel;VIEWS.painel=()=>{const h=_painel67();const ag=new Date(),lim=new Date(Date.now()+7*864e5);const pend=S.jobs.filter(j=>j.status!=="cancelado"&&j.principal_id&&j.seller_ok!==true&&new Date(j.inicio)>ag&&new Date(j.inicio)<lim);if(!pend.length)return h;
+  const no=pend.filter(j=>j.seller_ok===false).length;const box=`<div class="card esca" data-act="escOpen"><b>📤 ${pend.length} live${pend.length>1?"s":""} nos próximos 7 dias sem confirmação da seller</b>${no?` · <b style="color:var(--flash)">${no} recusada${no>1?"s":""}</b>`:""}<span class="small muted"> · abrir escala ›</span></div>`;
+  const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+box+h.slice(i):box+h};
+/* status na ficha da live */
+const _openJob67=openJob;openJob=function(id){_openJob67.apply(this,arguments);const j=id&&S.jobs.find(x=>x.id===id);const f=$("#sheetIn form")||$("#sheetIn");if(!j||!j.principal_id||!f)return;
+  f.insertAdjacentHTML("afterbegin",`<div class="escst ${j.seller_ok===true?"ok":j.seller_ok===false?"no":""}">${OKI(j)} Seller ${esc(nome(j.principal_id))}: <b>${esc(OKT(j))}</b>${j.escala_enviada_em?` <span class="small muted">· escala enviada ${new Date(j.escala_enviada_em).toLocaleDateString("pt-BR")}</span>`:""}</div>`)};
 if(!orcPreviewBoot())boot();
 </script>
 <script>

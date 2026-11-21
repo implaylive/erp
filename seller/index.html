@@ -93,6 +93,7 @@ h1,h2,h3{font-weight:800}
 #ctrSheet{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;overflow:auto;padding:20px}#ctrSheet .in{margin:0 auto}
 .cen summary{cursor:pointer;list-style:none}.cen summary::-webkit-details-marker{display:none}.cs{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13.5px;line-height:1.5}.cs h4{margin:0 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza)}.cs.ok{border-color:rgba(124,227,139,.5)}.cs.no{border-color:rgba(239,100,120,.6)}.cs a{color:var(--volt)}.cp{padding:4px 0;border-top:1px solid var(--linha)}.cp:first-of-type{border-top:0}
 .agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
+.cfx{margin-top:12px;padding:10px 12px;border-radius:12px;border:1px dashed var(--linha);font-size:13.5px}.cfx.ok{border-style:solid;border-color:rgba(124,227,139,.6)}.cfx.no{border-style:solid;border-color:rgba(239,100,120,.7)}.cfal{border-color:#ffb547;font-size:14px}
 </style>
 </head>
 <body>
@@ -106,7 +107,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="5";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="6";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -316,9 +317,9 @@ document.addEventListener("change",e=>{const i=e.target;if(i.dataset&&i.dataset.
 
 /* ---------- dados ---------- */
 async function load(){
-  const [a,b,c]=await Promise.all([db.rpc("imp_mural"),db.rpc("imp_meus_jobs"),db.rpc("imp_central_seller")]);
+  const [a,b,c,d]=await Promise.all([db.rpc("imp_mural"),db.rpc("imp_meus_jobs"),db.rpc("imp_central_seller"),db.rpc("imp_minhas_confirmacoes")]);
   if(a.error||b.error){toast(erro(a.error||b.error),true)}
-  S.mural=a.data||[];S.meus=b.data||[];S.marcas=(c&&!c.error&&c.data)||[];
+  S.mural=a.data||[];S.meus=b.data||[];S.marcas=(c&&!c.error&&c.data)||[];S.conf={};((d&&!d.error&&d.data)||[]).forEach(x=>S.conf[x.job_id]=x);
 }
 async function refresh(){if(!S.me||S.me.status!=="ativo"||!S.me.termo_aceito_em||S.me.termo_versao!==TERMO_VERSAO)return;await load();if($("#sheet").hidden)render()}
 
@@ -466,6 +467,20 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=
   if(a.dataset.act==="agOpen")return openAgendaGoogle();
   if(a.dataset.act==="agCopiar"){try{await navigator.clipboard.writeText(a.dataset.u);toast("Link copiado")}catch(_){prompt("Copie o link:",a.dataset.u)}return}
   if(!armed(a))return;const r=await db.rpc("imp_agenda_token_novo");if(r.error)return toast(r.error.message,true);toast("Link novo gerado. Assine de novo na agenda.");openAgendaGoogle()},true);
+
+/* ---------- Confirmação da escala ---------- */
+function confPend(){const now=new Date();return S.meus.filter(j=>j.minha_vaga==="principal"&&j.situacao!=="aguardando"&&j.status!=="cancelado"&&new Date(j.inicio)>now&&S.conf&&S.conf[j.id]&&S.conf[j.id].seller_ok===null)}
+const _cardMeu6=cardMeu;cardMeu=function(j){let h=_cardMeu6(j);const c=S.conf&&S.conf[j.id];if(!c||j.minha_vaga!=="principal"||j.situacao==="aguardando"||new Date(j.inicio)<new Date())return h;
+  const box=c.seller_ok===true?`<div class="cfx ok">✅ Você confirmou esta live · <a href="#" data-act="confNo" data-id="${j.id}">não vou conseguir</a></div>`
+   :c.seller_ok===false?`<div class="cfx no">❌ Você avisou que não pode${c.motivo?` (${esc(c.motivo)})`:""} · <a href="#" data-act="confOk" data-id="${j.id}">consigo sim</a></div>`
+   :`<div class="cfx"><b>Confirma esta live?</b><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" data-act="confOk" data-id="${j.id}">✅ Confirmo</button><button class="btn d" data-act="confNo" data-id="${j.id}">❌ Não posso</button></div></div>`;
+  return h.replace('<div class="det">','<div class="det">').replace(/<\/div>$/,box+"</div>")};
+const _meus6=meus;meus=function(){const p=confPend().length;return (p?`<div class="card cfal">⏳ Você tem <b>${p} live${p>1?"s":""}</b> para confirmar. Toque em ✅ Confirmo ou ❌ Não posso em cada uma.</div>`:"")+_meus6()};
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act=confOk],[data-act=confNo]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();const ok=a.dataset.act==="confOk";let mot=null;
+  if(!ok){mot=prompt("Por que não vai conseguir? (a IMPlay vê o motivo)");if(mot===null)return}
+  a.disabled=true;const r=await db.rpc("imp_seller_confirma",{p_job:a.dataset.id,p_ok:ok,p_motivo:mot});
+  if(r.error||!r.data){a.disabled=false;return toast(r.error?(/imp_seller_confirma/.test(r.error.message)?"Ainda não disponível. Tente mais tarde.":r.error.message):"Não deu para confirmar",true)}
+  S.conf[a.dataset.id]={job_id:a.dataset.id,seller_ok:ok,motivo:mot};toast(ok?"Confirmado! Obrigada 💜":"Avisamos a IMPlay");render()},true);
 </script>
 </body>
 </html>
