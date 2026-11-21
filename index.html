@@ -622,6 +622,13 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
 .sominfo{margin:-4px 0 10px;font-size:12.5px;background:rgba(255,181,71,.14);border:1px solid var(--warn);border-radius:10px;padding:6px 10px}.sominfo a{font-weight:700;text-decoration:underline}html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) .pills button.on{color:#fff}
 .escb{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-bottom:8px}.esch{display:flex;align-items:center;gap:8px;margin-bottom:4px}.escd{margin:12px 0 2px;padding:5px 10px;border-radius:8px;background:var(--card);font-weight:800;font-size:12.5px;letter-spacing:.02em}.escd:first-of-type{margin-top:6px}.escr{display:grid;grid-template-columns:24px 110px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--linha);font-size:12.5px;cursor:pointer}.esca{padding:10px 14px;margin-bottom:12px;cursor:pointer;border-color:var(--warn)}.escst{border:1px solid var(--warn);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px}.escst.ok{border-color:var(--ok)}.escst.no{border-color:var(--flash)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}.tcard{display:flex;gap:12px;background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:14px;cursor:pointer}.tcard:hover{border-color:var(--volt)}.tc-ic{font-size:34px;line-height:1}.tc-b{flex:1;min-width:0}
+.tobj{background:var(--card);border:1px solid var(--linha);border-radius:12px;padding:10px 14px;margin:10px 0;font-size:13.5px}.tprog{display:flex;align-items:center;gap:10px;margin:6px 0 12px}.tprog .cbar{flex:1;margin:0}
+.tsecs{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}.tsec{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:12px 14px;margin-bottom:10px}.ts-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.ts-h b{flex:1;font-size:15px}.ts-ic{font-size:26px;line-height:1}
+.ttem{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:8px}.tchip{font-size:11.5px;background:var(--card2);border:1px solid var(--linha);border-radius:999px;padding:2px 8px}
+.titem{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid var(--linha);font-size:13.5px;cursor:pointer}.titem input{width:18px;height:18px;accent-color:var(--ok);flex:none}.titem.ok span{text-decoration:line-through;opacity:.55}.tq{font-weight:800;background:var(--card2);border-radius:6px;padding:1px 6px;font-size:12px}
+.tnota{margin-top:8px;font-size:12.5px;background:var(--card2);border-radius:8px;padding:6px 10px}.tprio{display:flex;flex-wrap:wrap;gap:6px}.tprio div{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--linha);border-radius:999px;padding:4px 12px 4px 4px;font-size:13px}.tprio span{background:var(--volt);color:#000;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-weight:800;font-size:12px}
+.tobs{border:1px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:13px}
 </style>
 </head>
 <body>
@@ -2578,8 +2585,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="69";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
+const APP_VERSAO="70";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
 const NOVIDADES=[
+ ["70","21/11","✅ Tarefas: nova seção no menu com listas de compras e checklists. Cada lista é uma página só, com ícones por seção, o que já temos, quantidades e a barra de progresso; é só marcar cada item. Já entrou a lista de compras das 5 lives simultâneas."],
  ["69","21/11","Escala da semana separada por dia (segunda, terça…), para facilitar a leitura."],
  ["68","21/11","Escala da semana: cada live mostra o horário de início e de fim."],
  ["67","21/11","📤 Escala da semana: em Lives → Escala da semana, mande para cada seller, pelo WhatsApp, a lista das lives dela. A seller confirma cada live no app (✅ Confirmo / ❌ Não posso), e o status aparece na escala, na visão Dia, na ficha da live e no Painel."],
@@ -4089,6 +4097,44 @@ const _painel67=VIEWS.painel;VIEWS.painel=()=>{const h=_painel67();const ag=new 
 /* status na ficha da live */
 const _openJob67=openJob;openJob=function(id){_openJob67.apply(this,arguments);const j=id&&S.jobs.find(x=>x.id===id);const f=$("#sheetIn form")||$("#sheetIn");if(!j||!j.principal_id||!f)return;
   f.insertAdjacentHTML("afterbegin",`<div class="escst ${j.seller_ok===true?"ok":j.seller_ok===false?"no":""}">${OKI(j)} Seller ${esc(nome(j.principal_id))}: <b>${esc(OKT(j))}</b>${j.escala_enviada_em?` <span class="small muted">· escala enviada ${new Date(j.escala_enviada_em).toLocaleDateString("pt-BR")}</span>`:""}</div>`)};
+/* ---------- v70: Tarefas (listas com checklist visual) ---------- */
+IC.task='<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17"/>';
+{const g=MENU.find(x=>x[0]==="Operação");if(g&&!g[1].some(x=>x[0]==="tarefas"))g[1].push(["tarefas","Tarefas","Listas de compras e checklists","task"])}
+TAB_NOME.tarefas="Tarefas";TAB_SUB.tarefas="Listas de compras e checklists da equipe, com progresso";
+S.tarefas=null;S.tarSel=null;S.tarErr=null;
+async function tarLoad(){const r=await db.from("imp_tarefas").select("*").eq("arquivada",false).order("data",{ascending:false});S.tarErr=r.error?r.error.message:null;S.tarefas=r.data||[];if(S.tab==="tarefas")render()}
+function tarProg(t){let n=0,o=0;((t.dados||{}).secoes||[]).forEach(s=>(s.itens||[]).forEach(i=>{n++;if(i.ok)o++}));return {n,o,p:n?Math.round(o/n*100):0}}
+const fD=d=>new Date(d+"T12:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"});
+function tarLista(){if(S.tarefas===null){tarLoad();return `<div class="empty">Carregando…</div>`}
+  if(S.tarErr)return `<div class="warnbox">${/imp_tarefas/.test(S.tarErr)?"Rode o SQL da Versão 70 (implay_tarefas.sql).":esc(S.tarErr)}</div>`;
+  return `<div class="tgrid">${S.tarefas.map(t=>{const p=tarProg(t);return `<div class="tcard" data-act="tarAbrir" data-id="${t.id}"><div class="tc-ic">${esc(t.icone||"📋")}</div><div class="tc-b"><b>${esc(t.titulo)}</b><div class="small muted">${fD(t.data)}</div><div class="cbar"><i style="width:${p.p}%"></i></div><div class="small">${p.o} de ${p.n} feitos · ${p.p}%</div></div></div>`}).join("")||`<div class="empty">Nenhuma lista ainda.</div>`}</div>`}
+function tarPagina(t){const d=t.dados||{};const p=tarProg(t);
+  return `<div class="chead"><button class="btn sm" data-act="tarVoltar">← Tarefas</button><div class="ch-t"><h2>${esc(t.icone||"📋")} ${esc(t.titulo)}</h2><div class="small muted">📅 ${fD(t.data)}</div></div><button class="btn sm" data-act="tarItemNovo">+ Item</button><button class="btn sm d" data-act="tarArq">Arquivar</button></div>
+  ${d.objetivo?`<div class="tobj">🎯 <b>Objetivo:</b> ${esc(d.objetivo)}</div>`:""}
+  <div class="tprog"><div class="cbar" style="height:12px"><i style="width:${p.p}%"></i></div><b>${p.o}/${p.n}</b> <span class="muted small">concluídos · ${p.p}%</span></div>
+  <div class="tsecs">${(d.secoes||[]).map((s,si)=>{const sp=(s.itens||[]).filter(i=>i.ok).length;return `<div class="tsec"><div class="ts-h"><span class="ts-ic">${esc(s.ic||"📦")}</span><b>${esc(s.t)}</b><span class="tagc ${sp===(s.itens||[]).length&&sp?"ok":""}">${sp}/${(s.itens||[]).length}</span></div>
+    ${(s.tem||[]).length?`<div class="ttem"><span class="small muted">Já temos:</span> ${s.tem.map(x=>`<span class="tchip">✅ ${esc(x)}</span>`).join("")}</div>`:""}
+    ${(s.itens||[]).map((i,ii)=>`<label class="titem ${i.ok?"ok":""}"><input type="checkbox" data-tar="${si}.${ii}" ${i.ok?"checked":""}>${i.q?`<span class="tq">${i.q}×</span>`:""}<span>${esc(i.t)}</span></label>`).join("")}
+    ${s.nota?`<div class="tnota">💡 ${esc(s.nota)}</div>`:""}</div>`}).join("")}</div>
+  ${(d.prioridades||[]).length?`<div class="tsec"><div class="ts-h"><span class="ts-ic">🏁</span><b>Ordem de compra</b></div><div class="tprio">${d.prioridades.map((x,i)=>`<div><span>${i+1}</span>${esc(x)}</div>`).join("")}</div></div>`:""}
+  ${d.obs?`<div class="tobs">⚠️ ${esc(d.obs)}</div>`:""}`}
+VIEWS.tarefas=()=>{if(S.tarSel){const t=(S.tarefas||[]).find(x=>x.id===S.tarSel);if(t)return tarPagina(t);S.tarSel=null}return tarLista()};
+const _hTar=HEADACT.tarefas;HEADACT.tarefas=()=>S.tarSel?"":`<button class="btn sm p" data-act="tarNova">+ Nova lista</button>`;
+async function tarSalvar(t){t.updated_at=new Date().toISOString();const r=await db.from("imp_tarefas").update({dados:t.dados,updated_at:t.updated_at}).eq("id",t.id);if(r.error)toast("Não salvou: "+r.error.message,true)}
+document.addEventListener("change",e=>{const c=e.target.closest("[data-tar]");if(!c)return;const t=(S.tarefas||[]).find(x=>x.id===S.tarSel);if(!t)return;const [si,ii]=c.dataset.tar.split(".").map(Number);t.dados.secoes[si].itens[ii].ok=c.checked;tarSalvar(t);render()},true);
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act^=tar]");if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act;const t=(S.tarefas||[]).find(x=>x.id===S.tarSel);
+  if(act==="tarAbrir"){S.tarSel=a.dataset.id;return render()}
+  if(act==="tarVoltar"){S.tarSel=null;return render()}
+  if(act==="tarArq"){if(!armed(a))return;await db.from("imp_tarefas").update({arquivada:true}).eq("id",t.id);S.tarefas=S.tarefas.filter(x=>x.id!==t.id);S.tarSel=null;toast("Lista arquivada");return render()}
+  if(act==="tarItemNovo"){const secs=t.dados.secoes||[];openSheet(`<form id="tiF" onsubmit="return false"><h3>+ Item</h3><div class="fld"><label>Seção</label><select name="s">${secs.map((s,i)=>`<option value="${i}">${esc(s.ic||"")} ${esc(s.t)}</option>`).join("")}<option value="novo">+ Nova seção…</option></select></div><div class="fld"><label>Nova seção (ícone e nome)</label><input name="ns" placeholder="Ex.: 💡 Iluminação"></div><div class="cols2">${fld("t","Item","")}${fld("q","Quantidade","","text",'inputmode="numeric"')}</div><div class="acts"><button type="button" class="btn p" data-act="tarItemSalvar">Adicionar</button><button type="button" class="btn" data-act="fechar">Fechar</button></div></form>`);return}
+  if(act==="tarItemSalvar"){const F=$("#tiF");const g=n=>F.querySelector(`[name=${n}]`).value.trim();if(!g("t"))return toast("Escreva o item",true);let si=g("s");
+    if(si==="novo"){const ns=g("ns")||"📦 Outros";const m=ns.match(/^(\p{Extended_Pictographic}️?)\s*(.*)$/u);t.dados.secoes=t.dados.secoes||[];t.dados.secoes.push({ic:m?m[1]:"📦",t:m?m[2]||"Outros":ns,itens:[]});si=t.dados.secoes.length-1}
+    t.dados.secoes[+si].itens.push(Object.assign({t:g("t"),ok:false},g("q")?{q:+g("q")||g("q")}:{}));await tarSalvar(t);closeSheet();toast("Item adicionado");return render()}
+  if(act==="tarNova"){openSheet(`<form id="tnF" onsubmit="return false"><h3>Nova lista</h3><div class="cols2">${fld("titulo","Título","")}${fld("data","Data",new Date().toISOString().slice(0,10),"date")}</div>${fld("icone","Ícone","📋")}${fld("objetivo","Objetivo (opcional)","")}<div class="fld"><label>Itens</label><textarea name="itens" rows="8" placeholder="# 💻 Computadores&#10;2 PCs para live&#10;5 cabos de rede&#10;# 🎙️ Microfones&#10;5 microfones sem fio"></textarea><div class="small muted">Linha com # começa uma seção. Número no início vira quantidade.</div></div><div class="acts"><button type="button" class="btn p" data-act="tarCriar">Criar</button><button type="button" class="btn" data-act="fechar">Fechar</button></div></form>`);return}
+  if(act==="tarCriar"){const F=$("#tnF");const g=n=>F.querySelector(`[name=${n}]`).value.trim();if(!g("titulo"))return toast("Dê um título",true);const secoes=[];let cur=null;
+    g("itens").split("\n").map(x=>x.trim()).filter(Boolean).forEach(l=>{if(l.startsWith("#")){const s=l.replace(/^#+\s*/,"");const m=s.match(/^(\p{Extended_Pictographic}️?)\s*(.*)$/u);cur={ic:m?m[1]:"📦",t:m?m[2]:s,itens:[]};secoes.push(cur)}else{if(!cur){cur={ic:"📦",t:"Itens",itens:[]};secoes.push(cur)}const m=l.match(/^(\d+)\s*x?\s+(.*)$/i);cur.itens.push(m?{t:m[2],q:+m[1],ok:false}:{t:l,ok:false})}});
+    const r=await db.from("imp_tarefas").insert({titulo:g("titulo"),data:g("data")||new Date().toISOString().slice(0,10),icone:g("icone")||"📋",dados:{objetivo:g("objetivo"),secoes}}).select("*").single();if(r.error)return toast(r.error.message,true);
+    S.tarefas=[r.data,...(S.tarefas||[])];S.tarSel=r.data.id;closeSheet();return render()}},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
