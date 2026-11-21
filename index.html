@@ -631,6 +631,7 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .tobs{border:1px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:13px}
 .cpsum{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.cpsum>div{background:var(--card2);border:1px solid var(--linha);border-radius:10px;padding:6px 12px;min-width:110px}.cpsum span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--cinza)}.cpsum b{font-size:17px}.cpgrp{border:1px dashed var(--linha2);border-radius:12px;padding:8px 12px;font-size:13px;margin-top:4px}.cpi.cpin{margin-left:14px;border-left:3px solid var(--voltx)}.cpprev td{font-size:12.5px}.cpprev .cpgh td{background:var(--card2)}.cpprev .cpoff td{opacity:.45;text-decoration:line-through}
 .cpusd{border:1px solid var(--linha2);background:var(--card2);border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:13px}.cpusd input{background:var(--card);color:inherit;border:1px solid var(--linha);border-radius:8px;padding:5px 8px;font:inherit}
+.simc{border:1px solid var(--line,#333);border-radius:12px;padding:8px 10px;margin-bottom:10px}.simc.multi{border-color:var(--volt);box-shadow:0 0 0 1px var(--volt) inset}.simh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
 </style>
 </head>
 <body>
@@ -2587,8 +2588,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="72";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="16/11/2026";
+const APP_VERSAO="73";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="21/11/2026";
 const NOVIDADES=[
+ ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
  ["72","21/11","💵 Importar comprovantes em dólar (Amazon EUA e outros): o ERP lê o total em US$ (que já inclui o sales tax), a data em inglês e o nº do pedido, e converte para reais pelo câmbio do dia. O câmbio aparece no topo e dá para trocar (ex.: 5,90); tudo é recalculado na hora."],
  ["71","21/11","📎 Importar comprovantes: comprovante com vários produtos vira um item por produto, todos ligados ao mesmo comprovante (o desconto é dividido proporcionalmente). No topo aparecem o número de comprovantes, de itens e o total a lançar. Novo botão 👁 Gerar prévia, para conferir tudo numa tabela (e copiar para o Excel) antes de lançar. Placa de captura, webcam, hub e softbox agora entram como Equipamentos."],
  ["70","21/11","✅ Tarefas: nova seção no menu com listas de compras e checklists. Cada lista é uma página só, com ícones por seção, o que já temos, quantidades e a barra de progresso; é só marcar cada item. Já entrou a lista de compras das 5 lives simultâneas."],
@@ -4208,6 +4210,34 @@ const _cpRender72=cpRender;cpRender=function(){_cpRender72();const C=S.cp;const 
   C.items.forEach((x,i)=>{if((x.contraparte||"").includes("EUA")&&!x.usd&&cards[i]){const v=cards[i].querySelector("[data-f=valor]");if(v){v.placeholder="Valor em US$";v.dataset.usd="1"}}})};
 document.addEventListener("change",e=>{const t=e.target;if(t.id==="cpCambio"){const v=num(t.value);if(v>0){S.cpCambio=v;S.cpCambioFonte="taxa digitada";cpUsdRecalc();cpRender()}return}
   if(t.dataset&&t.dataset.usd==="1"&&t.dataset.cp!==undefined){const x=S.cp.items[+t.dataset.cp];const u=num(t.value);if(u>0){x.usd=u;x.descBase=x.descBase||(x.descricao||"").replace(/ · pedido #.*$/,"");setTimeout(()=>{cpUsdRecalc();cpRender()},0)}}},true);
+/* ================= v73 · SEMANA A PARTIR DE HOJE + LIVES SIMULTÂNEAS ================= */
+function semHoje(){const d=new Date();d.setHours(0,0,0,0);return d}
+S.week=semHoje();
+function simCluster(js){const s=[...js].sort((a,b)=>a.inicio<b.inicio?-1:1);const out=[];let c=null;
+  s.forEach(j=>{const a=new Date(j.inicio),b=new Date(j.fim||j.inicio);if(c&&a<c.fim){c.js.push(j);if(b>c.fim)c.fim=b}else{c={ini:a,fim:b,js:[j]};out.push(c)}});
+  out.forEach(c=>{const ev=[];c.js.forEach(j=>{ev.push([new Date(j.inicio).getTime(),1]);ev.push([new Date(j.fim||j.inicio).getTime(),-1])});ev.sort((x,y)=>x[0]-y[0]||x[1]-y[1]);let n=0;c.pico=0;c.picoEm=null;ev.forEach(([t,k])=>{n+=k;if(n>c.pico){c.pico=n;c.picoEm=new Date(t)}})});
+  return out}
+function agSimulView(){const d=S.agD?new Date(S.agD):new Date();d.setHours(0,0,0,0);
+  const js=S.jobs.filter(j=>j.status!=="cancelado"&&sameDay(new Date(j.inicio),d));const cl=simCluster(js);
+  const pico=cl.reduce((m,c)=>c.pico>m.pico?c:m,{pico:0});
+  const card=c=>`<div class="simc ${c.pico>1?"multi":""}"><div class="simh"><b>${hm(c.ini)}–${hm(c.fim)}</b>${c.pico>1?`<span class="tag f">⚡ ${c.pico} ao mesmo tempo</span>`:`<span class="tag">1 live</span>`}</div>${c.js.map(agLinha).join("")}</div>`;
+  return `<div class="agdh" style="cursor:default">${agDiaHead(d)}</div>
+   <div class="muted small" style="margin:0 0 10px">${js.length} lives${pico.pico>1?` · pico de <b>${pico.pico} simultâneas</b> às ${hm(pico.picoEm)}`:js.length?" · nenhuma ao mesmo tempo":""}</div>
+   ${cl.length?cl.map(card).join(""):`<div class="empty" style="padding:24px;text-align:center">Nenhuma live neste dia.</div>`}`}
+const _agendaV73=VIEWS.agenda;
+VIEWS.agenda=()=>{const v=S.agView;
+  if(v==="simul"){S.agView="semana";let h=_agendaV73();S.agView="simul";const i=h.indexOf('<div class="muted small"');const head=i>0?h.slice(0,i):h;
+    return head.replace('data-v="semana" class="on"','data-v="semana" class=""')+agSimulView()}
+  return _agendaV73()};
+const _agendaV73b=VIEWS.agenda;
+VIEWS.agenda=()=>{const v=S.agView;let h=_agendaV73b();
+  return h.replace(/(<div class="pills" style="margin:0">[\s\S]*?)<\/div>/,(m,a)=>a+`<button data-act="agView" data-v="simul" class="${v==="simul"?"on":""}">⚡ Simultâneas</button></div>`)};
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act,v=a.dataset.v;
+  if(act==="agNav"&&S.agView==="simul"){e.stopImmediatePropagation();const d=S.agD?new Date(S.agD):new Date();d.setDate(d.getDate()+Number(v));S.agD=d;render()}
+  else if(act==="agHoje"&&S.agView==="simul"){e.stopImmediatePropagation();S.agD=new Date();render()}
+  else if(act==="agHoje"&&S.agView==="semana"){e.stopImmediatePropagation();S.week=semHoje();S.agMes=null;render()}
+  else if(act==="agView"&&v==="semana"){e.stopImmediatePropagation();S.agView="semana";S.week=semHoje();render()}},true);
+
 if(!orcPreviewBoot())boot();
 </script>
 <script>
