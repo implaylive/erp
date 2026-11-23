@@ -632,6 +632,7 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .cpsum{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.cpsum>div{background:var(--card2);border:1px solid var(--linha);border-radius:10px;padding:6px 12px;min-width:110px}.cpsum span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--cinza)}.cpsum b{font-size:17px}.cpgrp{border:1px dashed var(--linha2);border-radius:12px;padding:8px 12px;font-size:13px;margin-top:4px}.cpi.cpin{margin-left:14px;border-left:3px solid var(--voltx)}.cpprev td{font-size:12.5px}.cpprev .cpgh td{background:var(--card2)}.cpprev .cpoff td{opacity:.45;text-decoration:line-through}
 .cpusd{border:1px solid var(--linha2);background:var(--card2);border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:13px}.cpusd input{background:var(--card);color:inherit;border:1px solid var(--linha);border-radius:8px;padding:5px 8px;font:inherit}
 .simc{border:1px solid var(--line,#333);border-radius:12px;padding:8px 10px;margin-bottom:10px}.simc.multi{border-color:var(--volt);box-shadow:0 0 0 1px var(--volt) inset}.simh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
+.confb{cursor:pointer;border-color:var(--volt)!important;padding:12px 14px;margin-bottom:12px}.confr{display:grid;grid-template-columns:22px 92px 1fr;gap:8px;align-items:start;padding:8px 4px;border-bottom:1px solid var(--line,#2a2a2a);cursor:pointer}.confr.meu{opacity:.6;cursor:default}.calenv{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,#2a2a2a);font-size:13px}.atnb{border:1px solid var(--warn,#f5a623);border-radius:12px;padding:10px 12px;margin-bottom:10px}.atn{font-size:13px;padding:4px 0}.atn.n3{color:var(--flash,#ff4d6d);font-weight:600}
 </style>
 </head>
 <body>
@@ -2588,8 +2589,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="73";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="21/11/2026";
+const APP_VERSAO="74";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="22/11/2026";
 const NOVIDADES=[
+ ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
  ["72","21/11","💵 Importar comprovantes em dólar (Amazon EUA e outros): o ERP lê o total em US$ (que já inclui o sales tax), a data em inglês e o nº do pedido, e converte para reais pelo câmbio do dia. O câmbio aparece no topo e dá para trocar (ex.: 5,90); tudo é recalculado na hora."],
  ["71","21/11","📎 Importar comprovantes: comprovante com vários produtos vira um item por produto, todos ligados ao mesmo comprovante (o desconto é dividido proporcionalmente). No topo aparecem o número de comprovantes, de itens e o total a lançar. Novo botão 👁 Gerar prévia, para conferir tudo numa tabela (e copiar para o Excel) antes de lançar. Placa de captura, webcam, hub e softbox agora entram como Equipamentos."],
@@ -4237,6 +4239,105 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(
   else if(act==="agHoje"&&S.agView==="simul"){e.stopImmediatePropagation();S.agD=new Date();render()}
   else if(act==="agHoje"&&S.agView==="semana"){e.stopImmediatePropagation();S.week=semHoje();S.agMes=null;render()}
   else if(act==="agView"&&v==="semana"){e.stopImmediatePropagation();S.agView="semana";S.week=semHoje();render()}},true);
+
+/* ================= v74 · CONFERÊNCIA INTERNA + CALENDÁRIO DA MARCA COM OK DO CLIENTE + PONTOS DE ATENÇÃO ================= */
+const hm2=d=>new Date(d).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+const dmy=d=>new Date(d).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+function d0(x){const d=x?new Date(x):new Date();d.setHours(0,0,0,0);return d}
+/* ---- 1) conferência ---- */
+function confPend(){const h=d0();return S.jobs.filter(j=>j.status!=="cancelado"&&j.alterado_em&&!j.conferido_em&&new Date(j.inicio)>=h).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio))}
+function confPodeEu(j){return !(S.me&&j.alterado_por&&j.alterado_por===S.me.id)}
+function confBanner(){if(!S.me||S.me.papel==="seller")return "";const p=confPend();if(!p.length)return "";const meus=p.filter(j=>!confPodeEu(j)).length;
+  return `<div class="card confb" data-act="confOpen"><b>🔎 ${p.length} live${p.length>1?"s":""} nova${p.length>1?"s":""} ou alterada${p.length>1?"s":""} aguardando conferência</b>${p.length-meus?` · <span>${p.length-meus} para você conferir</span>`:""}<span class="small muted"> · conferir ›</span></div>`}
+function confHtml(){const p=confPend();S.confSel=S.confSel||{};
+  const pode=p.filter(confPodeEu);const nsel=pode.filter(j=>S.confSel[j.id]!==false).length;
+  const ult=S.jobs.filter(j=>j.conferido_em).sort((a,b)=>new Date(b.conferido_em)-new Date(a.conferido_em)).slice(0,12);
+  return `<h3>🔎 Conferência do calendário</h3><p class="small muted" style="margin-top:0">Toda live criada ou alterada precisa ser conferida por <b>outra pessoa</b> da equipe. A live vale mesmo sem conferência; isso é só a dupla checagem.</p>
+  ${p.length?escDias(p,j=>{const meu=!confPodeEu(j);return `<label class="confr ${meu?"meu":""}"><input type="checkbox" data-conf="${j.id}" ${meu?"disabled":S.confSel[j.id]!==false?"checked":""}><span>${escHr(j)}</span><span>${esc(j.marca||cliNome(j.cliente_id)||"Live")} ${platTag(j)}${j.espaco?` <span class="small muted">· ${esc(j.espaco)}</span>`:""}<br><span class="small muted">${j.principal_id?"Seller: "+esc(nome(j.principal_id)):"sem seller"} · ${meu?"<b>alterada por você</b> — outra pessoa confere":"alterada por "+esc(nome(j.alterado_por)||"?")+" em "+new Date(j.alterado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span></span></label>`})
+   :`<div class="okbox">✓ Tudo conferido.</div>`}
+  ${ult.length?`<details style="margin-top:12px"><summary class="small muted">Últimas conferidas</summary>${ult.map(j=>`<div class="small" style="padding:4px 0">✅ ${dCurta(j.inicio)} ${escHr(j)} · ${esc(j.marca||"")} — por <b>${esc(nome(j.conferido_por)||"?")}</b> em ${new Date(j.conferido_em).toLocaleDateString("pt-BR")}${j.alterado_por?` <span class="muted">(alterada por ${esc(nome(j.alterado_por)||"?")})</span>`:""}</div>`).join("")}</details>`:""}
+  <div class="acts">${nsel?`<button type="button" class="btn p" data-act="confOk">✅ Conferir ${nsel} live${nsel>1?"s":""}</button>`:""}<button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
+function confOpen(){openSheet(`<div id="confBox">${confHtml()}</div>`)}
+async function confOk(btn){const ids=confPend().filter(j=>confPodeEu(j)&&S.confSel[j.id]!==false).map(j=>j.id);if(!ids.length)return;btn.disabled=true;
+  const r=await db.rpc("imp_conferir",{p_ids:ids});btn.disabled=false;
+  if(r.error)return toast(/function|schema cache/i.test(r.error.message||"")?"Falta rodar o SQL implay_calendario_ok.sql":"Erro: "+r.error.message,true);
+  const agora=new Date().toISOString();S.jobs.forEach(j=>{if(ids.includes(j.id)){j.conferido_por=S.me.id;j.conferido_em=agora}});toast(`${r.data||ids.length} conferida(s)`);const b=$("#confBox");if(b)b.innerHTML=confHtml();render()}
+document.addEventListener("change",e=>{const c=e.target.closest&&e.target.closest("[data-conf]");if(!c)return;S.confSel[c.dataset.conf]=c.checked;const b=$("#confBox");if(b)b.innerHTML=confHtml()});
+const _resumo74=openJobResumo;openJobResumo=function(id){_resumo74.apply(this,arguments);const j=S.jobs.find(x=>x.id===id);const box=$("#sheetIn .jres");if(!j||!box||!j.alterado_em)return;
+  box.insertAdjacentHTML("afterend",`<div class="escst ${j.conferido_em?"ok":""}" style="margin-top:8px">${j.conferido_em?`🔎 Conferida por <b>${esc(nome(j.conferido_por)||"?")}</b> em ${new Date(j.conferido_em).toLocaleDateString("pt-BR")}`:`⏳ <b>Aguardando conferência</b>`} <span class="small muted">· alterada por ${esc(nome(j.alterado_por)||"?")} em ${new Date(j.alterado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>${!j.conferido_em&&confPodeEu(j)&&S.me.papel!=="seller"?` <button type="button" class="btn sm p" data-act="confUm" data-id="${j.id}">Conferir</button>`:""}</div>`)};
+/* ---- 2) calendário da marca ---- */
+S.calc=S.calc||{cid:"",per:"sem1"};
+function calcPer(k){const h=d0();let a,b;if(k.startsWith("sem")){const dow=(h.getDay()+6)%7;a=new Date(h);a.setDate(h.getDate()-dow+(k==="sem1"?7:0));b=new Date(a);b.setDate(a.getDate()+7)}
+  else{a=new Date(h.getFullYear(),h.getMonth()+(k==="mes1"?1:0),1);b=new Date(a.getFullYear(),a.getMonth()+1,1)}return [a,b]}
+function calcLives(cid,a,b){const c=S.clientes.find(x=>x.id===cid);const mk=c&&String(c.marca||"").trim().toLowerCase();
+  return S.jobs.filter(j=>j.status!=="cancelado"&&(j.cliente_id===cid||(!j.cliente_id&&mk&&String(j.marca||"").trim().toLowerCase()===mk))&&new Date(j.inicio)>=a&&new Date(j.inicio)<b).sort((x,y)=>new Date(x.inicio)-new Date(y.inicio))}
+function calcTxt(c,l,a,b,link){let t=`Oi, pessoal da ${c.marca}! Segue a agenda de lives de ${dmy(a)} a ${dmy(new Date(b-1))} para vocês validarem:\n`;let dia="";
+  l.forEach(j=>{const d=new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"}).replace(".","");if(d!==dia){dia=d;t+=`\n*${d.charAt(0).toUpperCase()+d.slice(1)}*\n`}t+=`• ${hm2(j.inicio)} às ${hm2(j.fim||j.inicio)}${j.plataforma?" · "+j.plataforma:""}\n`});
+  t+=`\nTotal: ${l.length} live${l.length>1?"s":""}.`;return t+(link?`\n\n👉 Confira e dê o OK (ou peça ajuste) por aqui: ${link}`:`\n\nSe tiver alguma alteração, é só avisar!`)}
+function calcSnap(l){return l.map(j=>({id:j.id,inicio:j.inicio,fim:j.fim,plataforma:j.plataforma||""}))}
+function calcMudou(e,l){const k=x=>x.map(i=>i.id+"|"+new Date(i.inicio).getTime()+"|"+new Date(i.fim).getTime()+"|"+(i.plataforma||"")).sort().join(";");return k(e.itens||[])!==k(calcSnap(l))}
+const calcLink=e=>`https://${APP_HOST}ok/?t=${e.token}`;
+async function calcLoadEnv(){const cid=S.calc.cid;if(!cid){S.calcEnv=[];return}const r=await db.from("imp_cal_envios").select("*").eq("cliente_id",cid).order("criado_em",{ascending:false}).limit(12);S.calcEnv=r.error?null:(r.data||[]);S.calcEnvErr=r.error&&r.error.message}
+function calcHtml(){const per=S.calc.per;const [a,b]=calcPer(per);const h=d0();
+  const ativos=S.clientes.filter(c=>c.status!=="cancelado").map(c=>({c,n:calcLives(c.id,h,new Date(h.getTime()+62*864e5)).length})).sort((x,y)=>y.n-x.n||String(x.c.marca).localeCompare(String(y.c.marca)));
+  const c=S.clientes.find(x=>x.id===S.calc.cid);const l=c?calcLives(c.id,a,b):[];const nc=l.filter(j=>j.alterado_em&&!j.conferido_em).length;
+  const env=(S.calcEnv||[]).filter(e=>e.ini===ymd(a)&&e.fim===ymd(new Date(b-1)));const outros=(S.calcEnv||[]).filter(e=>!env.includes(e));
+  const st=e=>e.status==="aprovado"?`<span class="tag o">✅ aprovado</span> por <b>${esc(e.resposta_nome||"cliente")}</b> em ${new Date(e.resposta_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:e.status==="ajuste"?`<span class="tag w">✏️ pediu ajuste</span> ${esc(e.resposta_nome||"")}: <i>${esc(e.resposta_obs||"")}</i>`:`<span class="tag">⏳ aguardando OK</span>`;
+  const envRow=e=>{const lv=calcLives(c.id,parseYmd(e.ini),new Date(parseYmd(e.fim).getTime()+864e5));const mud=calcMudou(e,lv);return `<div class="calenv"><div>${dmy(parseYmd(e.ini))} a ${dmy(parseYmd(e.fim))} · enviado ${new Date(e.criado_em).toLocaleDateString("pt-BR")}${e.criado_por?" por "+esc(nome(e.criado_por)):""}<br>${st(e)}${mud?`<br><b style="color:var(--warn)">⚠️ O calendário mudou depois deste envio — gere um novo link e peça um novo OK.</b>`:""}</div><button type="button" class="btn sm" data-act="calcCopLink" data-v="${e.token}">Copiar link</button></div>`};
+  return `<h3>📆 Calendário da marca</h3>
+  <div class="fld"><label>Marca</label><select id="calcCli" data-1c="lista"><option value="">— escolher —</option>${ativos.map(({c:x,n})=>`<option value="${x.id}" ${x.id===S.calc.cid?"selected":""}>${esc(x.marca)}${n?` (${n} próximas)`:""}</option>`).join("")}</select></div>
+  <div class="chips" style="margin:6px 0 10px">${[["sem0","Esta semana"],["sem1","Próxima semana"],["mes0","Este mês"],["mes1","Próximo mês"]].map(([k,t])=>`<button type="button" data-act="calcPer" data-v="${k}" class="${per===k?"on":""}">${t}</button>`).join("")}</div>
+  ${!c?`<p class="small muted">Escolha a marca para ver as lives do período, copiar o texto e gerar o link para o cliente aprovar.</p>`:`
+  <div class="small muted" style="margin-bottom:6px"><b>${esc(c.marca)}</b> · ${dmy(a)} a ${dmy(new Date(b-1))} · ${l.length} live${l.length===1?"":"s"}</div>
+  ${nc?`<div class="warnbox" style="margin-bottom:8px">🔎 ${nc} live${nc>1?"s":""} deste período ainda não ${nc>1?"foram conferidas":"foi conferida"} por outra pessoa. <a href="#" data-act="confOpen">Conferir antes de mandar ›</a></div>`:""}
+  ${l.length?`<div class="escb">${escDias(l,j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>${j.alterado_em&&!j.conferido_em?"⏳":j.conferido_em?"🔎":""}</span><span><b>${escHr(j)}</b></span><span>${platTag(j)}</span><span class="small muted">${j.principal_id?esc(String(nome(j.principal_id)).split(" ")[0]):"sem seller"}</span></div>`)}</div>`:`<div class="empty">Nenhuma live desta marca no período.</div>`}
+  ${l.length?`<div class="acts" style="justify-content:flex-start"><button type="button" class="btn p" data-act="calcLink">🔗 Gerar link para o cliente aprovar</button><button type="button" class="btn" data-act="calcCop">Copiar texto</button><button type="button" class="btn" data-act="calcWa">WhatsApp</button></div>
+  <p class="small muted">O link mostra só as lives desta marca, e o cliente dá o OK ou pede ajuste. A resposta aparece aqui.</p>`:""}
+  ${S.calcEnv===null?`<div class="warnbox small">Falta rodar o SQL implay_calendario_ok.sql para gerar links e ver as respostas.</div>`:""}
+  ${env.length?`<div class="escd">Envios deste período</div>${env.map(envRow).join("")}`:""}
+  ${outros.length?`<details><summary class="small muted">Outros envios desta marca (${outros.length})</summary>${outros.map(envRow).join("")}</details>`:""}`}
+  <div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
+async function calcRefresh(){const b=$("#calcBox");if(b)b.innerHTML=calcHtml()}
+async function calcOpen(){openSheet(`<div id="calcBox">${calcHtml()}</div>`);if(S.calc.cid){await calcLoadEnv();calcRefresh()}}
+async function calcGerar(btn){const c=S.clientes.find(x=>x.id===S.calc.cid);const [a,b]=calcPer(S.calc.per);const l=calcLives(c.id,a,b);btn.disabled=true;
+  const r=await db.from("imp_cal_envios").insert({cliente_id:c.id,marca:c.marca,ini:ymd(a),fim:ymd(new Date(b-1)),itens:calcSnap(l)}).select().single();btn.disabled=false;
+  if(r.error)return toast(/relation|schema cache|does not exist/i.test(r.error.message||"")?"Falta rodar o SQL implay_calendario_ok.sql":"Erro: "+r.error.message,true);
+  const txt=calcTxt(c,l,a,b,calcLink(r.data));try{await navigator.clipboard.writeText(txt);toast("Link gerado e mensagem copiada")}catch(_){prompt("Copie:",txt)}
+  await calcLoadEnv();calcRefresh()}
+document.addEventListener("change",async e=>{if(e.target.id!=="calcCli")return;S.calc.cid=e.target.value;S.calcEnv=[];calcRefresh();await calcLoadEnv();calcRefresh()});
+/* ---- 3) pontos de atenção ---- */
+const ATN_GAP=30;/* minutos mínimos de descanso da seller */
+function atencao(js){const out=[];const l=js.filter(j=>j.status!=="cancelado").sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));
+  const par=(arr,fn)=>{for(let i=0;i<arr.length;i++)for(let k=i+1;k<arr.length;k++){const a=arr[i],b=arr[k];const gap=(new Date(b.inicio)-new Date(a.fim||a.inicio))/6e4;if(gap>ATN_GAP)break;fn(a,b,gap)}};
+  const por={};l.forEach(j=>[j.principal_id].filter(Boolean).forEach(s=>(por[s]=por[s]||[]).push(j)));
+  Object.entries(por).forEach(([s,arr])=>par(arr,(a,b,g)=>out.push(g<0?{n:3,t:`⛔ ${nome(s)} está em 2 lives ao mesmo tempo (${escHr(a)} e ${escHr(b)})`,ids:[a.id,b.id]}:{n:2,t:`😮‍💨 ${nome(s)} sem descanso: termina ${hm2(a.fim)} e começa outra às ${hm2(b.inicio)}${g>0?` (${Math.round(g)} min)`:""}`,ids:[a.id,b.id]})));
+  const sala={};l.filter(j=>j.local_tipo==="estudio"&&j.espaco).forEach(j=>(sala[j.espaco]=sala[j.espaco]||[]).push(j));
+  Object.entries(sala).forEach(([s,arr])=>par(arr,(a,b,g)=>{if(g<0)out.push({n:3,t:`⛔ Sala ${s} com 2 lives ao mesmo tempo (${escHr(a)} e ${escHr(b)})`,ids:[a.id,b.id]});else if(g<15)out.push({n:1,t:`🔁 Sala ${s}: uma live termina ${hm2(a.fim)} e outra começa ${hm2(b.inicio)} (troca rápida)`,ids:[a.id,b.id]})}));
+  simCluster(l).forEach(c=>{if(c.pico>=4)out.push({n:1,t:`⚡ Pico de ${c.pico} lives ao mesmo tempo às ${hm2(c.picoEm)}`,ids:[]})});
+  return out.sort((a,b)=>b.n-a.n)}
+function atnBox(js){const a=atencao(js);if(!a.length)return `<div class="okbox" style="margin-bottom:10px">✓ Nenhum ponto de atenção neste dia.</div>`;return `<div class="atnb"><b>⚠️ Pontos de atenção</b>${a.map(x=>`<div class="atn n${x.n}">${esc(x.t)}</div>`).join("")}</div>`}
+function atnProx(){const h=d0();const dias=[];for(let i=0;i<14;i++){const d=new Date(h);d.setDate(h.getDate()+i);const js=S.jobs.filter(j=>j.status!=="cancelado"&&sameDay(new Date(j.inicio),d));const a=atencao(js);if(a.length)dias.push({d,n:a.length,g:Math.max(...a.map(x=>x.n))})}
+  if(!dias.length)return "";return `<div class="small muted" style="margin:0 0 6px">Próximos 14 dias com pontos de atenção:</div><div class="chips" style="margin-bottom:12px">${dias.map(x=>`<button type="button" data-act="atnDia" data-v="${ymd(x.d)}" class="${S.agD&&sameDay(x.d,S.agD)?"on":""}">${x.g>=3?"⛔":x.g>=2?"😮‍💨":"⚡"} ${dCurta(x.d)} <span class="n">${x.n}</span></button>`).join("")}</div>`}
+const _simul74=agSimulView;agSimulView=function(){const d=S.agD?new Date(S.agD):new Date();const js=S.jobs.filter(j=>j.status!=="cancelado"&&sameDay(new Date(j.inicio),d));let h=_simul74();
+  const i=h.indexOf('<div class="simc');const box=atnProx()+atnBox(js);return i>=0?h.slice(0,i)+box+h.slice(i):h+box};
+/* ---- botões e avisos ---- */
+const _hJobs74=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm" data-act="calcOpen">📆 Calendário da marca</button>`+(_hJobs74?_hJobs74():"");
+const _agenda74=VIEWS.agenda;VIEWS.agenda=()=>confBanner()+_agenda74();
+const _painel74=VIEWS.painel;VIEWS.painel=()=>{const h=_painel74();const b=confBanner();if(!b)return h;const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+b+h.slice(i):b+h};
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act,v=a.dataset.v;
+  const L=["confOpen","confOk","confUm","calcOpen","calcPer","calcLink","calcCop","calcWa","calcCopLink","atnDia"];if(!L.includes(act))return;e.preventDefault();e.stopImmediatePropagation();
+  if(act==="confOpen")return confOpen();
+  if(act==="confOk")return confOk(a);
+  if(act==="confUm"){S.confSel={};confPend().forEach(j=>S.confSel[j.id]=j.id===a.dataset.id);a.disabled=true;await confOk(a);closeSheet();return}
+  if(act==="calcOpen")return calcOpen();
+  if(act==="calcPer"){S.calc.per=v;return calcRefresh()}
+  if(act==="atnDia"){S.agD=parseYmd(v);return render()}
+  if(act==="calcCopLink"){const t=`https://${APP_HOST}ok/?t=${v}`;try{await navigator.clipboard.writeText(t);toast("Link copiado")}catch(_){prompt("Copie:",t)}return}
+  const c=S.clientes.find(x=>x.id===S.calc.cid);if(!c)return;const [x,y]=calcPer(S.calc.per);const l=calcLives(c.id,x,y);
+  if(act==="calcLink")return calcGerar(a);
+  const txt=calcTxt(c,l,x,y,null);
+  if(act==="calcWa"){window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,"_blank");return}
+  try{await navigator.clipboard.writeText(txt);toast("Texto copiado")}catch(_){prompt("Copie:",txt)}},true);
 
 if(!orcPreviewBoot())boot();
 </script>
