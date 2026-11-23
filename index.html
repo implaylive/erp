@@ -652,6 +652,24 @@ form.jobf .seg,form.jobf .pchips,form.jobf .row{gap:10px!important}form.jobf .se
 form.jobf input:not([type=checkbox]):not([type=radio]),form.jobf select{min-height:40px;height:40px;padding:6px 12px;font-size:15px}form.jobf textarea{min-height:70px}
 form.jobf .hint{font-size:12.5px;margin-top:6px}form.jobf .jtop{gap:14px}form.jobf .jsub select{max-width:340px}
 form.jobf .jsel{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf .jsel .pch{padding:8px 14px}form.jobf .jtop{align-items:end}form.jobf [data-pick] .pchips,form.jobf .pchips{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf details.jmais{margin:6px 0 4px}form.jobf details.jmais summary{cursor:pointer;font-size:13px;opacity:.8}
+#mapaOv{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}#mapaOv[hidden]{display:none}
+#mapaOv .mbox{background:var(--bg,#0b0b0b);color:inherit;border:1px solid var(--line,#2a2a2a);border-radius:18px;padding:18px;width:min(640px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#mapaOv .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:17px}
+#mapaOv .mgrp{border:1px dashed var(--line,#333);border-radius:14px;padding:10px 12px;margin-bottom:12px}#mapaOv .mlab{font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700}
+#mapaOv .mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+#mapaOv .mtile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px;border-radius:12px;border:1.5px solid transparent;cursor:pointer;text-align:left;min-height:62px;font:inherit;color:inherit}
+#mapaOv .mtile b{font-size:16px}#mapaOv .mtile span{font-size:11px;line-height:1.25;opacity:.85}
+#mapaOv .mtile.livre{background:rgba(70,200,120,.14);border-color:rgba(70,200,120,.55)}#mapaOv .mtile.oc{background:rgba(255,77,109,.12);border-color:rgba(255,77,109,.5)}
+#mapaOv .mtile.on{outline:3px solid var(--volt,#D5FF3F);outline-offset:1px}#mapaOv .mtile i{position:absolute;top:6px;right:8px;font-style:normal;font-weight:800}
+#mapaOv .mlg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 3px 0 8px;vertical-align:-1px}#mapaOv .mlg.livre{background:rgba(70,200,120,.8)}#mapaOv .mlg.oc{background:rgba(255,77,109,.8)}
+@media(max-width:520px){#mapaOv .mrow{grid-template-columns:repeat(2,1fr)}}
+#mapaOv .mbox{width:min(560px,100%)}#mapaOv .mplan{position:relative;width:100%;aspect-ratio:800/1470;border:2px solid var(--line,#444);border-radius:10px;margin-bottom:12px}
+#mapaOv .mplan .mtile{position:absolute;min-height:0;padding:4px 6px;border-radius:6px;gap:0;overflow:hidden}#mapaOv .mplan .mtile b{font-size:15px}#mapaOv .mplan .mtile span{font-size:10px}
+#mapaOv .acts{position:static!important;background:none!important;box-shadow:none!important}#mapaOv .mfix{position:absolute;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:.5;border:1px dashed var(--line,#444);border-radius:6px;text-align:center}
+.pmgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:640px){.pmgrid{grid-template-columns:1fr}}.pmcol h4{margin:0 0 4px}.pmsub{font-size:11px;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin:14px 0 6px;font-weight:700}
+.pmck{display:flex;gap:10px;align-items:flex-start;padding:7px 2px;border-bottom:1px solid var(--line,#2a2a2a);cursor:pointer}.pmck input{margin-top:3px;width:18px;height:18px;flex:none}.pmck small{display:block;opacity:.65;font-size:11.5px}
+.snk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.snk>div{border:1px solid var(--line,#2a2a2a);border-radius:12px;padding:8px 10px}.snk b{display:block;font-size:16px}.snk span{font-size:11px;opacity:.7}
+.snn{border-left:3px solid var(--line,#444);padding:6px 10px;margin-bottom:8px}.snn.elogio{border-color:#46c878}.snn.bo{border-color:#ff4d6d}
 </style>
 </head>
 <body>
@@ -668,8 +686,8 @@ const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-erp-auth"}});
 
-const ESPACOS=[...Array.from({length:8},(_,i)=>"E"+(i+1)),...Array.from({length:8},(_,i)=>"P"+(i+1)),"B1","B2","C1"];
-const ESPACO_NOME={E:"Economy",P:"Premium",B:"Business",C:"Cabine"};
+const ESPACOS=["01","02","03","04","05","11","12","13","14","15","16","17","18","21","22","23","24","25","26","27","31","32","33"];
+const ESPACO_NOME={"0":"Sala","1":"Baia","2":"Baia","3":"Cabine"};const ESP_G=[["0","Salas (01–05)"],["1","Baias 11–18"],["2","Baias 21–27"],["3","Cabines 31–33"]];
 const ESTUDIO="Estúdio IMPlay · Av. Paulista, 2198, salas 161/162";
 const CAT_ENT=[["aporte","Aporte Tae & Dani"],["fixo_cliente","Fixo do cliente"],["variavel_cliente","% sobre vendas"],["aluguel_espaco","Aluguel do espaço"],["rendimento","Rendimento / juros"],["outra_entrada","Outra entrada"]];
 const CAT_SAI=[["seller","Cachê de seller","variavel"],["aluguel_imovel","Aluguel do imóvel","fixa"],["condominio_iptu","Condomínio / IPTU","fixa"],["obra","Obra","variavel"],["equipamentos","Equipamentos","variavel"],["salarios","Salários CLT","fixa"],["comissao","Comissão CLT","variavel"],["impostos","Impostos","variavel"],["contador","Contador","fixa"],["marketing","Marketing","variavel"],["limpeza","Limpeza","fixa"],["contas","Energia / água / internet","fixa"],["seguro","Seguro","fixa"],["taxas","Taxas, registros e certificados","variavel"],["caucao","Caução do aluguel","variavel"],["live_custos","Custos de live (viagem, transporte)","variavel"],["caixinha","Caixinha","variavel"],["devolucao_aporte","Devolução de aporte","variavel"],["moveis","Móveis e decoração","variavel"],["outra_saida","Outra saída","variavel"]];
@@ -709,7 +727,7 @@ function timeSel(name,d){const h=d?d.getHours():10,m=d?Math.round(d.getMinutes()
 function seg(name,opts,val,cls=""){return `<input type="hidden" name="${name}" value="${esc(val??"")}"><div class="seg ${cls}" data-seg="${name}">${opts.map(o=>{const[v,l]=Array.isArray(o)?o:[o,o];return `<button type="button" data-v="${esc(v)}" class="${String(v)===String(val??"")?"on":""}">${esc(l)}</button>`}).join("")}</div>`}
 function dLong(v){if(!v)return"";const d=parseYmd(v);return DL[d.getDay()]+", "+d.getDate()+" de "+ML[d.getMonth()]+" de "+d.getFullYear()}
 function dateFld(name,label,val,req){const ref=val?parseYmd(val):new Date();return `<div class="fld"><label>${label}</label><input type="hidden" name="${name}" value="${val||""}"><div class="dsel ${val?"":"vazio"}" data-dsel="${name}"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>${val?dLong(val):"Toque no dia abaixo"}</span></div><div class="cal" data-cal="${name}" data-m="${ymd(ref)}">${calHtml(name,ref,val||"")}</div></div>`}
-function espSeg(val){const G=[["E","Economy"],["P","Premium"],["B","Business"],["C","Cabine"]];return `<input type="hidden" name="espaco" value="${esc(val||"")}"><div class="espg" data-seg="espaco">${G.map(([k,l])=>`<div class="erow"><span class="elab">${l}</span><div class="ebtns">${ESPACOS.filter(e=>e[0]===k).map(e=>`<button type="button" data-v="${e}" class="${e===val?"on":""}">${e}</button>`).join("")}</div></div>`).join("")}</div>`}
+function espSeg(val){const G=ESP_G;return `<input type="hidden" name="espaco" value="${esc(val||"")}"><div class="espg" data-seg="espaco">${G.map(([k,l])=>`<div class="erow"><span class="elab">${l}</span><div class="ebtns">${ESPACOS.filter(e=>e[0]===k).map(e=>`<button type="button" data-v="${e}" class="${e===val?"on":""}">${e}</button>`).join("")}</div></div>`).join("")}</div>`}
 function calHtml(name,ref,sel){const today=new Date();
   const first=new Date(ref.getFullYear(),ref.getMonth(),1);const start=new Date(first);start.setDate(1-first.getDay());
   const jobsDia={};S.jobs.forEach(j=>{if(j.status==="cancelado")return;const k=ymd(new Date(j.inicio));jobsDia[k]=(jobsDia[k]||0)+1});
@@ -887,7 +905,7 @@ function openJob(id,preset={}){
    <div data-show="modalidade=servico" class="sbox eqoff">${pickM("equipamento","Equipamento (pode marcar mais de um)",j.equipamento||"",["Celular","Câmera profissional","2 câmeras","Iluminação extra","Microfone de lapela","Cenário da marca"],{ph:"Outro equipamento: escreva aqui"})}</div>
    <div class="sec"><h2>Local</h2></div>
    <div class="fld">${seg("local_tipo",[["estudio","Nosso estúdio"],["cliente","Terceiros"]],j.local_tipo==="online"?"cliente":j.local_tipo)}</div>
-   <div class="fld" data-show="local_tipo=estudio"><label>Sala</label><select name="espaco" data-1c="lista" data-self="${id||""}">${espOpts(j.espaco,ini,fim,id)}</select><div class="hint">As salas ocupadas no mesmo horário aparecem marcadas.</div></div>
+   <div class="fld" data-show="local_tipo=estudio"><label style="display:flex;justify-content:space-between;align-items:center">Sala<button type="button" class="btn sm p" data-act="mapaSala" style="min-height:30px;padding:4px 12px;font-size:12px;letter-spacing:0;text-transform:none">🗺️ Escolher no mapa</button></label><select name="espaco" data-1c="lista" data-self="${id||""}">${espOpts(j.espaco,ini,fim,id)}</select><div class="hint">As salas ocupadas no mesmo horário aparecem marcadas.</div></div>
    <div data-show="local_tipo=cliente">${fld("local_endereco","Onde é a live",j.local_endereco,"text",'placeholder="Ex.: loja da marca, Shopping X, endereço…"')}</div>
    <div class="sec"><h2>Quando</h2></div>
    <div class="jqt"><div class="fld"><label>Data</label><input type="date" name="data" value="${ini?ymd(ini):""}"></div>
@@ -908,6 +926,8 @@ function openJob(id,preset={}){
     <div class="hint">"Cliente direto": o seller emite a nota para o cliente e o valor não passa pelo caixa da IMPlay.</div></div>
    <div data-show="seller_conv=1" class="sbox">${fld("convidados","Convidados / influenciadores (fora do sistema)",j.convidados,"text",'placeholder="Ex.: Mari Menezes (influenciadora)"')}</div>
    </div>
+   <div class="sec"><h2>Operador responsável</h2></div>
+   <div class="fld"><input type="hidden" name="operador_id" value="${esc(j.operador_id||"")}"><div class="pchips jsel">${(()=>{const L=S.membros.filter(m=>m.status==="ativo"&&["operador","basico","socio"].includes(m.papel)).sort((a,b)=>(a.papel==="operador"?0:1)-(b.papel==="operador"?0:1)||String(a.nome).localeCompare(String(b.nome)));return `<button type="button" class="pch ${!j.operador_id?"on":""}" data-act="opSet" data-v="">Ainda ninguém</button>`+L.map(m=>`<button type="button" class="pch ${m.id===j.operador_id?"on":""}" data-act="opSet" data-v="${m.id}">${m.papel==="operador"?"🛠️ ":""}${esc(String(m.nome).split(" ").slice(0,2).join(" "))}</button>`).join("")})()}</div><div class="hint">Quem cuida da live: setup, produtos na sacola, câmera e transmissão.</div></div>
    ${area("obs","Observações internas",j.obs)}
    ${id?`<div class="sec"><h2>Financeiro desta live</h2></div><div id="jobFin">${jobFinHtml(j)}</div>
      <div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-act="finNovo" data-tipo="entrada" data-job="${j.id}">+ A receber do cliente</button>${j.seller_pago_por==="implay"?`<button type="button" class="btn sm" data-act="finNovo" data-tipo="saida" data-job="${j.id}">+ Pagar seller</button>`:""}</div>
@@ -930,6 +950,7 @@ async function saveJob(id){
     espaco:f.local_tipo==="estudio"?(f.espaco||null):null,local_endereco:f.local_tipo==="cliente"?f.local_endereco||null:null,inicio:ini.toISOString(),fim:fim.toISOString(),
     valor_seller:app?num(f.valor_seller):null,seller_pago_por:f.seller_pago_por||"cliente",requisitos:app?(f.requisitos||null):null,publicado:app,
     principal_id:srv?(f.principal_id||null):null,substituto_id:srv?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null,promocoes:jobPromosLer()};
+  if(S.jobs.some(x=>"operador_id" in x))row.operador_id=f.operador_id||null;
   if(row.principal_id&&row.principal_id===row.substituto_id)return toast("Principal e substituto precisam ser pessoas diferentes",true);
   if(id&&f.ireal_h!==undefined){const j=S.jobs.find(x=>x.id===id);const base=ymd(new Date(j.inicio));
     let ir=combine(f.data||base,f.ireal_h,f.ireal_m),fr=combine(f.data||base,f.freal_h,f.freal_m);if(fr<=ir)fr=new Date(fr.getTime()+864e5);
@@ -1177,9 +1198,9 @@ function openMembro(id){const m=id?S.membros.find(x=>x.id===id):{papel:"basico",
   const jobsM=id?S.jobs.filter(j=>j.principal_id===id||j.substituto_id===id):[];
   openSheet(`<form onsubmit="return false"><h3>${id?esc(m.nome):"Cadastrar pessoa"}</h3>
    ${id&&m.papel==="seller"?kycPainel(m):""}
-   ${id&&m.status==="pendente"&&m.obs==="PEDIU ACESSO AO ERP"&&isSocio()?`<div class="warnbox" style="margin-bottom:10px"><b>${esc(m.email)}</b> criou conta e pediu acesso ao ERP${m.created_at?" em "+new Date(m.created_at).toLocaleDateString("pt-BR"):""}. Ajuste o nome abaixo e libere:<div class="row" style="margin-top:8px;flex-wrap:wrap"><button type="button" class="btn p sm" data-act="acessoLib" data-id="${id}" data-v="basico">Liberar como Equipe</button><button type="button" class="btn sm" data-act="acessoLib" data-id="${id}" data-v="socio">Liberar como Sócio</button><button type="button" class="btn d sm" data-act="acessoLib" data-id="${id}" data-v="recusar">Recusar</button></div><div class="small" style="margin-top:6px">Se a pessoa for seller (faz lives), recuse e mande o link do app do seller.</div></div>`:""}
+   ${id&&m.status==="pendente"&&m.obs==="PEDIU ACESSO AO ERP"&&isSocio()?`<div class="warnbox" style="margin-bottom:10px"><b>${esc(m.email)}</b> criou conta e pediu acesso ao ERP${m.created_at?" em "+new Date(m.created_at).toLocaleDateString("pt-BR"):""}. Ajuste o nome abaixo e libere:<div class="row" style="margin-top:8px;flex-wrap:wrap"><button type="button" class="btn p sm" data-act="acessoLib" data-id="${id}" data-v="basico">Liberar como Equipe</button><button type="button" class="btn sm" data-act="acessoLib" data-id="${id}" data-v="operador">Liberar como Operador</button><button type="button" class="btn sm" data-act="acessoLib" data-id="${id}" data-v="socio">Liberar como Sócio</button><button type="button" class="btn d sm" data-act="acessoLib" data-id="${id}" data-v="recusar">Recusar</button></div><div class="small" style="margin-top:6px">Se a pessoa for seller (faz lives), recuse e mande o link do app do seller.</div></div>`:""}
    <div class="cols2">${fld("nome","Nome",m.nome,"text","required")}${fld("email","E-mail (o mesmo do login)",m.email,"email",id?"readonly":"required")}</div>
-   <div class="fld"><label>Acesso</label>${seg("papel",[["socio","Sócio (tudo)"],["basico","Equipe (lança, sem aprovar)"],["seller","Seller (só o app)"]],m.papel)}</div>
+   <div class="fld"><label>Acesso</label>${seg("papel",[["socio","Sócio (tudo)"],["basico","Equipe (lança, sem aprovar)"],["operador","Operador (lives)"],["seller","Seller (só o app)"]],m.papel)}</div>
    <div class="fld"><label>Vínculo</label>${seg("vinculo",[["socio","Sócio"],["clt","CLT"],["freelancer","Freelancer"],["pj","PJ"],["mei","MEI"]],m.vinculo)}</div>
    <div class="fld"><label>Situação</label>${seg("status",[["ativo","Ativo"],["pendente","Pendente"],["inativo","Inativo"]],m.status)}</div>
    <div class="cols2">${fld("telefone","Telefone",m.telefone,"tel")}${fld("cidade","Cidade",m.cidade)}</div>
@@ -1625,8 +1646,8 @@ VIEWS.relatorios=()=>{const {R,lives,fin}=rpData();const t=S.rp.tab;
     <div class="grid2"><div class="panel"><h3>Receita por tipo</h3>${bars(Object.entries(gr).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[CAT_NOME[k]||k,v]),brl,"var(--volt)")}</div><div class="panel"><h3>Despesas por categoria</h3>${bars(Object.entries(gc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[CAT_NOME[k]||k,v]))}</div></div>
     <div class="hint">Receita = entradas recebidas, sem aportes. Despesas = saídas pagas, sem devolução de aporte. Cachês pagos direto pelo cliente ao seller não entram no caixa.</div>`}
   if(t==="estudio"){const js=S.jobs.filter(j=>j.status!=="cancelado"&&j.local_tipo==="estudio"&&inR(j.inicio,R));const dias=Math.max(1,Math.round((Math.min(R[1],new Date(Date.now()+864e5))-R[0])/864e5));const cap=12*dias;
-    const g={};ESPACOS.forEach(e=>g[e]=0);js.forEach(j=>{if(j.espaco)g[j.espaco]+=hrs(j)});const tot=Object.values(g).reduce((a,b)=>a+b,0);
-    const tipo={Economy:0,Premium:0,Business:0,Cabine:0};Object.entries(g).forEach(([e,v])=>tipo[ESPACO_NOME[e[0]]]+=v);
+    const g={};ESPACOS.forEach(e=>g[e]=0);js.forEach(j=>{if(j.espaco in g)g[j.espaco]+=hrs(j)});const tot=Object.values(g).reduce((a,b)=>a+b,0);
+    const tipo={Sala:0,Baia:0,Cabine:0};Object.entries(g).forEach(([e,v])=>tipo[ESPACO_NOME[e[0]]]+=v);
     const aluguel=js.filter(j=>j.modalidade==="aluguel").length;
     S._csv=[["Espaço","Horas reservadas","Ocupação % (12h/dia)"],...ESPACOS.map(e=>[e,nf(g[e],1),nf(g[e]/cap*100,1)])];
     return head+`<div class="mks">${mini("Horas reservadas",nf(tot,1)+" h","","v")}${mini("Ocupação média",nf(tot/(cap*ESPACOS.length)*100,1)+"%","base 12 h/dia × "+ESPACOS.length+" espaços")}${mini("Lives no estúdio",js.length)}${mini("Só aluguel",aluguel,"","c")}${mini("Dias no período",dias)}</div>
@@ -1649,7 +1670,7 @@ VIEWS.equipe=()=>{const v=S.f.eq.view||"cards";const tg=`<div class="chips" styl
   if(v==="lista")return tg+_eqOld();
   const R=rangeOf("tri");const card=m=>{const js=S.jobs.filter(j=>j.principal_id===m.id&&j.status==="realizado");const gm=js.reduce((s,j)=>s+(Number(j.gmv)||0),0);const prox=S.jobs.filter(j=>(j.principal_id===m.id||j.substituto_id===m.id)&&j.status==="aberto"&&new Date(j.inicio)>new Date()).length;
     const cor=m.papel==="socio"?"var(--volt)":m.papel==="seller"?"var(--flash)":"var(--cobalt)";
-    return `<div class="pcard" data-act="membro" data-id="${m.id}"><div class="av" style="background:${cor};color:${m.papel==="socio"||m.papel==="seller"?"#131411":"#fff"}">${esc(iniciais(m.nome))}</div><div class="t">${esc(m.nome)}</div><div class="s">${m.papel==="socio"?"Sócio":m.papel==="basico"?"Equipe":"Seller"} · ${VINC[m.vinculo]||m.vinculo}</div>${m.obs?`<div class="s">${esc(m.obs.slice(0,60))}</div>`:""}
+    return `<div class="pcard" data-act="membro" data-id="${m.id}"><div class="av" style="background:${cor};color:${m.papel==="socio"||m.papel==="seller"?"#131411":"#fff"}">${esc(iniciais(m.nome))}</div><div class="t">${esc(m.nome)}</div><div class="s">${m.papel==="socio"?"Sócio":m.papel==="basico"?"Equipe":m.papel==="operador"?"Operador":"Seller"} · ${VINC[m.vinculo]||m.vinculo}</div>${m.obs?`<div class="s">${esc(m.obs.slice(0,60))}</div>`:""}
     ${m.papel!=="socio"?`<div class="pst"><span><b>${js.length}</b>lives</span><span><b>${brlK(gm)}</b>GMV</span><span><b>${prox}</b>próx.</span></div>`:`<div class="pst"><span><b>${S.propostas.filter(p=>m.user_id&&p.created_by===m.user_id).length}</b>propostas</span><span><b>${S.fin.filter(f=>f.reembolso_para===m.id&&["solicitado","aprovado"].includes(f.reembolso)).length}</b>reemb.</span></div>`}
     <div class="s" style="margin-top:6px">${esc(m.telefone||m.email)}</div>${m.obs==="PEDIU ACESSO AO ERP"&&m.status==="pendente"?`<span class="tag f">pediu acesso ao ERP</span>`:m.status!=="ativo"?`<span class="tag w">${m.status}</span>`:""}${m.papel==="seller"&&m.status!=="ativo"?kycTag(m):""}</div>`};
   const grp=(t,l)=>l.length?`<div class="sec"><h2>${t} <span class="muted small">${l.length}</span></h2></div><div class="pgrid">${l.map(card).join("")}</div>`:"";
@@ -1767,7 +1788,7 @@ const PRECOS_PADRAO=[
  {chave:"pontual.GO",grupo:"pontual",categoria:"GO",titulo:"GO",descricao:"Baia compacta, celular, 1 live seller, 4 horas",valor:1200,valor_ref:null,perc:10,lives:1,horas:4,ordem:1},
  {chave:"pontual.BOOST",grupo:"pontual",categoria:"BOOST",titulo:"BOOST",descricao:"Baia média, câmera profissional, 1 live seller, 4 horas",valor:2250,valor_ref:null,perc:10,lives:1,horas:4,ordem:2},
  {chave:"pontual.ICON",grupo:"pontual",categoria:"ICON",titulo:"ICON",descricao:"Baia grande, duas câmeras profissionais, 2 live sellers, 4 horas",valor:4000,valor_ref:null,perc:10,lives:1,horas:4,ordem:3},
- {chave:"pacote.GO",grupo:"pacote",categoria:"GO",titulo:"GO",descricao:"Estúdio compacto · 1 host com celular",valor:6800,valor_ref:null,perc:10,lives:12,horas:3,ordem:4},
+ {chave:"pacote.GO",grupo:"pacote",categoria:"GO",titulo:"GO",descricao:"Estúdio compacto · 1 host com celular",valor:8000,valor_ref:null,perc:10,lives:12,horas:3,ordem:4},
  {chave:"pacote.BOOST",grupo:"pacote",categoria:"BOOST",titulo:"BOOST",descricao:"Estúdio médio · 1 a 2 hosts com câmera 4K",valor:10000,valor_ref:null,perc:10,lives:12,horas:3,ordem:5},
  {chave:"pacote.ICON",grupo:"pacote",categoria:"ICON",titulo:"ICON",descricao:"Estúdio premium · 2 hosts com câmera 4K",valor:16000,valor_ref:null,perc:10,lives:12,horas:3,ordem:6},
  {chave:"drop.ICON",grupo:"drop",categoria:"ICON",titulo:"Live Drop",descricao:"4 lives ICON · baia grande, duas câmeras profissionais, 2 live sellers, 4 horas",valor:12500,valor_ref:16000,perc:10,lives:4,horas:4,ordem:7}];
@@ -2552,7 +2573,7 @@ function VPessoa(){const m=S.membros.find(x=>x.id===S.pessoa);if(!m)return `<div
    <div style="min-width:0;flex:1"><h2 style="margin:0;font-size:22px">${esc(m.nome)}</h2><div class="row" style="gap:6px;margin-top:4px"><span class="tag ${m.papel==="socio"?"v":m.papel==="seller"?"f":"c"}">${m.papel==="socio"?"sócio":m.papel==="basico"?"equipe CLT":"seller"}</span>${m.status!=="ativo"?`<span class="tag w">${m.status}</span>`:`<span class="tag o">ativo</span>`}${pos>=0&&rk.length>1?`<span class="tag">#${pos+1} de ${rk.length} em GMV/hora</span>`:""}</div></div>
    </div>
    <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:6px">${wa?`<a class="btn sm" href="https://wa.me/${wa.length<=11?"55":""}${wa}" target="_blank" rel="noopener">WhatsApp</a>`:""}${m.papel==="seller"?`<button class="btn sm" data-act="relatorio" data-id="${m.id}">Relatório de autonomia</button>`:""}${isSocio()||m.id===S.me.id?`<button class="btn p sm" data-act="pesEditar" data-id="${m.id}">Editar dados</button>`:""}${isSocio()&&m.id!==S.me.id?(m.status==="inativo"?`<button class="btn sm" data-act="pesStatus" data-id="${m.id}" data-v="ativo">Reativar</button>`:`<button class="btn sm" data-act="pesStatus" data-id="${m.id}" data-v="inativo" title="Sai do time, mas o histórico fica">Desligar</button>`)+`<button class="btn d sm" data-act="pesApagar" data-id="${m.id}">Apagar</button>`:""}</div></div>
-  ${m.status==="pendente"&&isSocio()?(m.obs==="PEDIU ACESSO AO ERP"?`<div class="warnbox" style="margin-top:12px"><b>${esc(m.email)}</b> pediu acesso ao ERP. Libere aqui:<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px"><button class="btn p sm" data-act="pesLib" data-id="${m.id}" data-v="basico">Liberar como Equipe</button><button class="btn sm" data-act="pesLib" data-id="${m.id}" data-v="socio">Liberar como Sócio</button><button class="btn d sm" data-act="pesLib" data-id="${m.id}" data-v="recusar">Recusar</button></div></div>`
+  ${m.status==="pendente"&&isSocio()?(m.obs==="PEDIU ACESSO AO ERP"?`<div class="warnbox" style="margin-top:12px"><b>${esc(m.email)}</b> pediu acesso ao ERP. Libere aqui:<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px"><button class="btn p sm" data-act="pesLib" data-id="${m.id}" data-v="basico">Liberar como Equipe</button><button class="btn sm" data-act="pesLib" data-id="${m.id}" data-v="operador">Liberar como Operador</button><button class="btn sm" data-act="pesLib" data-id="${m.id}" data-v="socio">Liberar como Sócio</button><button class="btn d sm" data-act="pesLib" data-id="${m.id}" data-v="recusar">Recusar</button></div></div>`
     :m.papel==="seller"?`<div class="warnbox" style="margin-top:12px">Seller aguardando aprovação. <button class="btn p sm" data-act="pesEditar" data-id="${m.id}" style="margin-left:6px">Conferir identidade e aprovar</button></div>`:""):""}
   <div class="row" style="margin:14px 0 6px;align-items:center"><h2 style="font-size:16px;margin:0 10px 0 0">Performance</h2>${chips("pesPer",PES_PER,per)}</div>
   <div class="mks six">${mini("Lives realizadas",st.js.length,subst?subst+" como substituto":"")}${mini("Horas no ar",nf(st.h,1)+" h")}${mini("GMV",brlK(st.g),"","v")}${mini("GMV por hora",brlK(st.gh))}${mini("Pedidos",nf(st.p),st.p?"ticket "+brl(st.tk):"")}${mini(m.papel==="seller"?"Cachês":"Próximas",m.papel==="seller"?brlK(st.cache):prox.length,m.papel==="seller"?prox.length+" lives agendadas":"")}</div>
@@ -2610,9 +2631,14 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="77";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="81";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
- ["77","23/11","📆 Semana que vem: nova visão dentro de Lives (ao lado de Calendário), com contador de quem falta de quinta a domingo, e aviso com barra de progresso no Painel. Mostra a semana inteira por marca, o progresso (aprovadas, aguardando, pediram mudança, para enviar) e um cartão por marca com a miniatura da imagem. 🖼️ Gerar a imagem no padrão IMPlay (com a logo da marca) e abrir o WhatsApp com o texto e o link, ou baixar todas as imagens de uma vez. A página do cliente deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
+ ["81","23/11","📆 Semana que vem: nova visão dentro de Lives (ao lado de Calendário), com contador de quem falta de quinta a domingo, e aviso com barra de progresso no Painel. Mostra a semana inteira por marca, o progresso (aprovadas, aguardando, pediram mudança, para enviar) e um cartão por marca com a miniatura da imagem. 🖼️ Gerar a imagem no padrão IMPlay (com a logo da marca) e abrir o WhatsApp com o texto e o link, ou baixar todas as imagens de uma vez. A página do cliente deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
+ ["80","23/11","🛠️ Operador responsável em cada live. 🗂️ Central do cliente mostra só contratos ativos (botão Todas para ver o resto). 📆 Calendário: Todas as marcas, escolher datas, filtrar TikTok/Instagram e ⬇️ Baixar/PDF. 📈 Histórico da seller em Equipe: lives, horas, GMV e anotações da equipe (elogio, BO, observação)."],
+ ["79","23/11","🛠️ Novo papel Operador: cuida das lives sem ver financeiro, propostas, contratos, senhas e dados da equipe. Em Equipe → ⚙️ Acessos por papel, o sócio escolhe o que o Operador e o Seller (app) podem ver."],
+ ["78","23/11","Mapa: a sala 33 voltou (abaixo da 32) e já pode ser escolhida."],
+ ["77","23/11","🗺️ O mapa agora é a planta real do estúdio: salas 01 a 05, baias 11 a 18 e 21 a 27, e as cabines 31 e 32. Recepção, banheiros, controle e copa aparecem só como referência. Lives que tinham sala no formato antigo (E1, P2…) mostram \"sala antiga\": escolha de novo."],
+ ["76","23/11","🗺️ Mapa das salas: na tela da live, ao lado de Sala, o botão \"Escolher no mapa\" abre o estúdio em quadrinhos. Verde = livre, vermelho = ocupada naquele horário (mostra a marca). Toque na sala e pronto."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
@@ -3366,9 +3392,9 @@ function openJobResumo(id){const j=S.jobs.find(x=>x.id===id);if(!j)return;const 
     ${R("Equipamento",esc(j.equipamento||""))}${R("Contrato",p?esc(p.contrato_numero||pn(p.numero)):"")}${R("Requisitos",esc(j.requisitos||""))}${R("Observações",esc(j.obs||""))}</div>
    <div class="acts"><button type="button" class="btn p" data-act="jobEditar" data-id="${id}">Editar</button><button type="button" class="btn" data-act="fechar">Fechar</button>
     ${j.status==="aberto"?`<button type="button" class="btn" data-act="jobDup" data-id="${id}">Duplicar</button><button type="button" class="btn d" data-act="jobStatus" data-id="${id}" data-v="cancelado">Cancelar live</button>`:`<button type="button" class="btn" data-act="jobStatus" data-id="${id}" data-v="aberto">Reabrir</button>`}</div></form>`)}
-function espOpts(val,ini,fim,selfId){const G=[["E","Economy"],["P","Premium"],["B","Business"],["C","Cabine"]];
+function espOpts(val,ini,fim,selfId){const G=ESP_G;
   const oc={};if(ini&&fim)S.jobs.filter(x=>x.id!==selfId&&x.status!=="cancelado"&&x.local_tipo==="estudio"&&x.espaco&&new Date(x.inicio)<fim&&ini<new Date(x.fim)).forEach(x=>oc[x.espaco]=`${x.marca||"live"} ${hm(x.inicio)}`);
-  return `<option value="">— escolher sala —</option>`+G.map(([k,l])=>`<optgroup label="${l}">${ESPACOS.filter(e=>e[0]===k).map(e=>`<option value="${e}" ${e===val?"selected":""}>${e}${oc[e]?` · ocupada (${esc(oc[e])})`:""}</option>`).join("")}</optgroup>`).join("")}
+  return `<option value="">— escolher sala —</option>`+(val&&!ESPACOS.includes(val)?`<option value="${esc(val)}" selected>${esc(val)} (sala antiga — escolha de novo)</option>`:"")+G.map(([k,l])=>`<optgroup label="${l}">${ESPACOS.filter(e=>e[0]===k).map(e=>`<option value="${e}" ${e===val?"selected":""}>${e}${oc[e]?` · ocupada (${esc(oc[e])})`:""}</option>`).join("")}</optgroup>`).join("")}
 function jobEspRefresh(){const f=$("#sheetIn form");const s=f&&f.querySelector("select[name=espaco]");if(!s)return;const d=f.querySelector("[name=data]").value,h=f.querySelector("[name=hora]").value,m=(f.querySelector("[name=min]")||{}).value||0,n=num(f.querySelector("[name=horas]").value);
   if(!d||!h||!n)return;const a=combine(d,h,m),b=new Date(a.getTime()+n*36e5);const v=s.value;s.innerHTML=espOpts(v,a,b,s.dataset.self||null)}
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#sheetIn")&&["data","hora","min"].includes(e.target.name)){jobQuandoSync();jobEspRefresh()}});
@@ -4037,8 +4063,9 @@ function horasJob(j){return Math.max(0,(new Date(j.fim||j.inicio)-new Date(j.ini
 function cenMes(cid){const mk=monthKey(new Date());const l=S.jobs.filter(j=>j.cliente_id===cid&&j.status!=="cancelado"&&monthKey(new Date(j.inicio))===mk);const agora=new Date();
   const feitas=l.filter(j=>j.status==="realizado"||new Date(j.fim||j.inicio)<agora);return {l,hTot:l.reduce((a,j)=>a+horasJob(j),0),hFeitas:feitas.reduce((a,j)=>a+horasJob(j),0),nFeitas:feitas.length}}
 const fH=n=>(Math.round(n*10)/10).toLocaleString("pt-BR")+" h";
-function cenLista(){const q=(S.cenQ||"").toLowerCase();const l=S.clientes.filter(c=>c.status!=="cancelado"&&(!q||(c.marca+" "+(c.empresa||"")).toLowerCase().includes(q))).sort((a,b)=>(a.marca||"").localeCompare(b.marca||""));
-  return `<div class="tool"><div class="q">${ic("search")}<input id="cenQ" value="${esc(S.cenQ||"")}" placeholder="Buscar marca…"></div></div><div class="cgrid">${l.map(c=>{const ct=cliContrato(c.id);const m=cenMes(c.id);const h=ct&&ct.itens.find(x=>x.h);const prox=S.jobs.filter(j=>j.cliente_id===c.id&&j.status!=="cancelado"&&new Date(j.inicio)>new Date()).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio))[0];
+function cenAtivo(c){return !!cliContrato(c.id)||(S.ctrs||[]).some(x=>x.cliente_id===c.id&&!["cancelado","recusado","substituido","encerrado"].includes(x.status))}
+function cenLista(){const q=(S.cenQ||"").toLowerCase();const base=S.clientes.filter(c=>c.status!=="cancelado"&&(!q||(c.marca+" "+(c.empresa||"")).toLowerCase().includes(q)));const nAt=base.filter(cenAtivo).length;const l=(S.cenTodas?base:base.filter(cenAtivo)).sort((a,b)=>(a.marca||"").localeCompare(b.marca||""));
+  return `<div class="tool"><div class="q">${ic("search")}<input id="cenQ" value="${esc(S.cenQ||"")}" placeholder="Buscar marca…"></div><div class="chips" style="margin:0"><button type="button" data-act="cenTodas" data-v="0" class="${S.cenTodas?"":"on"}">Contratos ativos <span class="n">${nAt}</span></button><button type="button" data-act="cenTodas" data-v="1" class="${S.cenTodas?"on":""}">Todas <span class="n">${base.length}</span></button></div></div>${!l.length?`<div class="empty">Nenhuma marca com contrato ativo. Toque em <b>Todas</b> para ver as outras.</div>`:""}<div class="cgrid">${l.map(c=>{const ct=cliContrato(c.id);const m=cenMes(c.id);const h=ct&&ct.itens.find(x=>x.h);const prox=S.jobs.filter(j=>j.cliente_id===c.id&&j.status!=="cancelado"&&new Date(j.inicio)>new Date()).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio))[0];
     return `<div class="ccard" data-act="cenCli" data-id="${c.id}"><div class="cc-h"><b>${esc(c.marca||"")}</b>${ct?`<span class="tagc ok">contrato</span>`:`<span class="tagc">sem contrato</span>`}</div>
     <div class="cc-l">${h?`<span><b>${fH(m.hTot)}</b> de ${fH(h.h.hmin)} no mês</span>`:`<span><b>${m.l.length}</b> lives no mês</span>`}<span>${prox?"próxima: "+new Date(prox.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"}):"sem live marcada"}</span></div>
     <div class="cc-f">${centralTem(c)?`<span class="okt">✓ briefing</span>`:`<span class="muted">briefing vazio</span>`} · ${matDe(c.id).length} materiais</div></div>`}).join("")||`<div class="empty">Nenhum cliente.</div>`}</div>`}
@@ -4290,31 +4317,34 @@ const _resumo74=openJobResumo;openJobResumo=function(id){_resumo74.apply(this,ar
   box.insertAdjacentHTML("afterend",`<div class="escst ${j.conferido_em?"ok":""}" style="margin-top:8px">${j.conferido_em?`🔎 Conferida por <b>${esc(nome(j.conferido_por)||"?")}</b> em ${new Date(j.conferido_em).toLocaleDateString("pt-BR")}`:`⏳ <b>Aguardando conferência</b>`} <span class="small muted">· alterada por ${esc(nome(j.alterado_por)||"?")} em ${new Date(j.alterado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span>${!j.conferido_em&&confPodeEu(j)&&S.me.papel!=="seller"?` <button type="button" class="btn sm p" data-act="confUm" data-id="${j.id}">Conferir</button>`:""}</div>`)};
 /* ---- 2) calendário da marca ---- */
 S.calc=S.calc||{cid:"",per:"sem1"};
-function calcPer(k){const h=d0();let a,b;if(k.startsWith("sem")){const dow=(h.getDay()+6)%7;a=new Date(h);a.setDate(h.getDate()-dow+(k==="sem1"?7:0));b=new Date(a);b.setDate(a.getDate()+7)}
+function calcPer(k){const h=d0();let a,b;if(k==="cust"){a=S.calc.de?parseYmd(S.calc.de):h;b=S.calc.ate?parseYmd(S.calc.ate):new Date(a.getTime()+6*864e5);b=new Date(b.getTime()+864e5);if(b<=a)b=new Date(a.getTime()+864e5);return [a,b]}if(k.startsWith("sem")){const dow=(h.getDay()+6)%7;a=new Date(h);a.setDate(h.getDate()-dow+(k==="sem1"?7:0));b=new Date(a);b.setDate(a.getDate()+7)}
   else{a=new Date(h.getFullYear(),h.getMonth()+(k==="mes1"?1:0),1);b=new Date(a.getFullYear(),a.getMonth()+1,1)}return [a,b]}
+function calcPlatOk(j){const p=(S.calc&&S.calc.plat)||"todas";if(p==="todas")return true;const t=String(j.plataforma||"").toLowerCase();return p==="tiktok"?t.includes("tiktok"):p==="insta"?t.includes("insta"):true}
 function calcLives(cid,a,b){const c=S.clientes.find(x=>x.id===cid);const mk=c&&String(c.marca||"").trim().toLowerCase();
-  return S.jobs.filter(j=>j.status!=="cancelado"&&(j.cliente_id===cid||(!j.cliente_id&&mk&&String(j.marca||"").trim().toLowerCase()===mk))&&new Date(j.inicio)>=a&&new Date(j.inicio)<b).sort((x,y)=>new Date(x.inicio)-new Date(y.inicio))}
-function calcTxt(c,l,a,b,link){let t=`Oi, pessoal da ${c.marca}! Segue a agenda de lives de ${dmy(a)} a ${dmy(new Date(b-1))} para vocês validarem:\n`;let dia="";
-  l.forEach(j=>{const d=new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"}).replace(".","");if(d!==dia){dia=d;t+=`\n*${d.charAt(0).toUpperCase()+d.slice(1)}*\n`}t+=`• ${hm2(j.inicio)} às ${hm2(j.fim||j.inicio)}${j.plataforma?" · "+j.plataforma:""}\n`});
-  t+=`\nTotal: ${l.length} live${l.length>1?"s":""}.`;return t+(link?`\n\n👉 Confira e dê o OK (ou peça ajuste) por aqui: ${link}`:`\n\nSe tiver alguma alteração, é só avisar!`)}
+  return S.jobs.filter(j=>j.status!=="cancelado"&&calcPlatOk(j)&&(cid==="*"||j.cliente_id===cid||(!j.cliente_id&&mk&&String(j.marca||"").trim().toLowerCase()===mk))&&new Date(j.inicio)>=a&&new Date(j.inicio)<b).sort((x,y)=>new Date(x.inicio)-new Date(y.inicio))}
+function calcTxt(c,l,a,b,link){const todas=!c||c.id==="*";const pl={todas:"",tiktok:" (TikTok)",insta:" (Instagram)"}[(S.calc&&S.calc.plat)||"todas"];let t=todas?`Agenda de lives IMPlay${pl} · ${dmy(a)} a ${dmy(new Date(b-1))}:\n`:`Oi, pessoal da ${c.marca}! Segue a agenda de lives${pl} de ${dmy(a)} a ${dmy(new Date(b-1))} para vocês validarem:\n`;let dia="";
+  l.forEach(j=>{const d=new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"}).replace(".","");if(d!==dia){dia=d;t+=`\n*${d.charAt(0).toUpperCase()+d.slice(1)}*\n`}t+=`• ${hm2(j.inicio)} às ${hm2(j.fim||j.inicio)}${todas?" · "+(j.marca||cliNome(j.cliente_id)||"Live"):""}${j.plataforma?" · "+j.plataforma:""}\n`});
+  t+=`\nTotal: ${l.length} live${l.length>1?"s":""}.`;if(todas)return t;return t+(link?`\n\n👉 Confira e dê o OK (ou peça ajuste) por aqui: ${link}`:`\n\nSe tiver alguma alteração, é só avisar!`)}
 function calcSnap(l){return l.map(j=>({id:j.id,inicio:j.inicio,fim:j.fim,plataforma:j.plataforma||""}))}
 function calcMudou(e,l){const k=x=>x.map(i=>i.id+"|"+new Date(i.inicio).getTime()+"|"+new Date(i.fim).getTime()+"|"+(i.plataforma||"")).sort().join(";");return k(e.itens||[])!==k(calcSnap(l))}
 const calcLink=e=>`https://${APP_HOST}ok/?t=${e.token}`;
-async function calcLoadEnv(){const cid=S.calc.cid;if(!cid){S.calcEnv=[];return}const r=await db.from("imp_cal_envios").select("*").eq("cliente_id",cid).order("criado_em",{ascending:false}).limit(12);S.calcEnv=r.error?null:(r.data||[]);S.calcEnvErr=r.error&&r.error.message}
+async function calcLoadEnv(){const cid=S.calc.cid;if(!cid||cid==="*"){S.calcEnv=[];return}const r=await db.from("imp_cal_envios").select("*").eq("cliente_id",cid).order("criado_em",{ascending:false}).limit(12);S.calcEnv=r.error?null:(r.data||[]);S.calcEnvErr=r.error&&r.error.message}
 function calcHtml(){const per=S.calc.per;const [a,b]=calcPer(per);const h=d0();
   const ativos=S.clientes.filter(c=>c.status!=="cancelado").map(c=>({c,n:calcLives(c.id,h,new Date(h.getTime()+62*864e5)).length})).sort((x,y)=>y.n-x.n||String(x.c.marca).localeCompare(String(y.c.marca)));
-  const c=S.clientes.find(x=>x.id===S.calc.cid);const l=c?calcLives(c.id,a,b):[];const nc=l.filter(j=>j.alterado_em&&!j.conferido_em).length;
+  const c=S.calc.cid==="*"?{id:"*",marca:"Todas as marcas"}:S.clientes.find(x=>x.id===S.calc.cid);const l=c?calcLives(c.id,a,b):[];const nc=l.filter(j=>j.alterado_em&&!j.conferido_em).length;
   const env=(S.calcEnv||[]).filter(e=>e.ini===ymd(a)&&e.fim===ymd(new Date(b-1)));const outros=(S.calcEnv||[]).filter(e=>!env.includes(e));
   const st=e=>e.status==="aprovado"?`<span class="tag o">✅ aprovado</span> por <b>${esc(e.resposta_nome||"cliente")}</b> em ${new Date(e.resposta_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:e.status==="ajuste"?`<span class="tag w">${e.aprova_com_ajustes?"✏️ aprovou com mudanças":"✏️ pediu ajuste"}</span> ${esc(e.resposta_nome||"")}${e.resposta_obs?`: <i>${esc(e.resposta_obs)}</i>`:""}`:`<span class="tag">⏳ aguardando OK</span>`;
   const envRow=e=>{const lv=calcLives(c.id,parseYmd(e.ini),new Date(parseYmd(e.fim).getTime()+864e5));const mud=calcMudou(e,lv);return `<div class="calenv"><div>${dmy(parseYmd(e.ini))} a ${dmy(parseYmd(e.fim))} · enviado ${new Date(e.criado_em).toLocaleDateString("pt-BR")}${e.criado_por?" por "+esc(nome(e.criado_por)):""}<br>${st(e)}${sugBloco(e)}${mud?`<br><b style="color:var(--warn)">⚠️ O calendário mudou depois deste envio — gere um novo link e peça um novo OK.</b>`:""}</div><button type="button" class="btn sm" data-act="calcCopLink" data-v="${e.token}">Copiar link</button></div>`};
   return `<h3>📆 Calendário da marca</h3>
-  <div class="fld"><label>Marca</label><select id="calcCli" data-1c="lista"><option value="">— escolher —</option>${ativos.map(({c:x,n})=>`<option value="${x.id}" ${x.id===S.calc.cid?"selected":""}>${esc(x.marca)}${n?` (${n} próximas)`:""}</option>`).join("")}</select></div>
-  <div class="chips" style="margin:6px 0 10px">${[["sem0","Esta semana"],["sem1","Próxima semana"],["mes0","Este mês"],["mes1","Próximo mês"]].map(([k,t])=>`<button type="button" data-act="calcPer" data-v="${k}" class="${per===k?"on":""}">${t}</button>`).join("")}</div>
+  <div class="fld"><label>Marca</label><select id="calcCli" data-1c="lista"><option value="">— escolher —</option><option value="*" ${S.calc.cid==="*"?"selected":""}>📋 Todas as marcas</option>${ativos.map(({c:x,n})=>`<option value="${x.id}" ${x.id===S.calc.cid?"selected":""}>${esc(x.marca)}${n?` (${n} próximas)`:""}</option>`).join("")}</select></div>
+  <div class="chips" style="margin:6px 0 10px">${[["sem0","Esta semana"],["sem1","Próxima semana"],["mes0","Este mês"],["mes1","Próximo mês"],["cust","Escolher datas"]].map(([k,t])=>`<button type="button" data-act="calcPer" data-v="${k}" class="${per===k?"on":""}">${t}</button>`).join("")}</div>
+  ${per==="cust"?`<div class="cols2" style="margin-bottom:8px"><div class="fld"><label>De</label><input type="date" id="calcDe" value="${S.calc.de||ymd(d0())}"></div><div class="fld"><label>Até</label><input type="date" id="calcAte" value="${S.calc.ate||ymd(new Date(d0().getTime()+6*864e5))}"></div></div>`:""}
+  <div class="chips" style="margin:0 0 10px">${[["todas","TikTok + Instagram"],["tiktok","Só TikTok"],["insta","Só Instagram"]].map(([k,t])=>`<button type="button" data-act="calcPlat" data-v="${k}" class="${(S.calc.plat||"todas")===k?"on":""}">${t}</button>`).join("")}</div>
   ${!c?`<p class="small muted">Escolha a marca para ver as lives do período, copiar o texto e gerar o link para o cliente aprovar.</p>`:`
   <div class="small muted" style="margin-bottom:6px"><b>${esc(c.marca)}</b> · ${dmy(a)} a ${dmy(new Date(b-1))} · ${l.length} live${l.length===1?"":"s"}</div>
   ${nc?`<div class="warnbox" style="margin-bottom:8px">🔎 ${nc} live${nc>1?"s":""} deste período ainda não ${nc>1?"foram conferidas":"foi conferida"} por outra pessoa. <a href="#" data-act="confOpen">Conferir antes de mandar ›</a></div>`:""}
-  ${l.length?`<div class="escb">${escDias(l,j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>${j.alterado_em&&!j.conferido_em?"⏳":j.conferido_em?"🔎":""}</span><span><b>${escHr(j)}</b></span><span>${platTag(j)}</span><span class="small muted">${j.principal_id?esc(String(nome(j.principal_id)).split(" ")[0]):"sem seller"}</span></div>`)}</div>`:`<div class="empty">Nenhuma live desta marca no período.</div>`}
-  ${l.length?`<div class="acts" style="justify-content:flex-start"><button type="button" class="btn p" data-act="calcLink">🔗 Gerar link para o cliente aprovar</button><button type="button" class="btn" data-act="calcImg">🖼️ Imagem</button><button type="button" class="btn" data-act="calcCop">Copiar texto</button><button type="button" class="btn" data-act="calcWa">WhatsApp</button></div>
+  ${l.length?`<div class="escb">${escDias(l,j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>${j.alterado_em&&!j.conferido_em?"⏳":j.conferido_em?"🔎":""}</span><span><b>${escHr(j)}</b></span><span>${c.id==="*"?`<b>${esc(j.marca||cliNome(j.cliente_id)||"")}</b> `:""}${platTag(j)}</span><span class="small muted">${j.principal_id?esc(String(nome(j.principal_id)).split(" ")[0]):"sem seller"}</span></div>`)}</div>`:`<div class="empty">Nenhuma live no período.</div>`}
+  ${l.length?`<div class="acts" style="justify-content:flex-start">${c.id!=="*"?`<button type="button" class="btn p" data-act="calcLink">🔗 Gerar link para o cliente aprovar</button><button type="button" class="btn" data-act="calcImg">🖼️ Imagem</button>`:""}<button type="button" class="btn" data-act="calcCop">Copiar texto</button><button type="button" class="btn" data-act="calcWa">WhatsApp</button><button type="button" class="btn" data-act="calcPrint">⬇️ Baixar / PDF</button></div>
   <p class="small muted">O link mostra só as lives desta marca, e o cliente dá o OK ou pede ajuste. A resposta aparece aqui.</p>`:""}
   ${S.calcEnv===null?`<div class="warnbox small">Falta rodar o SQL implay_calendario_ok.sql para gerar links e ver as respostas.</div>`:""}
   ${env.length?`<div class="escd">Envios deste período</div>${env.map(envRow).join("")}`:""}
@@ -4348,16 +4378,18 @@ const _hJobs74=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm" data-act="c
 const _agenda74=VIEWS.agenda;VIEWS.agenda=()=>confBanner()+_agenda74();
 const _painel74=VIEWS.painel;VIEWS.painel=()=>{const h=_painel74();const b=confBanner();if(!b)return h;const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+b+h.slice(i):b+h};
 document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act,v=a.dataset.v;
-  const L=["confOpen","confOk","confUm","calcOpen","calcPer","calcLink","calcCop","calcWa","calcCopLink","atnDia"];if(!L.includes(act))return;e.preventDefault();e.stopImmediatePropagation();
+  const L=["confOpen","confOk","confUm","calcOpen","calcPer","calcPlat","calcPrint","calcLink","calcCop","calcWa","calcCopLink","atnDia"];if(!L.includes(act))return;e.preventDefault();e.stopImmediatePropagation();
   if(act==="confOpen")return confOpen();
   if(act==="confOk")return confOk(a);
   if(act==="confUm"){S.confSel={};confPend().forEach(j=>S.confSel[j.id]=j.id===a.dataset.id);a.disabled=true;await confOk(a);closeSheet();return}
   if(act==="calcOpen")return calcOpen();
   if(act==="calcPer"){S.calc.per=v;return calcRefresh()}
+  if(act==="calcPlat"){S.calc.plat=v;return calcRefresh()}
   if(act==="atnDia"){S.agD=parseYmd(v);return render()}
   if(act==="calcCopLink"){const t=`https://${APP_HOST}ok/?t=${v}`;try{await navigator.clipboard.writeText(t);toast("Link copiado")}catch(_){prompt("Copie:",t)}return}
-  const c=S.clientes.find(x=>x.id===S.calc.cid);if(!c)return;const [x,y]=calcPer(S.calc.per);const l=calcLives(c.id,x,y);
-  if(act==="calcLink")return calcGerar(a);
+  const c=S.calc.cid==="*"?{id:"*",marca:"Todas as marcas"}:S.clientes.find(x=>x.id===S.calc.cid);if(!c)return;const [x,y]=calcPer(S.calc.per);const l=calcLives(c.id,x,y);
+  if(act==="calcLink")return c.id==="*"?null:calcGerar(a);
+  if(act==="calcPrint")return calcImprimir(c,l,x,y);
   const txt=calcTxt(c,l,x,y,null);
   if(act==="calcWa"){window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,"_blank");return}
   try{await navigator.clipboard.writeText(txt);toast("Texto copiado")}catch(_){prompt("Copie:",txt)}},true);
@@ -4606,6 +4638,110 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
     case"sugNo":return sugDecidir(a,id,Number(v),false);
     case"calResp":{const r=(S.calResp||[]).find(x=>eqId(x.id,v));if(!r)return;const m=calVistos();m[r.id]=1;try{localStorage.setItem("imp-cal-vistos",JSON.stringify(m))}catch(_){}
       const per=["sem0","sem1","mes0","mes1"].find(k=>{const [x,y]=calcPer(k);return ymd(x)===r.ini&&ymd(new Date(y-1))===r.fim})||"sem1";S.calc={cid:r.cliente_id,per};return calcOpen()}}},true);
+/* v76 · mapa de salas para escolher a sala da live */
+const PLANTA=[["03",115,32,410,236],["02",418,32,620,236],["01",626,32,890,236],["04",115,241,410,446],["05",115,451,410,655],
+ ["banheiros",457,265,655,537],["31",659,265,890,354],["32",659,356,890,445],["33",659,447,890,537],["controle",693,543,890,698],["copa",693,704,890,826],["recepção",418,660,688,826],
+ ...["11","12","13","14","15","16","17","18"].map((c,i)=>[c,115,658+i*102.4,237,656+(i+1)*102.4]),...["21","22","23","24","25","26","27"].map((c,i)=>[c,290,658+i*102.4,410,656+(i+1)*102.4]),
+ ["corredor",418,832,664,1477],["elevadores",668,1000,890,1477]];
+function mapaOcup(){const f=$("#sheetIn form");const s=f&&f.querySelector("select[name=espaco]");const d=f&&f.querySelector("[name=data]").value,h=f&&f.querySelector("[name=hora]").value,m=(f&&f.querySelector("[name=min]")||{}).value||0,n=f&&num(f.querySelector("[name=horas]").value);
+  const oc={};if(d&&h&&n){const a=combine(d,h,m),b=new Date(a.getTime()+n*36e5);S.jobs.filter(x=>x.id!==(s&&s.dataset.self)&&x.status!=="cancelado"&&x.local_tipo==="estudio"&&x.espaco&&new Date(x.inicio)<b&&a<new Date(x.fim)).forEach(x=>oc[x.espaco]=x);return {oc,a,b}}return {oc,a:null,b:null}}
+function mapaHtml(){const f=$("#sheetIn form");const cur=f&&f.querySelector("select[name=espaco]").value;const {oc,a,b}=mapaOcup();
+  const tile=e=>{const x=oc[e];return `<button type="button" class="mtile ${x?"oc":"livre"} ${e===cur?"on":""}" data-act="mapaPick" data-v="${e}">${e===cur?"<i>✓</i>":""}<b>${e}</b><span>${x?esc(x.marca||"ocupada")+" · "+hm(x.inicio)+"–"+hm(x.fim):"livre"}</span></button>`};
+  return `<div class="mbox"><div class="mhead"><b>🗺️ Mapa do estúdio</b><button type="button" class="btn sm" data-act="mapaFechar">✕</button></div>
+   <div class="small muted" style="margin:-4px 0 12px">${a?`${a.toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})} · ${hm(a)}–${hm(b)} · <span class="mlg livre"></span> livre <span class="mlg oc"></span> ocupada`:"Escolha a data e o horário para ver o que está ocupado."}</div>
+   <div class="mplan">${PLANTA.map(([c,x1,y1,x2,y2])=>{const st=`left:${(x1-100)/8}%;top:${(y1-20)/14.7}%;width:${(x2-x1)/8}%;height:${(y2-y1)/14.7}%`;return ESPACOS.includes(c)?tile(c).replace('class="mtile','style="'+st+'" class="mtile'):`<div class="mfix" style="${st}">${c}</div>`}).join("")}${(cur&&!ESPACOS.includes(cur))?"":""}</div>
+   <div class="acts"><button type="button" class="btn" data-act="mapaPick" data-v="">Sem sala</button><button type="button" class="btn" data-act="mapaFechar">Fechar</button></div></div>`}
+function mapaAbrir(){let o=$("#mapaOv");if(!o){o=document.createElement("div");o.id="mapaOv";document.body.appendChild(o)}o.innerHTML=mapaHtml();o.hidden=false}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="mapaSala"],[data-act="mapaPick"],[data-act="mapaFechar"],#mapaOv');if(!b)return;
+  if(b.id==="mapaOv"){if(e.target===b){b.hidden=true}return}
+  e.preventDefault();e.stopImmediatePropagation();const act=b.dataset.act;
+  if(act==="mapaSala")return mapaAbrir();
+  if(act==="mapaFechar"){$("#mapaOv").hidden=true;return}
+  const v=b.dataset.v;const x=mapaOcup().oc[v];if(x&&!confirm(`A sala ${v} já tem ${x.marca||"uma live"} nesse horário (${hm(x.inicio)}–${hm(x.fim)}). Usar mesmo assim?`))return;
+  const s=$('#sheetIn select[name="espaco"]');if(s){s.value=v;s.dispatchEvent(new Event("change",{bubbles:true}))}$("#mapaOv").hidden=true;toast(v?"Sala "+v+" escolhida":"Sem sala")},true);
+/* ================= v79 · PAPEL OPERADOR + PERMISSÕES POR PAPEL ================= */
+const PERM_DEF={operador:{tabs:["painel","jobs","central","amostras","equip","tarefas"],valores:false,conferir:true},seller:{mural:true,marcas:true}};
+S.perm=JSON.parse(JSON.stringify(PERM_DEF));
+function isOp(){return S.me&&S.me.papel==="operador"}
+function permMerge(v){const p=JSON.parse(JSON.stringify(PERM_DEF));if(v&&v.operador)Object.assign(p.operador,v.operador);if(v&&v.seller)Object.assign(p.seller,v.seller);return p}
+function tabsTodas(){return MENU.flatMap(([g,it])=>it.map(x=>[x[0],x[1],g]))}
+function opPode(t){return !isOp()||S.perm.operador.tabs.includes(t)}
+const _loadAll79=loadAll;loadAll=async function(){await _loadAll79();if(S.demo)return;try{const r=await db.from("imp_config").select("valor").eq("chave","permissoes").maybeSingle();S.permSemSQL=!!r.error;if(!r.error&&r.data)S.perm=permMerge(r.data.valor)}catch(_){}};
+const _render79=render;render=function(){if(isOp()&&!opPode(S.tab)){const t=S.perm.operador.tabs[0]||"painel";S.tab=opPode("painel")?"painel":t}_render79.apply(this,arguments);
+  if(isOp()){document.querySelectorAll('[data-act="tab"][data-v]').forEach(b=>{if(!opPode(b.dataset.v)&&!b.closest(".logo,.brand"))b.style.display="none"});
+    document.querySelectorAll(".sgrp").forEach(g=>{let n=g.nextElementSibling,vis=false;while(n&&!n.classList.contains("sgrp")){if(n.style.display!=="none"&&n.matches('[data-act="tab"]'))vis=true;n=n.nextElementSibling}if(!vis)g.style.display="none"});
+    document.querySelectorAll(".rl").forEach(e=>{if(e.textContent==="Equipe")e.textContent="Operador"});
+    {const q=document.querySelector('input[placeholder^="Buscar live"]');if(q)(q.closest(".search,.srch,.sbar")||q.parentElement).style.visibility="hidden"}
+    document.querySelectorAll('[data-act="backup"],[data-act="propNova"],[data-act="finNovo"],[data-act="cliNovo"],[data-act="orcNovo"]').forEach(b=>b.style.display="none");
+    const val=S.perm.operador.valores,rx=val?/^(receita do mês|resultado do mês|contratos ativos)$/i:/^(receita do mês|resultado do mês|contratos ativos|gmv do mês)$/i;
+    document.querySelectorAll(".mk .l").forEach(l=>{if(rx.test(l.textContent.trim()))l.closest(".mk").style.display="none"});
+    const rp=val?/^funil comercial/i:/^(funil comercial|gmv · 6 meses|top marcas|top sellers)/i;
+    document.querySelectorAll(".panel h3, .panel h4").forEach(h=>{if(rp.test(h.textContent.trim())){const pn=h.closest(".panel");if(pn)pn.style.display="none"}})}};
+const _openJob79=openJob;openJob=function(){_openJob79.apply(this,arguments);if(!isOp()||S.perm.operador.valores)return;const box=$("#sheetIn");if(!box)return;
+  box.querySelectorAll(".sec h2").forEach(h=>{if(/Financeiro desta live/.test(h.textContent)){const sec=h.closest(".sec");const fin=$("#jobFin");const nx=fin&&fin.nextElementSibling;[sec,fin,nx&&nx.classList.contains("row")?nx:null].forEach(e=>e&&(e.style.display="none"))}});
+  box.querySelectorAll('[name="valor_seller"],[name="valor"],[name="valor_cliente"],[name="gmv"]').forEach(i=>{const f=i.closest(".fld");if(f)f.style.display="none"})};
+/* tela de permissões (sócio) */
+function permHtml(){const p=S.perm,ab=tabsTodas();const ck=(on,attr,lab,sub)=>`<label class="pmck"><input type="checkbox" ${attr} ${on?"checked":""}><span><b>${lab}</b>${sub?`<small>${sub}</small>`:""}</span></label>`;
+  return `<h3>⚙️ O que cada papel vê</h3>
+  ${S.permSemSQL?`<div class="warnbox">Falta rodar o SQL implay_operador.sql para salvar estas escolhas.</div>`:""}
+  <div class="pmgrid"><div class="pmcol"><h4>🛠️ Operador</h4><p class="small muted">Cuida das lives no dia a dia. Nunca vê: senhas dos clientes e aportes.</p>
+   <div class="pmsub">Telas do menu</div>${ab.map(([k,l,g])=>ck(p.operador.tabs.includes(k),`data-pm="op-tab" data-v="${k}"`,l,g)).join("")}
+   <div class="pmsub">Dentro das lives</div>${ck(p.operador.valores,'data-pm="op-valores"',"Ver valores","cachê do seller e financeiro da live")}${ck(p.operador.conferir,'data-pm="op-conferir"',"Conferir lives","dupla checagem do calendário")}</div>
+  <div class="pmcol"><h4>🎤 Seller (app)</h4><p class="small muted">Sempre vê: Minha agenda e Perfil.</p>
+   ${ck(p.seller.mural,'data-pm="sl-mural"',"Lives abertas","escolher vagas no mural")}${ck(p.seller.marcas,'data-pm="sl-marcas"',"Marcas","briefing e materiais das marcas em que tem live")}</div></div>
+  <div class="acts"><button type="button" class="btn p" data-act="permSalvar">Salvar</button><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
+function permLer(){const p=JSON.parse(JSON.stringify(S.perm));p.operador.tabs=[...document.querySelectorAll('[data-pm="op-tab"]:checked')].map(i=>i.dataset.v);
+  p.operador.valores=!!$('[data-pm="op-valores"]').checked;p.operador.conferir=!!$('[data-pm="op-conferir"]').checked;p.seller.mural=!!$('[data-pm="sl-mural"]').checked;p.seller.marcas=!!$('[data-pm="sl-marcas"]').checked;return p}
+const _hEq79=HEADACT.equipe;HEADACT.equipe=()=>(isSocio()?`<button class="btn sm" data-act="permAbrir">⚙️ Acessos por papel</button>`:"")+(_hEq79?_hEq79():"");
+document.addEventListener("click",async e=>{const a=e.target.closest('[data-act="permAbrir"],[data-act="permSalvar"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="permAbrir")return openSheet(permHtml());
+  const p=permLer();a.disabled=true;const r=await db.from("imp_config").upsert({chave:"permissoes",valor:p,atualizado_em:new Date().toISOString(),atualizado_por:S.me.id},{onConflict:"chave"});a.disabled=false;
+  if(r.error)return toast(/relation|schema cache|does not exist/i.test(r.error.message||"")?"Falta rodar o SQL implay_operador.sql":"Erro: "+r.error.message,true);S.perm=p;toast("Acessos salvos");closeSheet();render()},true);
+/* conferência só se permitido */
+const _confBanner79=confBanner;confBanner=function(){if(isOp()&&!S.perm.operador.conferir)return "";return _confBanner79()};
+const _confPode79=confPodeEu;confPodeEu=function(j){if(isOp()&&!S.perm.operador.conferir)return false;return _confPode79(j)};
+/* ================= v80 · OPERADOR DA LIVE, CENTRAL SÓ ATIVOS, CALENDÁRIO GERAL, HISTÓRICO DA SELLER ================= */
+document.addEventListener("click",async e=>{const b=e.target.closest('#sheetIn [data-act="opSet"],[data-act="cenTodas"],[data-act="snAdd"],[data-act="snTipo"],[data-act="snDel"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();const act=b.dataset.act,v=b.dataset.v;
+  if(act==="opSet"){const i=$('#sheetIn [name="operador_id"]');if(i)i.value=v||"";b.parentElement.querySelectorAll(".pch").forEach(x=>x.classList.toggle("on",x===b));return}
+  if(act==="cenTodas"){S.cenTodas=v==="1";return render()}
+  if(act==="snTipo"){S.snTipo=v;b.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));return}
+  if(act==="snAdd"){const t=$("#snTxt");const tx=(t&&t.value||"").trim();if(!tx)return toast("Escreva a anotação",true);b.disabled=true;
+    const r=await db.from("imp_seller_notas").insert({membro_id:b.dataset.id,tipo:S.snTipo||"obs",texto:tx}).select().single();b.disabled=false;
+    if(r.error)return toast(/relation|schema cache|does not exist/i.test(r.error.message||"")?"Falta rodar o SQL implay_operador_historico.sql":"Erro: "+r.error.message,true);
+    (S.snotas[b.dataset.id]=S.snotas[b.dataset.id]||[]).unshift(r.data);t.value="";snRefresh(b.dataset.id);toast("Anotação salva");return}
+  if(act==="snDel"){if(!confirm("Apagar esta anotação?"))return;const r=await db.from("imp_seller_notas").delete().eq("id",v);if(r.error)return toast("Erro: "+r.error.message,true);
+    const mid=b.dataset.id;S.snotas[mid]=(S.snotas[mid]||[]).filter(x=>x.id!==v);snRefresh(mid)}},true);
+/* calendário: datas livres + imprimir/baixar */
+document.addEventListener("change",e=>{if(e.target.id==="calcDe"||e.target.id==="calcAte"){S.calc[e.target.id==="calcDe"?"de":"ate"]=e.target.value;calcRefresh()}});
+function calcImprimir(c,l,a,b){const w=window.open("","_blank");if(!w)return toast("Libere pop-ups para baixar",true);const pl={todas:"TikTok + Instagram",tiktok:"Só TikTok",insta:"Só Instagram"}[S.calc.plat||"todas"];
+  const dias={};l.forEach(j=>{const k=ymd(new Date(j.inicio));(dias[k]=dias[k]||[]).push(j)});
+  const rows=Object.keys(dias).sort().map(k=>{const d=parseYmd(k);return `<tr class="dh"><td colspan="5">${d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit"})}</td></tr>`+dias[k].map(j=>`<tr><td>${hm2(j.inicio)}–${hm2(j.fim||j.inicio)}</td><td><b>${esc(j.marca||cliNome(j.cliente_id)||"")}</b></td><td>${esc(j.plataforma||"")}</td><td>${j.local_tipo==="estudio"?(j.espaco?"Sala "+esc(j.espaco):"Estúdio"):"Externo"}</td><td>${j.principal_id?esc(nome(j.principal_id)):"—"}</td></tr>`).join("")}).join("");
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Agenda ${esc(c.marca)} ${dmy(a)}-${dmy(new Date(b-1))}</title><style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:24px;color:#111}h1{font-size:20px;margin:0}.s{color:#666;margin:4px 0 16px}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;background:#111;color:#D5FF3F;padding:8px}td{padding:7px 8px;border-bottom:1px solid #eee}tr.dh td{background:#f3f3ec;font-weight:700;text-transform:capitalize}.bar{display:flex;gap:8px;margin-bottom:14px}.bar button{padding:8px 14px;border-radius:99px;border:1px solid #ccc;background:#fff;cursor:pointer}@media print{.bar{display:none}}</style></head><body>
+  <div class="bar"><button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button><button onclick="window.close()">✕ Fechar aba</button></div>
+  <h1>Agenda de lives · ${esc(c.marca)}</h1><div class="s">${dmy(a)} a ${dmy(new Date(b-1))} · ${pl} · ${l.length} live${l.length===1?"":"s"}</div>
+  <table><thead><tr><th>Horário</th><th>Marca</th><th>Plataforma</th><th>Local</th><th>Seller</th></tr></thead><tbody>${rows||`<tr><td colspan="5">Nenhuma live.</td></tr>`}</tbody></table></body></html>`);w.document.close()}
+/* operador na ficha da live */
+const _resumo80=openJobResumo;openJobResumo=function(id){_resumo80.apply(this,arguments);const j=S.jobs.find(x=>x.id===id);const box=$("#sheetIn .jres");if(!j||!box||!j.operador_id)return;box.insertAdjacentHTML("afterend",`<div class="small" style="margin-top:6px">🛠️ Operador: <b>${esc(nome(j.operador_id))}</b></div>`)};
+/* histórico da seller */
+S.snotas={};
+const SN_TIPO={obs:["📝","Observação"],elogio:["⭐","Elogio"],bo:["⚠️","BO / problema"]};
+function snStats(id){const ag=new Date();const l=S.jobs.filter(j=>j.status!=="cancelado"&&j.principal_id===id);const feitas=l.filter(j=>j.status==="realizado"||new Date(j.fim||j.inicio)<ag);const prox=l.filter(j=>new Date(j.inicio)>=ag);
+  const h=feitas.reduce((a,j)=>a+horasJob(j),0);const gmv=feitas.reduce((a,j)=>a+(Number(j.gmv)||0),0);const sub=S.jobs.filter(j=>j.status!=="cancelado"&&j.substituto_id===id).length;
+  const marcas={};feitas.forEach(j=>{const k=j.marca||cliNome(j.cliente_id)||"?";marcas[k]=(marcas[k]||0)+1});const ult=feitas.sort((a,b)=>new Date(b.inicio)-new Date(a.inicio))[0];
+  return {n:feitas.length,prox:prox.length,h,gmv,gph:h?gmv/h:0,sub,marcas:Object.entries(marcas).sort((a,b)=>b[1]-a[1]).slice(0,5),ult}}
+function snHtml(id){const st=snStats(id);const ns=S.snotas[id];const val=!isOp()||S.perm.operador.valores;
+  return `<div class="sec"><h2>📈 Histórico da seller</h2></div>
+  <div class="snk"><div><b>${st.n}</b><span>lives feitas</span></div><div><b>${fH(st.h)}</b><span>no ar</span></div>${val?`<div><b>${brl(st.gmv)}</b><span>GMV</span></div><div><b>${brl(st.gph)}</b><span>GMV por hora</span></div>`:""}<div><b>${st.prox}</b><span>próximas</span></div><div><b>${st.sub}</b><span>como substituta</span></div></div>
+  ${st.marcas.length?`<div class="small muted" style="margin:6px 0">Marcas: ${st.marcas.map(([m,n])=>`${esc(m)} (${n})`).join(" · ")}${st.ult?` · última live ${new Date(st.ult.inicio).toLocaleDateString("pt-BR")}`:""}</div>`:""}
+  <div class="sec" style="margin-top:14px"><h2>🗒️ Anotações da equipe</h2></div><p class="small muted" style="margin-top:-6px">Só a equipe vê. A seller nunca vê estas anotações.</p>
+  <div class="chips" style="margin:0 0 8px">${Object.entries(SN_TIPO).map(([k,[i,t]])=>`<button type="button" data-act="snTipo" data-v="${k}" class="${(S.snTipo||"obs")===k?"on":""}">${i} ${t}</button>`).join("")}</div>
+  <textarea id="snTxt" rows="2" placeholder="Ex.: chegou 30 min atrasada na live da Hidratei; ótima energia na Yasmin…" style="width:100%"></textarea>
+  <div class="row" style="margin:6px 0 10px"><button type="button" class="btn sm p" data-act="snAdd" data-id="${id}">Salvar anotação</button></div>
+  <div id="snLista">${ns===undefined?`<div class="small muted">Carregando…</div>`:ns===null?`<div class="warnbox small">Falta rodar o SQL implay_operador_historico.sql para as anotações.</div>`:!ns.length?`<div class="small muted">Nenhuma anotação ainda.</div>`:ns.map(n=>`<div class="snn ${n.tipo}"><div>${(SN_TIPO[n.tipo]||SN_TIPO.obs)[0]} ${esc(n.texto)}</div><div class="small muted">${new Date(n.criado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"})} · ${esc(nome(n.criado_por)||"?")}${isSocio()||n.criado_por===S.me.id?` · <a href="#" data-act="snDel" data-id="${id}" data-v="${n.id}">apagar</a>`:""}</div></div>`).join("")}</div>`}
+function snRefresh(id){const b=$("#snBox");if(b)b.innerHTML=snHtml(id)}
+const _openMembro80=openMembro;openMembro=function(id){_openMembro80.apply(this,arguments);const m=id&&S.membros.find(x=>x.id===id);if(!m||m.papel!=="seller"||!S.me||S.me.papel==="seller")return;
+  const f=$("#sheetIn form")||$("#sheetIn");if(!f)return;const acts=f.querySelector(".acts");const box=document.createElement("div");box.id="snBox";box.innerHTML=snHtml(id);if(acts)acts.before(box);else f.appendChild(box);
+  db.from("imp_seller_notas").select("*").eq("membro_id",id).order("criado_em",{ascending:false}).then(r=>{S.snotas[id]=r.error?null:(r.data||[]);snRefresh(id)})};
 if(!orcPreviewBoot())boot();
 </script>
 <script>

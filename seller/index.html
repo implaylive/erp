@@ -107,7 +107,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="6";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="7";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -317,6 +317,7 @@ document.addEventListener("change",e=>{const i=e.target;if(i.dataset&&i.dataset.
 
 /* ---------- dados ---------- */
 async function load(){
+  try{const r=await db.from("imp_config").select("valor").eq("chave","permissoes").maybeSingle();S.perm=(r&&!r.error&&r.data&&r.data.valor&&r.data.valor.seller)||{}}catch(_){S.perm={}}
   const [a,b,c,d]=await Promise.all([db.rpc("imp_mural"),db.rpc("imp_meus_jobs"),db.rpc("imp_central_seller"),db.rpc("imp_minhas_confirmacoes")]);
   if(a.error||b.error){toast(erro(a.error||b.error),true)}
   S.mural=a.data||[];S.meus=b.data||[];S.marcas=(c&&!c.error&&c.data)||[];S.conf={};((d&&!d.error&&d.data)||[]).forEach(x=>S.conf[x.job_id]=x);
@@ -324,11 +325,13 @@ async function load(){
 async function refresh(){if(!S.me||S.me.status!=="ativo"||!S.me.termo_aceito_em||S.me.termo_versao!==TERMO_VERSAO)return;await load();if($("#sheet").hidden)render()}
 
 /* ---------- telas ---------- */
+function slPode(k){const p=S.perm||{};return !((k==="mural"&&p.mural===false)||(k==="marcas"&&p.marcas===false))}
 function render(){
+  if(!slPode(S.tab))S.tab="meus";
   const conv=S.meus.filter(j=>j.status==="aberto"&&j.situacao!=="aguardando"&&j.minha_vaga==="substituto"&&j.principal_livre&&new Date(j.inicio)>new Date()&&!S.meus.some(x=>x.id===j.id&&x.situacao==="aguardando"));
   const prox=S.meus.filter(j=>j.status==="aberto"&&new Date(j.fim)>new Date());
   $("#app").innerHTML=`<div class="wrap"><div class="top"><div><img class="logoimg" src="${LOGO_LIMA}" alt="IMPlay" data-act="tab" data-v="mural" style="cursor:pointer" title="Início"><div class="live" style="margin-top:8px">● app do seller</div></div><div class="small muted" style="text-align:right">${esc(S.me.nome)}</div></div>
-  <div class="tabs">${[["mural","Lives abertas"],["meus","Minha agenda"+(prox.length?" ("+prox.length+")":"")],["marcas","Marcas"+((S.marcas||[]).length?" ("+S.marcas.length+")":"")],["perfil","Perfil"]].map(([k,l])=>`<button data-act="tab" data-v="${k}" class="${S.tab===k?"on":""}">${l}</button>`).join("")}</div>
+  <div class="tabs">${[["mural","Lives abertas"],["meus","Minha agenda"+(prox.length?" ("+prox.length+")":"")],["marcas","Marcas"+((S.marcas||[]).length?" ("+S.marcas.length+")":"")],["perfil","Perfil"]].filter(([k])=>slPode(k)).map(([k,l])=>`<button data-act="tab" data-v="${k}" class="${S.tab===k?"on":""}">${l}</button>`).join("")}</div>
   ${conv.map(j=>`<div class="banner"><b>A vaga de principal abriu.</b><br>${esc(j.marca)} · ${dExt(j.inicio)}, ${hm(j.inicio)}. Quer assumir? (você decide)<button class="btn" style="margin-top:10px;background:#fff;color:#000" data-act="pegar" data-id="${j.id}" data-v="principal">Quero ser o principal</button></div>`).join("")}
   ${S.tab==="mural"?mural():S.tab==="meus"?meus():S.tab==="marcas"?marcasView():perfil()}
   <div class="foot">Conectado como ${esc(S.email)} · <a href="#" data-act="sair" style="color:var(--cinza)">Sair desta conta</a> · Versão ${APP_VERSAO}</div></div>`;
