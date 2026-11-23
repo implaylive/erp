@@ -635,6 +635,16 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .confb{cursor:pointer;border-color:var(--volt)!important;padding:12px 14px;margin-bottom:12px}.confr{display:grid;grid-template-columns:22px 92px 1fr;gap:8px;align-items:start;padding:8px 4px;border-bottom:1px solid var(--line,#2a2a2a);cursor:pointer}.confr.meu{opacity:.6;cursor:default}.calenv{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,#2a2a2a);font-size:13px}.atnb{border:1px solid var(--warn,#f5a623);border-radius:12px;padding:10px 12px;margin-bottom:10px}.atn{font-size:13px;padding:4px 0}.atn.n3{color:var(--flash,#ff4d6d);font-weight:600}
 .sexr{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--linha)}.sexa{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.sexi{min-width:0}
 .sugs{margin-top:6px;display:grid;gap:6px}.sug{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card2);border:1px solid var(--linha);border-radius:10px;padding:7px 10px}.sugb{display:flex;gap:6px}
+.sxp{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;margin-bottom:6px}.sxpt{margin-bottom:8px}.sxbar{display:flex;gap:3px;height:10px;border-radius:99px;overflow:hidden;background:var(--card2)}.sxbar span{display:block}
+.sxgw{overflow-x:auto;border:1px solid var(--linha);border-radius:14px;background:var(--card)}.sxg{display:grid;grid-template-columns:170px repeat(7,minmax(88px,1fr));min-width:800px}
+.sxgh{padding:9px 6px;font-size:12px;color:var(--cinza);text-align:center;border-bottom:1px solid var(--linha)}.sxgh b{color:var(--chalk)}.sxgh.fim{background:var(--card2)}
+.sxgb{padding:9px 12px;font-weight:700;font-size:13px;border-bottom:1px solid var(--linha);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:sticky;left:0;background:var(--card);z-index:1}
+.sxgc{padding:5px 4px;border-bottom:1px solid var(--linha);border-left:1px solid var(--linha);display:flex;flex-direction:column;gap:3px;min-height:42px;justify-content:center}
+.sxch{font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 6px;text-align:center;white-space:nowrap;background:rgba(213,255,63,.14);color:var(--volt);border:1px solid rgba(213,255,63,.28)}.sxch.tt{background:rgba(37,244,238,.12);color:#5ff5ee;border-color:rgba(37,244,238,.3)}.sxch.ig{background:rgba(239,143,196,.14);color:var(--flash);border-color:rgba(239,143,196,.3)}
+.sxc{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:8px}
+.sxk{background:var(--card);border:1px solid var(--linha);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}.sxk.pre{border-color:var(--volt)}
+.sxth{aspect-ratio:4/5;background:#0c0d08;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}.sxth img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.sxkb{padding:12px 14px 4px;display:grid;gap:4px}.sxka{display:flex;gap:6px;padding:10px 14px 14px;flex-wrap:wrap}.sxka .btn.p{flex:1}
 .cimg{margin:10px 0}.cimg img{display:block;width:100%;max-width:400px;margin:0 auto;border-radius:12px;border:1px solid var(--linha)}.cimga{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 @media(max-width:560px){.sexr{flex-direction:column;align-items:flex-start}.sexa{justify-content:flex-start}}
 form.jobf .fld{margin-bottom:18px}form.jobf .sec{margin-top:30px;padding-top:16px;border-top:1px solid var(--line,#2a2a2a)}form.jobf .sec h2{margin-bottom:12px}
@@ -2602,7 +2612,7 @@ VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
 const APP_VERSAO="77";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
- ["77","23/11","📆 Calendário de sexta: o botão \"Semana que vem\" (em Lives, e aviso no Painel de sexta a domingo) lista todas as marcas com live na semana que vem, com o status de cada uma (não enviado, aguardando OK, aprovado, pediu mudança). 🖼️ Imagem do calendário no padrão IMPlay para mandar pelo WhatsApp, com logo da marca. A página do cliente agora deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
+ ["77","23/11","📆 Semana que vem: nova página no menu (com contador de quem falta, de quinta a domingo) e aviso no Painel. Mostra a semana inteira por marca, o progresso (aprovadas, aguardando, pediram mudança, para enviar) e um cartão por marca com a miniatura da imagem. 🖼️ Gerar a imagem no padrão IMPlay (com a logo da marca) e abrir o WhatsApp com o texto e o link, ou baixar todas as imagens de uma vez. A página do cliente deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
@@ -4358,7 +4368,7 @@ document.addEventListener("click",e=>{const b=e.target.closest('#sheetIn [data-a
   const sub=$('#sheetIn [name="substituto_id"]');if(sub&&i.value&&sub.value===i.value){sub.value="";sub.dispatchEvent(new Event("change",{bubbles:true}))}},true);
 /* ================= v77 · SEXTA: calendário da semana que vem por marca + imagem para o cliente + sugestões do cliente ================= */
 const CAL77={bg:"#0c0d08",row:"#16170f",line:"#26271c",lima:"#dceb8c",roxo:"#8e3a87",rosa:"#e87cd1"};
-const sexSexta=()=>[5,6,0].includes(new Date().getDay());
+const sexSexta=()=>[4,5,6,0].includes(new Date().getDay());/* de quinta a domingo o ERP lembra do calendário da semana que vem */
 const sexPer=()=>calcPer("sem1");
 const eqId=(a,b)=>String(a)===String(b);
 function sexLinhas(){const [a,b]=sexPer();const usados=new Set();
@@ -4378,19 +4388,38 @@ function sexStatus(x,a,b){const e=sexEnvDe(x.c.id,a,b);
   if(e.status==="aprovado")return{k:"ok",e,mud,precisa:mud,t:`<span class="tag o">✅ Aprovado</span>${sugLista(e).length?" com mudanças":""}${mudT}`};
   if(e.status==="ajuste")return{k:"aj",e,mud,precisa:pend>0||rec||mud||!sugLista(e).length,t:`<span class="tag w">✏️ ${e.aprova_com_ajustes?"Aprovou com mudanças":"Pediu ajuste"}</span>${pend?` <b>${pend} sugest${pend>1?"ões":"ão"} para decidir</b>`:""}${mudT}`};
   return{k:"esp",e,mud,precisa:mud,t:`<span class="tag">⏳ Aguardando OK</span>${mudT}`}}
+/* página "Semana que vem" (aba própria no menu): progresso, grade da semana e um cartão por marca com miniatura da imagem */
+const sexDiaCurto=d=>["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][d.getDay()];
+const hh77=d=>{const t=new Date(d);return t.getHours()+(t.getMinutes()?"h"+String(t.getMinutes()).padStart(2,"0"):"")};
+function sexGrade(rows,a){const dias=[...Array(7)].map((_,i)=>{const d=new Date(a);d.setDate(a.getDate()+i);return d});
+  return `<div class="sxg"><div class="sxgh"></div>${dias.map(d=>`<div class="sxgh ${d.getDay()%6===0?"fim":""}"><b>${sexDiaCurto(d)}</b> ${dmy(d)}</div>`).join("")}
+   ${rows.map(x=>`<div class="sxgb" title="${esc(x.c.marca)}">${esc(x.c.marca)}</div>${dias.map(d=>{const k=ymd(d);return `<div class="sxgc">${x.l.filter(j=>ymd(new Date(j.inicio))===k).map(j=>`<span class="sxch ${platTipo(j.plataforma)}" title="${esc(j.plataforma||"")}">${hh77(j.inicio)}–${hh77(j.fim||j.inicio)}h</span>`).join("")}</div>`}).join("")}`).join("")}</div>`}
 function sexHtml(){const {a,b,rows,soltas}=sexLinhas();const st=rows.map(x=>({x,s:sexStatus(x,a,b)}));
-  const nconf=rows.reduce((n,x)=>n+x.l.filter(j=>j.alterado_em&&!j.conferido_em).length,0);
-  return `<h3>📆 Semana que vem <span class="muted small" style="font-weight:500">${dmy(a)} a ${dmy(new Date(b-1))}</span></h3>
-  <p class="small muted" style="margin-top:0">Uma linha por marca. Gere a imagem, mande pelo WhatsApp e acompanhe aqui quem aprovou ou pediu mudança.</p>
-  ${S.sexEnv===null?`<div class="warnbox small" style="margin-bottom:8px">Falta rodar o SQL implay_calendario_ok.sql para gerar links e ver as respostas.</div>`:""}
+  const n=k=>st.filter(y=>y.s.k===k).length,tot=st.length;
+  const seg=(k,cor,t)=>n(k)?`<span style="flex:${n(k)};background:${cor}" title="${t}"></span>`:"";
+  const nconf=rows.reduce((q,x)=>q+x.l.filter(j=>j.alterado_em&&!j.conferido_em).length,0);
+  if(!tot)return `<div class="empty">Nenhuma live agendada para a semana que vem (${dmy(a)} a ${dmy(new Date(b-1))}).</div>`;
+  return `${S.sexEnv===null?`<div class="warnbox small" style="margin-bottom:8px">Falta rodar o SQL implay_calendario_ok.sql para gerar links e ver as respostas.</div>`:""}
   ${nconf?`<div class="warnbox small" style="margin-bottom:8px">🔎 ${nconf} live${nconf>1?"s":""} da semana ainda ${nconf>1?"não foram conferidas":"não foi conferida"} por outra pessoa. <a href="#" data-act="confOpen">Conferir antes de mandar ›</a></div>`:""}
   ${soltas.length?`<div class="warnbox small" style="margin-bottom:8px">⚠️ ${soltas.length} live${soltas.length>1?"s":""} da semana sem marca cadastrada (${[...new Set(soltas.map(j=>j.marca||"sem marca"))].map(esc).join(", ")}). Não entram em nenhum calendário.</div>`:""}
-  ${rows.length?st.map(({x,s})=>{const pl=[...new Set(x.l.map(j=>j.plataforma).filter(Boolean))].join(" + ");
-    return `<div class="sexr"><div class="sexi"><b>${esc(x.c.marca)}</b> <span class="small muted">${x.l.length} live${x.l.length>1?"s":""}${pl?" · "+esc(pl):""}</span><br>${s.t}</div>
-    <div class="sexa"><button type="button" class="btn sm ${s.k==="nao"?"p":""}" data-act="sexImg" data-id="${x.c.id}">🖼️ Imagem</button><button type="button" class="btn sm" data-act="sexWa" data-id="${x.c.id}">💬 WhatsApp</button><button type="button" class="btn sm" data-act="sexAbrir" data-id="${x.c.id}">Abrir</button></div></div>`}).join(""):`<div class="empty">Nenhuma live agendada para a semana que vem.</div>`}
-  <div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
-const sexRefresh=()=>{const b=$("#sexBox");if(b)b.innerHTML=sexHtml()};
-async function sexOpen(){openSheet(`<div id="sexBox"><p class="muted">Carregando…</p></div>`);await sexLoad();sexRefresh()}
+  <div class="sxp"><div class="sxpt"><b>${n("ok")}</b> de ${tot} marcas aprovadas <span class="muted small">· ${n("esp")} aguardando OK · ${n("aj")} pediram mudança · ${n("nao")} para enviar</span></div>
+   <div class="sxbar">${seg("ok","var(--ok)","Aprovadas")}${seg("esp","var(--volt)","Aguardando OK")}${seg("aj","var(--warn)","Pediram mudança")}${seg("nao","var(--linha2)","Para enviar")}</div></div>
+  <div class="sec"><h2>A semana inteira</h2><span class="muted small">${dmy(a)} a ${dmy(new Date(b-1))} · ${tot} marca${tot>1?"s":""} · ${rows.reduce((q,x)=>q+x.l.length,0)} lives</span></div>
+  <div class="sxgw">${sexGrade(rows,a)}</div>
+  <div class="sec"><h2>Uma imagem por marca</h2><span class="muted small">toque na imagem para abrir</span></div>
+  <div class="sxc">${st.map(({x,s})=>{const pl=[...new Set(x.l.map(j=>j.plataforma).filter(Boolean))].join(" + "),feito=!s.precisa;
+    return `<div class="sxk ${s.precisa?"pre":""}"><div class="sxth" data-act="sexImg" data-id="${x.c.id}"><img data-th="${x.c.id}" alt="Prévia do calendário de ${esc(x.c.marca)}" hidden><span class="muted small">Gerando prévia…</span></div>
+     <div class="sxkb"><b>${esc(x.c.marca)}</b><span class="small muted">${x.l.length} live${x.l.length>1?"s":""}${pl?" · "+esc(pl):""}</span><div>${s.t}</div></div>
+     <div class="sxka"><button type="button" class="btn sm ${feito?"":"p"}" data-act="sexImg" data-id="${x.c.id}">🖼️ ${feito?"Ver imagem":"Gerar imagem e enviar"}</button><button type="button" class="btn sm" data-act="sexWa" data-id="${x.c.id}" title="Só o texto com o link">💬</button><button type="button" class="btn sm" data-act="sexAbrir" data-id="${x.c.id}">Abrir</button></div></div>`}).join("")}</div>`}
+S._th=S._th||{};
+const sexThumbKey=x=>x.c.id+"|"+x.c.marca+"|"+x.l.map(j=>j.id+j.inicio+j.fim+(j.plataforma||"")).join(",")+"|"+(cimgLogo(x.c.id)?1:0);
+async function sexThumbs(){const {a,b,rows}=sexLinhas();const tk=S._thTok=(S._thTok||0)+1;
+  for(const x of rows){if(tk!==S._thTok)return;const k=sexThumbKey(x);let u=S._th[k];
+    if(!u){try{const cv=await calcCartao(x.c,x.l,a,b,cimgLogo(x.c.id));const sm=document.createElement("canvas");sm.width=300;sm.height=Math.round(cv.height*300/cv.width);sm.getContext("2d").drawImage(cv,0,0,sm.width,sm.height);u=S._th[k]=sm.toDataURL("image/jpeg",.82)}catch(_){continue}}
+    const im=document.querySelector(`[data-th="${x.c.id}"]`);if(im){im.src=u;im.hidden=false;if(im.nextElementSibling)im.nextElementSibling.remove()}
+    await new Promise(r=>setTimeout(r,0))}}
+const sexRefresh=()=>{if(S.tab==="semana")render()};
+async function sexOpen(){S.tab="semana";closeSheet();render();window.scrollTo(0,0);await sexLoad();if(S.tab==="semana")render()}
 /* link do envio: reaproveita o que já foi enviado (se nada mudou e o cliente não pediu ajuste); senão cria um novo */
 async function sexEnvio(c,l,a,b){const e=sexEnvDe(c.id,a,b);if(e&&e.status!=="ajuste"&&!calcMudou(e,l))return e;
   const r=await db.from("imp_cal_envios").insert({cliente_id:c.id,marca:c.marca,ini:ymd(a),fim:ymd(new Date(b-1)),itens:calcSnap(l)}).select().single();
@@ -4489,7 +4518,8 @@ async function cimgRender(){const d=cimgDados();const p=$("#cimgPrev");if(!d||!p
   const im=new Image();im.alt="Prévia do calendário";im.src=cv.toDataURL("image/png");q.replaceChildren(im)}
 async function cimgOpen(cid,per,volta){S.cimg={cid,per,volta:volta||""};openSheet(`<div id="cimgBox">${cimgHtml()}</div>`);await cimgRender()}
 const cimgBlob=()=>new Promise(ok=>S.cimg.canvas.toBlob(ok,"image/png"));
-const cimgNome=()=>{const d=cimgDados();return "calendario-"+String(d.c.marca).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-"+ymd(d.a)+".png"};
+const calNome=(c,a)=>"calendario-"+String(c.marca).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-"+ymd(a)+".png";
+const cimgNome=()=>{const d=cimgDados();return calNome(d.c,d.a)};
 async function cimgCopiar(){if(!S.cimg.canvas)return false;
   try{await navigator.clipboard.write([new ClipboardItem({"image/png":cimgBlob()})]);return true}catch(_){toast("Este navegador não deixou copiar a imagem. Use Baixar.",true);return false}}
 document.addEventListener("change",async e=>{if(e.target.id!=="cimgFile")return;const f=e.target.files[0];const d=cimgDados();if(!f||!d)return;
@@ -4529,8 +4559,8 @@ async function sugDecidir(btn,envId,idx,aceita){
 /* ---- avisos: banner de sexta e "Precisa de você" quando o cliente responde ---- */
 function sexBanner(){if(!S.me||S.me.papel==="seller"||!sexSexta())return "";
   if(S.sexEnv===undefined&&!S._sexL){S._sexL=true;sexLoad().finally(()=>{S._sexL=false;if(["painel","jobs"].includes(S.tab)&&$("#sheet").hidden)render()})}
-  if(!S.sexEnv)return "";const {a,b,rows}=sexLinhas();const n=rows.filter(x=>sexStatus(x,a,b).precisa).length;if(!n)return "";
-  return `<div class="card confb" data-act="sexOpen"><b>📆 Semana que vem: ${n} marca${n>1?"s":""} para mandar o calendário</b><span class="small muted"> · gerar ›</span></div>`}
+  if(!S.sexEnv)return "";const {a,b,rows}=sexLinhas();const st=rows.map(x=>sexStatus(x,a,b));const n=st.filter(s=>s.precisa).length;if(!n)return "";
+  return `<div class="card confb" data-act="sexOpen" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span><b>📆 Semana que vem: ${n} marca${n>1?"s":""} para mandar o calendário</b><br><span class="small muted">${st.filter(s=>s.k==="ok"&&!s.precisa).length} de ${rows.length} já aprovadas · ${dmy(a)} a ${dmy(new Date(b-1))}</span></span><button type="button" class="btn p sm" data-act="sexOpen">Gerar ›</button></div>`}
 async function calRespLoad(){if(!S.me||S.me.papel==="seller")return;
   const r=await db.from("imp_cal_envios").select("*").not("resposta_em","is",null).gte("resposta_em",new Date(Date.now()-21*864e5).toISOString()).order("resposta_em",{ascending:false}).limit(100);
   S.calResp=r.error?null:(r.data||[]);if(sexSexta()||S.sexEnv!==undefined)await sexLoad()}
@@ -4539,15 +4569,24 @@ const _loadAll77=loadAll;loadAll=async function(){await _loadAll77.apply(this,ar
 const _pend77=pendencias;pendencias=function(){const p=_pend77();if(!S.me||S.me.papel==="seller"||!S.calResp)return p;const vistos=calVistos();
   S.calResp.filter(e=>e.status==="ajuste"&&(sugPend(e)>0||(!sugLista(e).length&&!vistos[e.id]))).slice(0,5).forEach(e=>{const n=sugPend(e);
     p.unshift({t:`${e.marca}: ${n?`${n} sugest${n>1?"ões":"ão"} de mudança no calendário`:"pediu ajuste no calendário"}`,v:dmy(parseYmd(e.ini))+" a "+dmy(parseYmd(e.fim)),act:"calResp",a:String(e.id)})});return p};
+IC.calok='<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"/>';
+MENU[0][1].splice(MENU[0][1].findIndex(x=>x[0]==="jobs")+1,0,["semana","Semana que vem","Calendário por marca","calok"]);
+TAB_NOME.semana="Semana que vem";TAB_SUB.semana="Calendário da semana seguinte: uma imagem por marca, para mandar e acompanhar o OK";
+VIEWS.semana=()=>sexHtml();HEADACT.semana=()=>`<button type="button" class="btn sm" data-act="sexTodas">⬇️ Baixar todas as imagens</button>`;
+const _badges77=badges;badges=function(){const bd=_badges77();if(S.me&&S.me.papel!=="seller"&&S.sexEnv&&sexSexta()){const {a,b,rows}=sexLinhas();const n=rows.filter(x=>sexStatus(x,a,b).precisa).length;if(n)bd.semana=n}return bd};
+const _render77=render;render=function(){const r=_render77.apply(this,arguments);if(S.tab==="semana")sexThumbs();return r};
 const _hJobs77=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm ${sexSexta()?"p":""}" data-act="sexOpen">📆 Semana que vem</button>`+(_hJobs77?_hJobs77():"");
 const _painel77=VIEWS.painel;VIEWS.painel=()=>{const h=_painel77();const b=sexBanner();if(!b)return h;const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+b+h.slice(i):b+h};
 const _agenda77=VIEWS.agenda;VIEWS.agenda=()=>sexBanner()+_agenda77();
 document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act,id=a.dataset.id,v=a.dataset.v;
-  if(!["sexOpen","sexImg","sexWa","sexAbrir","calcImg","cimgWa","cimgBaixar","cimgCopiar","cimgShare","cimgLogo","cimgLogoX","cimgVolta","sugOk","sugNo","calResp"].includes(act))return;
+  if(!["sexOpen","sexTodas","sexImg","sexWa","sexAbrir","calcImg","cimgWa","cimgBaixar","cimgCopiar","cimgShare","cimgLogo","cimgLogoX","cimgVolta","sugOk","sugNo","calResp"].includes(act))return;
   e.preventDefault();e.stopImmediatePropagation();
   const cli=cid=>S.clientes.find(x=>eqId(x.id,cid));
   switch(act){
     case"sexOpen":return sexOpen();
+    case"sexTodas":{const {a:ini,b:fim,rows}=sexLinhas();if(!rows.length)return;toast(`Gerando ${rows.length} imagem${rows.length>1?"ns":""}…`);let n=0;
+      for(const x of rows){const cv=await calcCartao(x.c,x.l,ini,fim,cimgLogo(x.c.id));const bl=await new Promise(r=>cv.toBlob(r,"image/png"));const u=URL.createObjectURL(bl);const l=document.createElement("a");l.href=u;l.download=calNome(x.c,ini);document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);n++;await new Promise(r=>setTimeout(r,500))}
+      toast(n+" imagem"+(n>1?"ns":"")+" baixada"+(n>1?"s":"")+". Se o navegador perguntar, permita vários downloads.");return}
     case"sexImg":return cimgOpen(id,"sem1","sex");
     case"sexAbrir":S.calc={cid:id,per:"sem1"};return calcOpen();
     case"sexWa":{const c=cli(id);if(!c)return;const [x,y]=sexPer();return sexWhats(a,c,calcLives(c.id,x,y),x,y)}
@@ -4558,7 +4597,7 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
     case"cimgWa":{const d=cimgDados();if(!d||!S.cimg.canvas)return;return sexWhats(a,d.c,d.l,d.a,d.b,async()=>{if(await cimgCopiar())toast("Imagem copiada: cole na conversa")})}
     case"cimgLogo":{const f=$("#cimgFile");if(f)f.click();return}
     case"cimgLogoX":{const d=cimgDados();try{localStorage.removeItem("imp-cal-logo:"+d.c.id)}catch(_){}const bx=$("#cimgBox");if(bx){bx.innerHTML=cimgHtml();await cimgRender()}return}
-    case"cimgVolta":if(S.cimg.volta==="sex")return sexOpen();if(S.cimg.volta==="calc")return calcOpen();return closeSheet();
+    case"cimgVolta":if(S.cimg.volta==="sex")return closeSheet();if(S.cimg.volta==="calc")return calcOpen();return closeSheet();
     case"sugOk":return sugDecidir(a,id,Number(v),true);
     case"sugNo":return sugDecidir(a,id,Number(v),false);
     case"calResp":{const r=(S.calResp||[]).find(x=>eqId(x.id,v));if(!r)return;const m=calVistos();m[r.id]=1;try{localStorage.setItem("imp-cal-vistos",JSON.stringify(m))}catch(_){}
