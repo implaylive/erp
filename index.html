@@ -633,6 +633,11 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .cpusd{border:1px solid var(--linha2);background:var(--card2);border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:13px}.cpusd input{background:var(--card);color:inherit;border:1px solid var(--linha);border-radius:8px;padding:5px 8px;font:inherit}
 .simc{border:1px solid var(--line,#333);border-radius:12px;padding:8px 10px;margin-bottom:10px}.simc.multi{border-color:var(--volt);box-shadow:0 0 0 1px var(--volt) inset}.simh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
 .confb{cursor:pointer;border-color:var(--volt)!important;padding:12px 14px;margin-bottom:12px}.confr{display:grid;grid-template-columns:22px 92px 1fr;gap:8px;align-items:start;padding:8px 4px;border-bottom:1px solid var(--line,#2a2a2a);cursor:pointer}.confr.meu{opacity:.6;cursor:default}.calenv{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,#2a2a2a);font-size:13px}.atnb{border:1px solid var(--warn,#f5a623);border-radius:12px;padding:10px 12px;margin-bottom:10px}.atn{font-size:13px;padding:4px 0}.atn.n3{color:var(--flash,#ff4d6d);font-weight:600}
+form.jobf .fld{margin-bottom:18px}form.jobf .sec{margin-top:30px;padding-top:16px;border-top:1px solid var(--line,#2a2a2a)}form.jobf .sec h2{margin-bottom:12px}
+form.jobf .seg,form.jobf .pchips,form.jobf .row{gap:10px!important}form.jobf .seg button,form.jobf .pch{margin:0}
+form.jobf input:not([type=checkbox]):not([type=radio]),form.jobf select{min-height:40px;height:40px;padding:6px 12px;font-size:15px}form.jobf textarea{min-height:70px}
+form.jobf .hint{font-size:12.5px;margin-top:6px}form.jobf .jtop{gap:14px}form.jobf .jsub select{max-width:340px}
+form.jobf .jsel{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf .jsel .pch{padding:8px 14px}form.jobf .jtop{align-items:end}form.jobf [data-pick] .pchips,form.jobf .pchips{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf details.jmais{margin:6px 0 4px}form.jobf details.jmais summary{cursor:pointer;font-size:13px;opacity:.8}
 </style>
 </head>
 <body>
@@ -859,10 +864,10 @@ function openJob(id,preset={}){
   const j=id?S.jobs.find(x=>x.id===id):Object.assign({modalidade:"servico",local_tipo:"estudio",seller_pago_por:"cliente",publicado:true,status:"aberto"},preset);
   const ini=j.inicio?new Date(j.inicio):null,fim=j.fim?new Date(j.fim):null;
   const contratos=S.propostas.filter(p=>p.status==="aceita");
-  openSheet(`<form onsubmit="return false"><h3>${id?esc(j.marca||"Live")+" · "+jn(j.numero):"Nova live"}</h3>
+  openSheet(`<form onsubmit="return false" class="jobf"><h3>${id?esc(j.marca||"Live")+" · "+jn(j.numero):"Nova live"}</h3>
    ${id?`<div>${j.status==="realizado"?`<span class="tag o">realizado</span>`:j.status==="cancelado"?`<span class="tag x">cancelado</span>`:`<span class="tag v">aberto</span>`}</div>`:""}
    <div class="fld"><label>Contrato</label><select name="proposta_id" data-act-change="jobContrato" data-1c="lista"><option value="">— sem contrato —</option>${contratos.map(p=>`<option value="${p.id}" ${p.id===j.proposta_id?"selected":""}>${esc(p.contrato_numero||pn(p.numero))} · ${esc(p.marca)}</option>`).join("")}</select><div class="hint">Liga a live às condições de venda da proposta aceita.</div></div>
-   ${cliSel(j.cliente_id,"Cliente")}${fld("marca","Marca",j.marca)}
+   <div class="cols2 jtop">${cliSel(j.cliente_id,"Cliente")}${fld("marca","Marca",j.marca)}</div>
    ${pick("plataforma","Onde é a live",j.plataforma||(id?"":"TikTok"),PLAT_LIVE,{ph:"Outra: escreva"})}<div class="hint" style="margin-top:-6px">Mesma marca no TikTok e no Instagram? Cadastre uma live para cada plataforma.</div>${jobPromosHtml(j)}
    <div class="fld"><label>Modalidade</label>${seg("modalidade",[["servico","Serviço completo"],["aluguel","Só aluguel do espaço"]],j.modalidade)}</div>
    <div data-show="modalidade=servico" class="sbox eqoff">${pickM("equipamento","Equipamento (pode marcar mais de um)",j.equipamento||"",["Celular","Câmera profissional","2 câmeras","Iluminação extra","Microfone de lapela","Cenário da marca"],{ph:"Outro equipamento: escreva aqui"})}</div>
@@ -878,12 +883,14 @@ function openJob(id,preset={}){
     <div class="hint v" id="jobQuando"></div></div></div>
    <div data-show="modalidade=servico">
    <div class="sec"><h2>Seller</h2></div>
-   <div class="row" style="gap:8px">${tglBtn("seller_clt","Seller IMPlay (CLT)",!!j.seller_clt)}${tglBtn("seller_app","Vaga no app dos sellers",id?!!j.publicado:false)}${tglBtn("seller_conv","Convidado / influenciador",!!j.convidados)}</div>
+   <div class="fld"><label>Quem faz a live</label><input type="hidden" name="principal_id" value="${esc(j.principal_id||"")}"><div class="pchips jsel">${(()=>{const L=S.membros.filter(m=>m.status==="ativo"&&(m.papel==="seller"||m.vinculo==="clt")).sort((a,b)=>String(a.nome).localeCompare(String(b.nome)));return `<button type="button" class="pch ${!j.principal_id?"on":""}" data-act="pselSet" data-v="">Ainda ninguém</button>`+L.map(m=>`<button type="button" class="pch ${m.id===j.principal_id?"on":""}" data-act="pselSet" data-v="${m.id}">${esc(String(m.nome).split(" ").slice(0,2).join(" "))}</button>`).join("")})()}</div></div>
+   <div class="fld jsub"><label>Substituto (opcional)</label><select name="substituto_id" data-1c="lista">${sellerOpts(j.substituto_id)}</select></div>
+   <details class="adv jmais" ${(id&&j.publicado&&!j.principal_id)||j.seller_clt||j.convidados?"open":""}><summary>Mais opções: vaga no app, equipe extra, convidado</summary>
+   <div class="row" style="gap:10px;margin-top:10px">${tglBtn("seller_clt","Equipe IMPlay extra",!!j.seller_clt)}${tglBtn("seller_app","Abrir vaga no app",id?!!j.publicado:false)}${tglBtn("seller_conv","Convidado / influenciador",!!j.convidados)}</div></details>
    <div data-show="seller_clt=1" class="sbox"><label class="lb">Quem da equipe IMPlay vai</label>${msel("clt_ids",S.membros.filter(m=>m.status==="ativo"&&(m.vinculo==="clt"||m.papel==="basico")),j.clt_ids||[])}</div>
    <div data-show="seller_app=1" class="sbox"><label class="lb">Vaga no app · aparece para os sellers cadastrados escolherem</label>
     <div class="cols2">${moneyFld("valor_seller","Cachê do seller (R$)",j.valor_seller)}<div class="fld"><label>Quem paga o seller</label>${seg("seller_pago_por",[["cliente","Cliente direto"],["implay","IMPlay"]],j.seller_pago_por)}</div></div>
     ${area("requisitos","Requisitos / observações para o seller",j.requisitos)}
-    <details class="adv"><summary>Já sabe quem vai? Definir seller agora (opcional)</summary><div class="cols2"><div class="fld"><label>Seller principal (A)</label><select name="principal_id" data-1c="lista">${sellerOpts(j.principal_id)}</select></div><div class="fld"><label>Substituto (B)</label><select name="substituto_id" data-1c="lista">${sellerOpts(j.substituto_id)}</select></div></div></details>
     <div class="hint">"Cliente direto": o seller emite a nota para o cliente e o valor não passa pelo caixa da IMPlay.</div></div>
    <div data-show="seller_conv=1" class="sbox">${fld("convidados","Convidados / influenciadores (fora do sistema)",j.convidados,"text",'placeholder="Ex.: Mari Menezes (influenciadora)"')}</div>
    </div>
@@ -908,7 +915,7 @@ async function saveJob(id){
   const row={proposta_id:f.proposta_id||null,cliente_id:f.cliente_id||null,marca:f.marca||cliNome(f.cliente_id)||null,equipamento:srv?(f.equipamento||null):null,seller_clt:clt,seller_fora:fora,clt_ids:clt&&f.clt_ids?f.clt_ids.split(","):[],convidados:conv?(f.convidados||null):null,modalidade:f.modalidade,local_tipo:f.local_tipo,
     espaco:f.local_tipo==="estudio"?(f.espaco||null):null,local_endereco:f.local_tipo==="cliente"?f.local_endereco||null:null,inicio:ini.toISOString(),fim:fim.toISOString(),
     valor_seller:app?num(f.valor_seller):null,seller_pago_por:f.seller_pago_por||"cliente",requisitos:app?(f.requisitos||null):null,publicado:app,
-    principal_id:app?(f.principal_id||null):null,substituto_id:app?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null,promocoes:jobPromosLer()};
+    principal_id:srv?(f.principal_id||null):null,substituto_id:srv?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null,promocoes:jobPromosLer()};
   if(row.principal_id&&row.principal_id===row.substituto_id)return toast("Principal e substituto precisam ser pessoas diferentes",true);
   if(id&&f.ireal_h!==undefined){const j=S.jobs.find(x=>x.id===id);const base=ymd(new Date(j.inicio));
     let ir=combine(f.data||base,f.ireal_h,f.ireal_m),fr=combine(f.data||base,f.freal_h,f.freal_m);if(fr<=ir)fr=new Date(fr.getTime()+864e5);
@@ -2589,8 +2596,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="74";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="22/11/2026";
+const APP_VERSAO="75";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
  ["72","21/11","💵 Importar comprovantes em dólar (Amazon EUA e outros): o ERP lê o total em US$ (que já inclui o sales tax), a data em inglês e o nº do pedido, e converte para reais pelo câmbio do dia. O câmbio aparece no topo e dá para trocar (ex.: 5,90); tudo é recalculado na hora."],
@@ -4339,6 +4347,10 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
   if(act==="calcWa"){window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,"_blank");return}
   try{await navigator.clipboard.writeText(txt);toast("Texto copiado")}catch(_){prompt("Copie:",txt)}},true);
 
+/* v75 · tela da live mais limpa: escolher seller pelo nome */
+document.addEventListener("click",e=>{const b=e.target.closest('#sheetIn [data-act="pselSet"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
+  const i=$('#sheetIn [name="principal_id"]');if(!i)return;i.value=b.dataset.v||"";b.parentElement.querySelectorAll(".pch").forEach(x=>x.classList.toggle("on",x===b));
+  const sub=$('#sheetIn [name="substituto_id"]');if(sub&&i.value&&sub.value===i.value){sub.value="";sub.dispatchEvent(new Event("change",{bubbles:true}))}},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
