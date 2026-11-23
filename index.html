@@ -2612,7 +2612,7 @@ VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
 const APP_VERSAO="77";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
- ["77","23/11","📆 Semana que vem: nova página no menu (com contador de quem falta, de quinta a domingo) e aviso no Painel. Mostra a semana inteira por marca, o progresso (aprovadas, aguardando, pediram mudança, para enviar) e um cartão por marca com a miniatura da imagem. 🖼️ Gerar a imagem no padrão IMPlay (com a logo da marca) e abrir o WhatsApp com o texto e o link, ou baixar todas as imagens de uma vez. A página do cliente deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
+ ["77","23/11","📆 Semana que vem: nova visão dentro de Lives (ao lado de Calendário), com contador de quem falta de quinta a domingo, e aviso com barra de progresso no Painel. Mostra a semana inteira por marca, o progresso (aprovadas, aguardando, pediram mudança, para enviar) e um cartão por marca com a miniatura da imagem. 🖼️ Gerar a imagem no padrão IMPlay (com a logo da marca) e abrir o WhatsApp com o texto e o link, ou baixar todas as imagens de uma vez. A página do cliente deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
@@ -4394,16 +4394,17 @@ const hh77=d=>{const t=new Date(d);return t.getHours()+(t.getMinutes()?"h"+Strin
 function sexGrade(rows,a){const dias=[...Array(7)].map((_,i)=>{const d=new Date(a);d.setDate(a.getDate()+i);return d});
   return `<div class="sxg"><div class="sxgh"></div>${dias.map(d=>`<div class="sxgh ${d.getDay()%6===0?"fim":""}"><b>${sexDiaCurto(d)}</b> ${dmy(d)}</div>`).join("")}
    ${rows.map(x=>`<div class="sxgb" title="${esc(x.c.marca)}">${esc(x.c.marca)}</div>${dias.map(d=>{const k=ymd(d);return `<div class="sxgc">${x.l.filter(j=>ymd(new Date(j.inicio))===k).map(j=>`<span class="sxch ${platTipo(j.plataforma)}" title="${esc(j.plataforma||"")}">${hh77(j.inicio)}–${hh77(j.fim||j.inicio)}h</span>`).join("")}</div>`}).join("")}`).join("")}</div>`}
+const sexBarra=ss=>{const q=k=>ss.filter(s=>s.k===k).length;const g=(k,cor,t)=>q(k)?`<span style="flex:${q(k)};background:${cor}" title="${t}: ${q(k)}"></span>`:"";
+  return `<div class="sxbar">${g("ok","var(--ok)","Aprovadas")}${g("esp","var(--volt)","Aguardando OK")}${g("aj","var(--warn)","Pediram mudança")}${g("nao","var(--linha2)","Para enviar")}</div>`};
 function sexHtml(){const {a,b,rows,soltas}=sexLinhas();const st=rows.map(x=>({x,s:sexStatus(x,a,b)}));
   const n=k=>st.filter(y=>y.s.k===k).length,tot=st.length;
-  const seg=(k,cor,t)=>n(k)?`<span style="flex:${n(k)};background:${cor}" title="${t}"></span>`:"";
   const nconf=rows.reduce((q,x)=>q+x.l.filter(j=>j.alterado_em&&!j.conferido_em).length,0);
   if(!tot)return `<div class="empty">Nenhuma live agendada para a semana que vem (${dmy(a)} a ${dmy(new Date(b-1))}).</div>`;
   return `${S.sexEnv===null?`<div class="warnbox small" style="margin-bottom:8px">Falta rodar o SQL implay_calendario_ok.sql para gerar links e ver as respostas.</div>`:""}
   ${nconf?`<div class="warnbox small" style="margin-bottom:8px">🔎 ${nconf} live${nconf>1?"s":""} da semana ainda ${nconf>1?"não foram conferidas":"não foi conferida"} por outra pessoa. <a href="#" data-act="confOpen">Conferir antes de mandar ›</a></div>`:""}
   ${soltas.length?`<div class="warnbox small" style="margin-bottom:8px">⚠️ ${soltas.length} live${soltas.length>1?"s":""} da semana sem marca cadastrada (${[...new Set(soltas.map(j=>j.marca||"sem marca"))].map(esc).join(", ")}). Não entram em nenhum calendário.</div>`:""}
   <div class="sxp"><div class="sxpt"><b>${n("ok")}</b> de ${tot} marcas aprovadas <span class="muted small">· ${n("esp")} aguardando OK · ${n("aj")} pediram mudança · ${n("nao")} para enviar</span></div>
-   <div class="sxbar">${seg("ok","var(--ok)","Aprovadas")}${seg("esp","var(--volt)","Aguardando OK")}${seg("aj","var(--warn)","Pediram mudança")}${seg("nao","var(--linha2)","Para enviar")}</div></div>
+   ${sexBarra(st.map(y=>y.s))}</div>
   <div class="sec"><h2>A semana inteira</h2><span class="muted small">${dmy(a)} a ${dmy(new Date(b-1))} · ${tot} marca${tot>1?"s":""} · ${rows.reduce((q,x)=>q+x.l.length,0)} lives</span></div>
   <div class="sxgw">${sexGrade(rows,a)}</div>
   <div class="sec"><h2>Uma imagem por marca</h2><span class="muted small">toque na imagem para abrir</span></div>
@@ -4418,8 +4419,8 @@ async function sexThumbs(){const {a,b,rows}=sexLinhas();const tk=S._thTok=(S._th
     if(!u){try{const cv=await calcCartao(x.c,x.l,a,b,cimgLogo(x.c.id));const sm=document.createElement("canvas");sm.width=300;sm.height=Math.round(cv.height*300/cv.width);sm.getContext("2d").drawImage(cv,0,0,sm.width,sm.height);u=S._th[k]=sm.toDataURL("image/jpeg",.82)}catch(_){continue}}
     const im=document.querySelector(`[data-th="${x.c.id}"]`);if(im){im.src=u;im.hidden=false;if(im.nextElementSibling)im.nextElementSibling.remove()}
     await new Promise(r=>setTimeout(r,0))}}
-const sexRefresh=()=>{if(S.tab==="semana")render()};
-async function sexOpen(){S.tab="semana";closeSheet();render();window.scrollTo(0,0);await sexLoad();if(S.tab==="semana")render()}
+const sexRefresh=()=>{if(sexAtiva())render()};
+async function sexOpen(){S.tab="jobs";S.liveModo="semana";closeSheet();render();window.scrollTo(0,0);await sexLoad();if(sexAtiva())render()}
 /* link do envio: reaproveita o que já foi enviado (se nada mudou e o cliente não pediu ajuste); senão cria um novo */
 async function sexEnvio(c,l,a,b){const e=sexEnvDe(c.id,a,b);if(e&&e.status!=="ajuste"&&!calcMudou(e,l))return e;
   const r=await db.from("imp_cal_envios").insert({cliente_id:c.id,marca:c.marca,ini:ymd(a),fim:ymd(new Date(b-1)),itens:calcSnap(l)}).select().single();
@@ -4560,7 +4561,7 @@ async function sugDecidir(btn,envId,idx,aceita){
 function sexBanner(){if(!S.me||S.me.papel==="seller"||!sexSexta())return "";
   if(S.sexEnv===undefined&&!S._sexL){S._sexL=true;sexLoad().finally(()=>{S._sexL=false;if(["painel","jobs"].includes(S.tab)&&$("#sheet").hidden)render()})}
   if(!S.sexEnv)return "";const {a,b,rows}=sexLinhas();const st=rows.map(x=>sexStatus(x,a,b));const n=st.filter(s=>s.precisa).length;if(!n)return "";
-  return `<div class="card confb" data-act="sexOpen" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span><b>📆 Semana que vem: ${n} marca${n>1?"s":""} para mandar o calendário</b><br><span class="small muted">${st.filter(s=>s.k==="ok"&&!s.precisa).length} de ${rows.length} já aprovadas · ${dmy(a)} a ${dmy(new Date(b-1))}</span></span><button type="button" class="btn p sm" data-act="sexOpen">Gerar ›</button></div>`}
+  return `<div class="card confb" data-act="sexOpen" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span><b>📆 Semana que vem: ${n} marca${n>1?"s":""} para mandar o calendário</b><div style="margin:8px 0 5px;width:min(360px,100%)">${sexBarra(st)}</div><span class="small muted">${st.filter(s=>s.k==="ok"&&!s.precisa).length} de ${rows.length} já aprovadas · ${dmy(a)} a ${dmy(new Date(b-1))}</span></span><button type="button" class="btn p sm" data-act="sexOpen">Gerar ›</button></div>`}
 async function calRespLoad(){if(!S.me||S.me.papel==="seller")return;
   const r=await db.from("imp_cal_envios").select("*").not("resposta_em","is",null).gte("resposta_em",new Date(Date.now()-21*864e5).toISOString()).order("resposta_em",{ascending:false}).limit(100);
   S.calResp=r.error?null:(r.data||[]);if(sexSexta()||S.sexEnv!==undefined)await sexLoad()}
@@ -4569,13 +4570,16 @@ const _loadAll77=loadAll;loadAll=async function(){await _loadAll77.apply(this,ar
 const _pend77=pendencias;pendencias=function(){const p=_pend77();if(!S.me||S.me.papel==="seller"||!S.calResp)return p;const vistos=calVistos();
   S.calResp.filter(e=>e.status==="ajuste"&&(sugPend(e)>0||(!sugLista(e).length&&!vistos[e.id]))).slice(0,5).forEach(e=>{const n=sugPend(e);
     p.unshift({t:`${e.marca}: ${n?`${n} sugest${n>1?"ões":"ão"} de mudança no calendário`:"pediu ajuste no calendário"}`,v:dmy(parseYmd(e.ini))+" a "+dmy(parseYmd(e.fim)),act:"calResp",a:String(e.id)})});return p};
-IC.calok='<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"/>';
-MENU[0][1].splice(MENU[0][1].findIndex(x=>x[0]==="jobs")+1,0,["semana","Semana que vem","Calendário por marca","calok"]);
-TAB_NOME.semana="Semana que vem";TAB_SUB.semana="Calendário da semana seguinte: uma imagem por marca, para mandar e acompanhar o OK";
-VIEWS.semana=()=>sexHtml();HEADACT.semana=()=>`<button type="button" class="btn sm" data-act="sexTodas">⬇️ Baixar todas as imagens</button>`;
-const _badges77=badges;badges=function(){const bd=_badges77();if(S.me&&S.me.papel!=="seller"&&S.sexEnv&&sexSexta()){const {a,b,rows}=sexLinhas();const n=rows.filter(x=>sexStatus(x,a,b).precisa).length;if(n)bd.semana=n}return bd};
-const _render77=render;render=function(){const r=_render77.apply(this,arguments);if(S.tab==="semana")sexThumbs();return r};
-const _hJobs77=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm ${sexSexta()?"p":""}" data-act="sexOpen">📆 Semana que vem</button>`+(_hJobs77?_hJobs77():"");
+const sexAtiva=()=>S.tab==="jobs"&&S.liveModo==="semana";
+const sexPend=()=>{if(!S.sexEnv)return 0;const {a,b,rows}=sexLinhas();return rows.filter(x=>sexStatus(x,a,b).precisa).length};
+if(S.liveModo==="semana"&&!sexSexta())S.liveModo="cal";
+/* visão "Semana que vem" dentro de Lives: pílula com contador ao lado do Calendário */
+const _vJobs77=VIEWS.jobs;VIEWS.jobs=()=>{const n=sexSexta()?sexPend():0;
+  const pill=on=>`<button data-act="liveModo" data-v="semana" class="${on?"on":""}">📆 Semana que vem${n?` <span class="tag w" style="margin-left:4px">${n}</span>`:""}</button>`;
+  if(S.liveModo!=="semana")return _vJobs77().replace(/(<button data-act="liveModo" data-v="cal"[^>]*>[^<]*<\/button>)/,"$1"+pill(false));
+  return `<div class="pills" style="margin:0 0 12px"><button data-act="liveModo" data-v="cal">📅 Calendário</button>${pill(true)}<button data-act="liveModo" data-v="check">✅ Checklist do dia</button><button data-act="liveModo" data-v="dia">🕒 Dia</button><button data-act="liveModo" data-v="gestao">☰ Gestão</button></div>`+sexHtml()};
+const _render77=render;render=function(){const r=_render77.apply(this,arguments);if(sexAtiva())sexThumbs();return r};
+const _hJobs77=HEADACT.jobs;HEADACT.jobs=()=>(sexAtiva()?`<button type="button" class="btn sm" data-act="sexTodas">⬇️ Baixar todas as imagens</button>`:"")+(_hJobs77?_hJobs77():"");
 const _painel77=VIEWS.painel;VIEWS.painel=()=>{const h=_painel77();const b=sexBanner();if(!b)return h;const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+b+h.slice(i):b+h};
 const _agenda77=VIEWS.agenda;VIEWS.agenda=()=>sexBanner()+_agenda77();
 document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act,id=a.dataset.id,v=a.dataset.v;
