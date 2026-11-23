@@ -42,6 +42,7 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .sitem .sl small{font-size:11px;color:var(--cinza);margin-top:1px}
 .sitem svg{color:var(--cinza)}
 .sitem.on{background:var(--volt);color:#000}
+.sitem .sext{color:var(--cinza);font-size:14px;opacity:.7}
 .sitem.on svg,.sitem.on small{color:#2a3300}
 .sbad{background:var(--flash);color:#131411;border-radius:999px;font-size:10.5px;font-weight:700;padding:1px 7px}
 .sitem.on .sbad{background:#000;color:var(--voltx)}
@@ -1246,7 +1247,7 @@ function render(){
   $("#app").innerHTML=`<div class="shell">
    <aside class="side">
     <div class="sbrand"><img class="logoimg" src="${TEMAS_CLAROS.includes(S.tema)?LOGO_CARVAO:LOGO_LIMA}" alt="IMPlay" data-act="tab" data-v="painel" title="Ir para o Painel" style="cursor:pointer"><div class="live" style="margin-top:12px">gestão · live commerce</div><div class="tagline">A marca que fala de volta.</div></div>
-    ${MENU.map(([g,items])=>`<div class="sgrp">${g}</div>${items.map(([k,l,sub,i])=>`<button class="sitem ${S.tab===k?"on":""}" data-act="tab" data-v="${k}">${ic(i)}<span class="sl"><b>${l}</b><small>${sub}</small></span>${b[k]?`<span class="sbad">${b[k]}</span>`:""}</button>`).join("")}`).join("")}
+    ${MENU.map(([g,items])=>`<div class="sgrp">${g}</div>${items.map(([k,l,sub,i,href])=>href?`<a class="sitem" href="${esc(href)}" target="_blank" rel="noopener" style="text-decoration:none" data-act="baseGo" data-url="${esc(href)}">${ic(i)}<span class="sl"><b>${l}</b><small>${sub}</small></span><span class="sext" aria-hidden="true">↗</span></a>`:`<button class="sitem ${S.tab===k?"on":""}" data-act="tab" data-v="${k}">${ic(i)}<span class="sl"><b>${l}</b><small>${sub}</small></span>${b[k]?`<span class="sbad">${b[k]}</span>`:""}</button>`).join("")}`).join("")}
     <div class="sfoot">${esc(S.email)}<br><a href="#" data-act="novidades" style="color:var(--voltx)">Versão ${APP_VERSAO}</a> · <a href="#" data-act="backup" style="color:var(--voltx)">Copiar backup</a> · <a href="#" data-act="sair">Sair</a></div>
    </aside><div class="scrim" data-act="sideClose"></div>
    <div class="main">
@@ -2235,6 +2236,12 @@ document.addEventListener("click",async e=>{
   if(a.tagName==="A")e.preventDefault();
   try{switch(act){
     case"tab":S.tab=val;render();window.scrollTo(0,0);break;
+    case"baseGo":{/* abre o Base já logado: o login do ERP vai no "#", que o navegador não envia ao servidor */
+      const url=a.dataset.url,w=window.open("","_blank");/* abre já, no clique, para o navegador não bloquear */
+      if(w){try{w.opener=null}catch(_){}}
+      let dest=url;try{const {data}=await db.auth.getSession();const t=data&&data.session&&data.session.access_token;
+        if(t){const u=new URL(url);dest=u.origin+"/sso#t="+encodeURIComponent(t)+"&to="+encodeURIComponent(u.pathname)}}catch(_){}
+      if(w)w.location=dest;else location.href=dest;break}
     case"sideOpen":$(".shell").classList.add("open");break;
     case"sideClose":$(".shell").classList.remove("open");break;
     case"fechar":closeSheet();break;
@@ -2596,8 +2603,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="75";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="76";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["76","23/11","Casting e Fornecedores no menu (grupo Base IMPlay): abrem o sistema de casting e fornecedores já logados, sem pedir senha de novo. Os dados continuam no Base."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
@@ -4116,6 +4124,9 @@ const _openJob67=openJob;openJob=function(id){_openJob67.apply(this,arguments);c
 /* ---------- v70: Tarefas (listas com checklist visual) ---------- */
 IC.task='<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17"/>';
 {const g=MENU.find(x=>x[0]==="Operação");if(g&&!g[1].some(x=>x[0]==="tarefas"))g[1].push(["tarefas","Tarefas","Listas de compras e checklists","task"])}
+/* Base IMPlay (casting e fornecedores): os dados continuam no Railway; o menu abre o sistema em nova aba */
+const BASE_URL="https://implay-base-production.up.railway.app";
+if(!MENU.some(x=>x[0]==="Base IMPlay"))MENU.push(["Base IMPlay",[["base_casting","Casting","Sellers e operadores de live","users",BASE_URL+"/casting"],["base_fornecedores","Fornecedores","Cotações e preços","box",BASE_URL+"/fornecedores"]]]);
 TAB_NOME.tarefas="Tarefas";TAB_SUB.tarefas="Listas de compras e checklists da equipe, com progresso";
 S.tarefas=null;S.tarSel=null;S.tarErr=null;
 async function tarLoad(){const r=await db.from("imp_tarefas").select("*").eq("arquivada",false).order("data",{ascending:false});S.tarErr=r.error?r.error.message:null;S.tarefas=r.data||[];if(S.tab==="tarefas")render()}
