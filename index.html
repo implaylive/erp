@@ -633,6 +633,10 @@ html:is([data-tema=papel],[data-tema=areia],[data-tema=lavanda]) :is(.cdfoot b,.
 .cpusd{border:1px solid var(--linha2);background:var(--card2);border-radius:12px;padding:10px 12px;margin:0 0 10px;font-size:13px}.cpusd input{background:var(--card);color:inherit;border:1px solid var(--linha);border-radius:8px;padding:5px 8px;font:inherit}
 .simc{border:1px solid var(--line,#333);border-radius:12px;padding:8px 10px;margin-bottom:10px}.simc.multi{border-color:var(--volt);box-shadow:0 0 0 1px var(--volt) inset}.simh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
 .confb{cursor:pointer;border-color:var(--volt)!important;padding:12px 14px;margin-bottom:12px}.confr{display:grid;grid-template-columns:22px 92px 1fr;gap:8px;align-items:start;padding:8px 4px;border-bottom:1px solid var(--line,#2a2a2a);cursor:pointer}.confr.meu{opacity:.6;cursor:default}.calenv{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,#2a2a2a);font-size:13px}.atnb{border:1px solid var(--warn,#f5a623);border-radius:12px;padding:10px 12px;margin-bottom:10px}.atn{font-size:13px;padding:4px 0}.atn.n3{color:var(--flash,#ff4d6d);font-weight:600}
+.sexr{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--linha)}.sexa{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.sexi{min-width:0}
+.sugs{margin-top:6px;display:grid;gap:6px}.sug{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;background:var(--card2);border:1px solid var(--linha);border-radius:10px;padding:7px 10px}.sugb{display:flex;gap:6px}
+.cimg{margin:10px 0}.cimg img{display:block;width:100%;max-width:400px;margin:0 auto;border-radius:12px;border:1px solid var(--linha)}.cimga{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+@media(max-width:560px){.sexr{flex-direction:column;align-items:flex-start}.sexa{justify-content:flex-start}}
 form.jobf .fld{margin-bottom:18px}form.jobf .sec{margin-top:30px;padding-top:16px;border-top:1px solid var(--line,#2a2a2a)}form.jobf .sec h2{margin-bottom:12px}
 form.jobf .seg,form.jobf .pchips,form.jobf .row{gap:10px!important}form.jobf .seg button,form.jobf .pch{margin:0}
 form.jobf input:not([type=checkbox]):not([type=radio]),form.jobf select{min-height:40px;height:40px;padding:6px 12px;font-size:15px}form.jobf textarea{min-height:70px}
@@ -2596,8 +2600,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="75";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="77";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["77","23/11","📆 Calendário de sexta: o botão \"Semana que vem\" (em Lives, e aviso no Painel de sexta a domingo) lista todas as marcas com live na semana que vem, com o status de cada uma (não enviado, aguardando OK, aprovado, pediu mudança). 🖼️ Imagem do calendário no padrão IMPlay para mandar pelo WhatsApp, com logo da marca. A página do cliente agora deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
@@ -4290,8 +4295,8 @@ function calcHtml(){const per=S.calc.per;const [a,b]=calcPer(per);const h=d0();
   const ativos=S.clientes.filter(c=>c.status!=="cancelado").map(c=>({c,n:calcLives(c.id,h,new Date(h.getTime()+62*864e5)).length})).sort((x,y)=>y.n-x.n||String(x.c.marca).localeCompare(String(y.c.marca)));
   const c=S.clientes.find(x=>x.id===S.calc.cid);const l=c?calcLives(c.id,a,b):[];const nc=l.filter(j=>j.alterado_em&&!j.conferido_em).length;
   const env=(S.calcEnv||[]).filter(e=>e.ini===ymd(a)&&e.fim===ymd(new Date(b-1)));const outros=(S.calcEnv||[]).filter(e=>!env.includes(e));
-  const st=e=>e.status==="aprovado"?`<span class="tag o">✅ aprovado</span> por <b>${esc(e.resposta_nome||"cliente")}</b> em ${new Date(e.resposta_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:e.status==="ajuste"?`<span class="tag w">✏️ pediu ajuste</span> ${esc(e.resposta_nome||"")}: <i>${esc(e.resposta_obs||"")}</i>`:`<span class="tag">⏳ aguardando OK</span>`;
-  const envRow=e=>{const lv=calcLives(c.id,parseYmd(e.ini),new Date(parseYmd(e.fim).getTime()+864e5));const mud=calcMudou(e,lv);return `<div class="calenv"><div>${dmy(parseYmd(e.ini))} a ${dmy(parseYmd(e.fim))} · enviado ${new Date(e.criado_em).toLocaleDateString("pt-BR")}${e.criado_por?" por "+esc(nome(e.criado_por)):""}<br>${st(e)}${mud?`<br><b style="color:var(--warn)">⚠️ O calendário mudou depois deste envio — gere um novo link e peça um novo OK.</b>`:""}</div><button type="button" class="btn sm" data-act="calcCopLink" data-v="${e.token}">Copiar link</button></div>`};
+  const st=e=>e.status==="aprovado"?`<span class="tag o">✅ aprovado</span> por <b>${esc(e.resposta_nome||"cliente")}</b> em ${new Date(e.resposta_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:e.status==="ajuste"?`<span class="tag w">${e.aprova_com_ajustes?"✏️ aprovou com mudanças":"✏️ pediu ajuste"}</span> ${esc(e.resposta_nome||"")}${e.resposta_obs?`: <i>${esc(e.resposta_obs)}</i>`:""}`:`<span class="tag">⏳ aguardando OK</span>`;
+  const envRow=e=>{const lv=calcLives(c.id,parseYmd(e.ini),new Date(parseYmd(e.fim).getTime()+864e5));const mud=calcMudou(e,lv);return `<div class="calenv"><div>${dmy(parseYmd(e.ini))} a ${dmy(parseYmd(e.fim))} · enviado ${new Date(e.criado_em).toLocaleDateString("pt-BR")}${e.criado_por?" por "+esc(nome(e.criado_por)):""}<br>${st(e)}${sugBloco(e)}${mud?`<br><b style="color:var(--warn)">⚠️ O calendário mudou depois deste envio — gere um novo link e peça um novo OK.</b>`:""}</div><button type="button" class="btn sm" data-act="calcCopLink" data-v="${e.token}">Copiar link</button></div>`};
   return `<h3>📆 Calendário da marca</h3>
   <div class="fld"><label>Marca</label><select id="calcCli" data-1c="lista"><option value="">— escolher —</option>${ativos.map(({c:x,n})=>`<option value="${x.id}" ${x.id===S.calc.cid?"selected":""}>${esc(x.marca)}${n?` (${n} próximas)`:""}</option>`).join("")}</select></div>
   <div class="chips" style="margin:6px 0 10px">${[["sem0","Esta semana"],["sem1","Próxima semana"],["mes0","Este mês"],["mes1","Próximo mês"]].map(([k,t])=>`<button type="button" data-act="calcPer" data-v="${k}" class="${per===k?"on":""}">${t}</button>`).join("")}</div>
@@ -4299,7 +4304,7 @@ function calcHtml(){const per=S.calc.per;const [a,b]=calcPer(per);const h=d0();
   <div class="small muted" style="margin-bottom:6px"><b>${esc(c.marca)}</b> · ${dmy(a)} a ${dmy(new Date(b-1))} · ${l.length} live${l.length===1?"":"s"}</div>
   ${nc?`<div class="warnbox" style="margin-bottom:8px">🔎 ${nc} live${nc>1?"s":""} deste período ainda não ${nc>1?"foram conferidas":"foi conferida"} por outra pessoa. <a href="#" data-act="confOpen">Conferir antes de mandar ›</a></div>`:""}
   ${l.length?`<div class="escb">${escDias(l,j=>`<div class="escr" data-act="job" data-id="${j.id}"><span>${j.alterado_em&&!j.conferido_em?"⏳":j.conferido_em?"🔎":""}</span><span><b>${escHr(j)}</b></span><span>${platTag(j)}</span><span class="small muted">${j.principal_id?esc(String(nome(j.principal_id)).split(" ")[0]):"sem seller"}</span></div>`)}</div>`:`<div class="empty">Nenhuma live desta marca no período.</div>`}
-  ${l.length?`<div class="acts" style="justify-content:flex-start"><button type="button" class="btn p" data-act="calcLink">🔗 Gerar link para o cliente aprovar</button><button type="button" class="btn" data-act="calcCop">Copiar texto</button><button type="button" class="btn" data-act="calcWa">WhatsApp</button></div>
+  ${l.length?`<div class="acts" style="justify-content:flex-start"><button type="button" class="btn p" data-act="calcLink">🔗 Gerar link para o cliente aprovar</button><button type="button" class="btn" data-act="calcImg">🖼️ Imagem</button><button type="button" class="btn" data-act="calcCop">Copiar texto</button><button type="button" class="btn" data-act="calcWa">WhatsApp</button></div>
   <p class="small muted">O link mostra só as lives desta marca, e o cliente dá o OK ou pede ajuste. A resposta aparece aqui.</p>`:""}
   ${S.calcEnv===null?`<div class="warnbox small">Falta rodar o SQL implay_calendario_ok.sql para gerar links e ver as respostas.</div>`:""}
   ${env.length?`<div class="escd">Envios deste período</div>${env.map(envRow).join("")}`:""}
@@ -4351,6 +4356,213 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
 document.addEventListener("click",e=>{const b=e.target.closest('#sheetIn [data-act="pselSet"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
   const i=$('#sheetIn [name="principal_id"]');if(!i)return;i.value=b.dataset.v||"";b.parentElement.querySelectorAll(".pch").forEach(x=>x.classList.toggle("on",x===b));
   const sub=$('#sheetIn [name="substituto_id"]');if(sub&&i.value&&sub.value===i.value){sub.value="";sub.dispatchEvent(new Event("change",{bubbles:true}))}},true);
+/* ================= v77 · SEXTA: calendário da semana que vem por marca + imagem para o cliente + sugestões do cliente ================= */
+const CAL77={bg:"#0c0d08",row:"#16170f",line:"#26271c",lima:"#dceb8c",roxo:"#8e3a87",rosa:"#e87cd1"};
+const sexSexta=()=>[5,6,0].includes(new Date().getDay());
+const sexPer=()=>calcPer("sem1");
+const eqId=(a,b)=>String(a)===String(b);
+function sexLinhas(){const [a,b]=sexPer();const usados=new Set();
+  const rows=S.clientes.filter(c=>c.status!=="cancelado").map(c=>({c,l:calcLives(c.id,a,b)})).filter(x=>x.l.length).sort((x,y)=>String(x.c.marca).localeCompare(String(y.c.marca)));
+  rows.forEach(x=>x.l.forEach(j=>usados.add(j.id)));
+  const soltas=S.jobs.filter(j=>j.status!=="cancelado"&&new Date(j.inicio)>=a&&new Date(j.inicio)<b&&!usados.has(j.id));
+  return {a,b,rows,soltas}}
+async function sexLoad(){const [a]=sexPer();const r=await db.from("imp_cal_envios").select("*").eq("ini",ymd(a)).order("criado_em",{ascending:false}).limit(300);S.sexEnv=r.error?null:(r.data||[]);return S.sexEnv}
+const sexEnvDe=(cid,a,b)=>(S.sexEnv||[]).filter(e=>eqId(e.cliente_id,cid)&&e.ini===ymd(a)&&e.fim===ymd(new Date(b-1))).sort((x,y)=>new Date(y.criado_em)-new Date(x.criado_em))[0]||null;
+const sugLista=e=>Array.isArray(e&&e.sugestoes)?e.sugestoes:[];
+const sugPend=e=>sugLista(e).filter(s=>!s.decisao).length;
+/* status de cada marca na semana que vem; "precisa" = ainda falta alguma ação da equipe */
+function sexStatus(x,a,b){const e=sexEnvDe(x.c.id,a,b);
+  if(!e)return{k:"nao",e:null,precisa:true,t:`<span class="tag">⚪ Não enviado</span>`};
+  const mud=calcMudou(e,x.l),pend=sugPend(e),rec=sugLista(e).some(s=>s.decisao==="recusada");
+  const mudT=mud?` <span class="tag w">⚠️ mudou depois</span>`:"";
+  if(e.status==="aprovado")return{k:"ok",e,mud,precisa:mud,t:`<span class="tag o">✅ Aprovado</span>${sugLista(e).length?" com mudanças":""}${mudT}`};
+  if(e.status==="ajuste")return{k:"aj",e,mud,precisa:pend>0||rec||mud||!sugLista(e).length,t:`<span class="tag w">✏️ ${e.aprova_com_ajustes?"Aprovou com mudanças":"Pediu ajuste"}</span>${pend?` <b>${pend} sugest${pend>1?"ões":"ão"} para decidir</b>`:""}${mudT}`};
+  return{k:"esp",e,mud,precisa:mud,t:`<span class="tag">⏳ Aguardando OK</span>${mudT}`}}
+function sexHtml(){const {a,b,rows,soltas}=sexLinhas();const st=rows.map(x=>({x,s:sexStatus(x,a,b)}));
+  const nconf=rows.reduce((n,x)=>n+x.l.filter(j=>j.alterado_em&&!j.conferido_em).length,0);
+  return `<h3>📆 Semana que vem <span class="muted small" style="font-weight:500">${dmy(a)} a ${dmy(new Date(b-1))}</span></h3>
+  <p class="small muted" style="margin-top:0">Uma linha por marca. Gere a imagem, mande pelo WhatsApp e acompanhe aqui quem aprovou ou pediu mudança.</p>
+  ${S.sexEnv===null?`<div class="warnbox small" style="margin-bottom:8px">Falta rodar o SQL implay_calendario_ok.sql para gerar links e ver as respostas.</div>`:""}
+  ${nconf?`<div class="warnbox small" style="margin-bottom:8px">🔎 ${nconf} live${nconf>1?"s":""} da semana ainda ${nconf>1?"não foram conferidas":"não foi conferida"} por outra pessoa. <a href="#" data-act="confOpen">Conferir antes de mandar ›</a></div>`:""}
+  ${soltas.length?`<div class="warnbox small" style="margin-bottom:8px">⚠️ ${soltas.length} live${soltas.length>1?"s":""} da semana sem marca cadastrada (${[...new Set(soltas.map(j=>j.marca||"sem marca"))].map(esc).join(", ")}). Não entram em nenhum calendário.</div>`:""}
+  ${rows.length?st.map(({x,s})=>{const pl=[...new Set(x.l.map(j=>j.plataforma).filter(Boolean))].join(" + ");
+    return `<div class="sexr"><div class="sexi"><b>${esc(x.c.marca)}</b> <span class="small muted">${x.l.length} live${x.l.length>1?"s":""}${pl?" · "+esc(pl):""}</span><br>${s.t}</div>
+    <div class="sexa"><button type="button" class="btn sm ${s.k==="nao"?"p":""}" data-act="sexImg" data-id="${x.c.id}">🖼️ Imagem</button><button type="button" class="btn sm" data-act="sexWa" data-id="${x.c.id}">💬 WhatsApp</button><button type="button" class="btn sm" data-act="sexAbrir" data-id="${x.c.id}">Abrir</button></div></div>`}).join(""):`<div class="empty">Nenhuma live agendada para a semana que vem.</div>`}
+  <div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
+const sexRefresh=()=>{const b=$("#sexBox");if(b)b.innerHTML=sexHtml()};
+async function sexOpen(){openSheet(`<div id="sexBox"><p class="muted">Carregando…</p></div>`);await sexLoad();sexRefresh()}
+/* link do envio: reaproveita o que já foi enviado (se nada mudou e o cliente não pediu ajuste); senão cria um novo */
+async function sexEnvio(c,l,a,b){const e=sexEnvDe(c.id,a,b);if(e&&e.status!=="ajuste"&&!calcMudou(e,l))return e;
+  const r=await db.from("imp_cal_envios").insert({cliente_id:c.id,marca:c.marca,ini:ymd(a),fim:ymd(new Date(b-1)),itens:calcSnap(l)}).select().single();
+  if(r.error){toast(/relation|schema cache|does not exist/i.test(r.error.message||"")?"Falta rodar o SQL implay_calendario_ok.sql":"Erro: "+r.error.message,true);return null}
+  S.sexEnv=[r.data,...(S.sexEnv||[])];return r.data}
+function waUrl(c,txt){const t=String(c.contato_tel||"").replace(/\D/g,"");const n=t.length===10||t.length===11?"55"+t:t.length>11?t:"";return `https://wa.me/${n}?text=${encodeURIComponent(txt)}`}
+/* abre a aba do WhatsApp na hora do clique (senão o navegador bloqueia) e preenche depois */
+async function sexWhats(btn,c,l,a,b,antes){const w=window.open("about:blank","_blank");if(btn)btn.disabled=true;
+  try{if(antes)await antes();const e=await sexEnvio(c,l,a,b);if(!e){if(w)w.close();return}
+    sexRefresh();calcRefresh();const txt=calcTxt(c,l,a,b,calcLink(e));
+    if(w)w.location.href=waUrl(c,txt);else{try{await navigator.clipboard.writeText(txt)}catch(_){prompt("Copie:",txt)}toast("O navegador bloqueou a nova aba. O texto com o link foi copiado.",true)}}
+  finally{if(btn)btn.disabled=false}}
+
+/* ---- imagem do calendário (cartão 1080 px de largura, padrão IMPlay) ---- */
+const _imgs77={};const carregaImg=src=>_imgs77[src]||(_imgs77[src]=new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src}));
+function cartaoRR(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
+function cartaoEsp(x,t,X,Y,esp,dir){const ws=[...t].map(ch=>x.measureText(ch).width);const tot=ws.reduce((s,w)=>s+w,0)+esp*(ws.length-1);let px=dir?X-tot:X;[...t].forEach((ch,i)=>{x.fillText(ch,px,Y);px+=ws[i]+esp});return tot}
+function cartaoGlifo(x,tipo,cx,cy){x.save();x.strokeStyle=x.fillStyle=CAL77.bg;x.lineWidth=8;x.lineCap=x.lineJoin="round";
+  if(tipo==="tt"){x.beginPath();x.arc(cx-20,cy+16,11,0,7);x.stroke();x.beginPath();x.arc(cx+20,cy+16,11,0,7);x.stroke();x.beginPath();x.moveTo(cx-9,cy+16);x.lineTo(cx-9,cy-20);x.quadraticCurveTo(cx+10,cy-32,cx+31,cy-26);x.lineTo(cx+31,cy+16);x.stroke()}
+  else if(tipo==="ig"){cartaoRR(x,cx-26,cy-26,52,52,16);x.stroke();x.beginPath();x.arc(cx,cy,11,0,7);x.stroke();x.beginPath();x.arc(cx+17,cy-17,2.5,0,7);x.fill()}
+  else{x.beginPath();x.moveTo(cx-14,cy-22);x.lineTo(cx+22,cy);x.lineTo(cx-14,cy+22);x.closePath();x.fill();x.stroke()}
+  x.restore()}
+const platTipo=p=>/tik/i.test(p||"")?"tt":/insta/i.test(p||"")?"ig":"ot";
+const platRot=p=>/tik/i.test(p||"")?"TikTok":/insta/i.test(p||"")?"Instagram":p||"Lives";
+const MES_L=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+async function calcCartao(c,l,a,b,logoSrc){
+  try{await Promise.all(["800 80px Figtree","700 30px Figtree","500 30px Figtree","400 40px Figtree"].map(f=>document.fonts.load(f)))}catch(_){}
+  const F="Figtree,system-ui,-apple-system,sans-serif",W=1080,ROW=114,GAP=17,RX=72,RW=936,TOP=660;
+  const mes=(b-a)/864e5>10;
+  const dias=[];l.forEach(j=>{const k=ymd(new Date(j.inicio));let d=dias[dias.length-1];if(!d||d.k!==k){d={k,d:new Date(j.inicio),j:[]};dias.push(d)}d.j.push(j)});
+  const plats=[...new Set(l.map(j=>j.plataforma||"").filter(Boolean))];const misto=new Set(l.map(j=>j.plataforma||"")).size>1;
+  const hh=d=>{const t=new Date(d);return t.getHours()+"h"+(t.getMinutes()?String(t.getMinutes()).padStart(2,"0"):"")};
+  const cv=document.createElement("canvas"),x=cv.getContext("2d");
+  const linhas=dias.map(d=>{const wk=d.d.toLocaleDateString("pt-BR",{weekday:"long"}).replace(/-feira$/,"").toUpperCase();
+    const dt=String(d.d.getDate()).padStart(2,"0")+"/"+String(d.d.getMonth()+1).padStart(2,"0");
+    const ch=d.j.map(j=>hh(j.inicio)+" às "+hh(j.fim||j.inicio)+(misto&&j.plataforma?" "+(/insta/i.test(j.plataforma)?"Insta":j.plataforma):""));
+    x.font=`800 40px ${F}`;const w1=x.measureText(wk).width;x.font=`500 24px ${F}`;const w2=x.measureText(dt).width;
+    const livre=RW-64-(w1+14+w2)-36,txt=ch.join("   ·   ");let tam=42;
+    for(;tam>=26;tam-=2){x.font=`800 ${tam}px ${F}`;if(x.measureText(txt).width<=livre)break}
+    const pilha=tam<26;return{wk,dt,ch,txt,tam:pilha?32:tam,pilha,w1,h:pilha?Math.max(ROW,34+ch.length*44):ROW}});
+  const H=Math.max(1350,TOP+linhas.reduce((s,r)=>s+r.h+GAP,0)+150);cv.width=W;cv.height=H;
+  x.textBaseline="alphabetic";x.fillStyle=CAL77.bg;x.fillRect(0,0,W,H);
+  const blob=(cx,cy,rx,ry,rot,cor)=>{x.fillStyle=cor;x.beginPath();x.ellipse(cx,cy,rx,ry,rot,0,Math.PI*2);x.fill()};
+  blob(-18,-26,120,100,.25,CAL77.roxo);blob(1100,-24,125,105,-.3,CAL77.lima);blob(-14,H+34,165,150,-.2,CAL77.lima);blob(1130,H+60,300,210,.2,CAL77.roxo);
+  /* topo: logo IMPlay à esquerda, marca do cliente à direita */
+  const lg=await carregaImg(LOGO_LIMA);const lw=170,lh=lw*lg.height/lg.width;x.drawImage(lg,112,250-lh/2,lw,lh);
+  const cli=logoSrc?await carregaImg(logoSrc).catch(()=>null):null;
+  if(cli){const k=Math.min(330/cli.width,96/cli.height),w=cli.width*k,h=cli.height*k;x.drawImage(cli,968-w,250-h/2,w,h)}
+  else{/* sem logo: nome em texto espaçado, quebrando por palavras (até 3 linhas) e diminuindo se for longo */
+    const nm=String(c.marca||"").toUpperCase().trim().split(/\s+/),MAXW=330;let fs=46,lin=[];x.fillStyle="#fff";
+    const larg=t=>[...t].reduce((s,ch)=>s+x.measureText(ch).width,0)+fs*.26*(t.length-1);
+    const quebra=()=>{const o=[];let cur="";nm.forEach(w=>{const t=cur?cur+" "+w:w;if(!cur||larg(t)<=MAXW)cur=t;else{o.push(cur);cur=w}});if(cur)o.push(cur);return o};
+    for(fs=46;fs>=24;fs-=2){x.font=`400 ${fs}px ${F}`;lin=quebra();if(lin.length<=3&&lin.every(t=>larg(t)<=MAXW))break}
+    if(fs<24){fs=24;x.font=`400 ${fs}px ${F}`;lin=quebra();const cortou=lin.length>3;
+      lin=lin.slice(0,3).map((t,i)=>{let s=t+(cortou&&i===2?"…":"");while(s.length>1&&larg(s)>MAXW)s=s.slice(0,-1).replace(/\s*…?$/,"")+"…";return s})}
+    const base=250-((lin.length-1)*(fs+10))/2+fs*.35;lin.forEach((t,i)=>cartaoEsp(x,t,968,base+i*(fs+10),fs*.26,true))}
+  /* etiqueta, ícone da plataforma, título */
+  const pill="Calendário para aprovação";x.font=`700 24px ${F}`;const pw=x.measureText(pill).width+44;
+  cartaoRR(x,252,326,pw,42,21);x.fillStyle=CAL77.rosa;x.fill();x.fillStyle=CAL77.bg;x.textBaseline="middle";x.fillText(pill,274,347.5);x.textBaseline="alphabetic";
+  cartaoRR(x,72,398,152,152,40);x.fillStyle=CAL77.lima;x.fill();
+  const unica=plats.length===1?plats[0]:"";cartaoGlifo(x,platTipo(unica),148,460);
+  x.fillStyle=CAL77.bg;x.textAlign="center";x.font=`800 ${unica&&unica.length>9?20:24}px ${F}`;x.fillText(plats.length===1?platRot(unica):"Lives",148,528);x.textAlign="left";
+  const t1=mes?"Lives de":"Lives da semana";const pri=new Date(l[0].inicio),ult=new Date(l[l.length-1].inicio);
+  const t2=mes?MES_L[a.getMonth()].replace(/^./,m=>m.toUpperCase()):dmy(a)+" a "+dmy(new Date(b-1));
+  let ts=90;x.font=`800 ${ts}px ${F}`;while(ts>52&&x.measureText(t1).width>1008-252){ts-=2;x.font=`800 ${ts}px ${F}`}
+  x.fillStyle="#fff";x.fillText(t1,252,468);
+  x.save();x.translate(252,468+ts*.98);x.transform(1,0,-.2,1,0,0);x.fillStyle=CAL77.lima;x.font=`800 ${ts}px ${F}`;x.fillText(t2,0,0);x.restore();
+  /* subtítulo: "Lives da Marca no TikTok · 24 a 27 de novembro" */
+  const sd=pri.getMonth()===ult.getMonth()&&pri.getDate()!==ult.getDate()?`${pri.getDate()} a ${ult.getDate()} de ${MES_L[ult.getMonth()]}`:pri.getDate()===ult.getDate()&&pri.getMonth()===ult.getMonth()?`${pri.getDate()} de ${MES_L[pri.getMonth()]}`:`${pri.getDate()} de ${MES_L[pri.getMonth()]} a ${ult.getDate()} de ${MES_L[ult.getMonth()]}`;
+  const fimT=(plats.length===1?" no "+plats[0]:"")+" · "+sd;let mT=String(c.marca||""),sf=26;
+  const subW=(m,s)=>{x.font=`500 ${s}px ${F}`;const p=x.measureText("Lives da "+fimT).width;x.font=`800 ${s}px ${F}`;return p+x.measureText(m).width};
+  while(sf>20&&subW(mT,sf)>RW)sf-=1;while(mT.length>3&&subW(mT,sf)>RW)mT=mT.replace(/…$/,"").slice(0,-1).trimEnd()+"…";
+  let sx=72;[["Lives da ",500,"#d2d3ce"],[mT,800,"#fff"],[fimT,500,"#d2d3ce"]].forEach(([t,w,cor])=>{x.font=`${w} ${sf}px ${F}`;x.fillStyle=cor;x.fillText(t,sx,TOP-48);sx+=x.measureText(t).width});
+  /* uma linha por dia */
+  let y=TOP;linhas.forEach(r=>{cartaoRR(x,RX,y,RW,r.h,28);x.fillStyle=CAL77.row;x.fill();x.lineWidth=1.5;x.strokeStyle=CAL77.line;x.stroke();
+    const base=r.pilha?y+56:y+r.h/2+14;x.textAlign="left";x.fillStyle="#fff";x.font=`800 40px ${F}`;x.fillText(r.wk,RX+32,base);
+    x.fillStyle="#a9aaa2";x.font=`500 24px ${F}`;x.fillText(r.dt,RX+32+r.w1+14,base);
+    x.textAlign="right";x.fillStyle=CAL77.lima;x.font=`800 ${r.tam}px ${F}`;
+    if(r.pilha)r.ch.forEach((t,i)=>x.fillText(t,RX+RW-32,y+52+i*44));else x.fillText(r.txt,RX+RW-32,base);
+    y+=r.h+GAP});
+  x.textAlign="center";x.fillStyle="#8d8e86";x.font=`500 22px ${F}`;x.fillText("Algum ajuste? É só avisar a gente.",W/2,H-62);x.textAlign="left";
+  return cv}
+const cimgLogo=cid=>{try{return localStorage.getItem("imp-cal-logo:"+cid)||""}catch(_){return ""}};
+function cimgDados(){const k=S.cimg||{};const c=S.clientes.find(x=>eqId(x.id,k.cid));if(!c)return null;const [a,b]=calcPer(k.per);return{c,a,b,l:calcLives(c.id,a,b)}}
+function cimgHtml(){const d=cimgDados();if(!d)return `<p class="muted">Marca não encontrada.</p>`;const logo=cimgLogo(d.c.id);
+  return `<h3>🖼️ Calendário · ${esc(d.c.marca)} <span class="muted small" style="font-weight:500">${dmy(d.a)} a ${dmy(new Date(d.b-1))}</span></h3>
+  <div class="cimg"><div id="cimgPrev" class="empty">Gerando…</div></div>
+  <div class="cimga"><button type="button" class="btn p" data-act="cimgWa">💬 Copiar imagem e abrir WhatsApp</button><button type="button" class="btn" data-act="cimgBaixar">⬇️ Baixar</button><button type="button" class="btn" data-act="cimgCopiar">Copiar imagem</button>${navigator.canShare?`<button type="button" class="btn" data-act="cimgShare">Compartilhar</button>`:""}</div>
+  <div class="cimga"><button type="button" class="btn sm" data-act="cimgLogo">${logo?"Trocar a logo da marca":"Adicionar a logo da marca"}</button>${logo?`<button type="button" class="btn sm" data-act="cimgLogoX">Tirar a logo</button>`:""}</div>
+  <input type="file" id="cimgFile" accept="image/*" hidden>
+  <p class="small muted">${logo?"A logo fica guardada neste navegador e entra sem mudar de cor.":"Sem logo, o nome da marca aparece em texto. A logo fica guardada só neste navegador e entra sem mudar de cor."} O botão verde copia a imagem e abre a conversa já com o texto e o link para aprovar: é só colar (Ctrl/Cmd + V) a imagem.</p>
+  <div class="acts"><button type="button" class="btn" data-act="cimgVolta">${S.cimg.volta==="sex"?"‹ Semana que vem":S.cimg.volta==="calc"?"‹ Calendário da marca":"Fechar"}</button></div>`}
+async function cimgRender(){const d=cimgDados();const p=$("#cimgPrev");if(!d||!p)return;
+  if(!d.l.length){p.textContent="Nenhuma live desta marca no período.";S.cimg.canvas=null;return}
+  const cv=await calcCartao(d.c,d.l,d.a,d.b,cimgLogo(d.c.id));S.cimg.canvas=cv;const q=$("#cimgPrev");if(!q)return;
+  const im=new Image();im.alt="Prévia do calendário";im.src=cv.toDataURL("image/png");q.replaceChildren(im)}
+async function cimgOpen(cid,per,volta){S.cimg={cid,per,volta:volta||""};openSheet(`<div id="cimgBox">${cimgHtml()}</div>`);await cimgRender()}
+const cimgBlob=()=>new Promise(ok=>S.cimg.canvas.toBlob(ok,"image/png"));
+const cimgNome=()=>{const d=cimgDados();return "calendario-"+String(d.c.marca).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-"+ymd(d.a)+".png"};
+async function cimgCopiar(){if(!S.cimg.canvas)return false;
+  try{await navigator.clipboard.write([new ClipboardItem({"image/png":cimgBlob()})]);return true}catch(_){toast("Este navegador não deixou copiar a imagem. Use Baixar.",true);return false}}
+document.addEventListener("change",async e=>{if(e.target.id!=="cimgFile")return;const f=e.target.files[0];const d=cimgDados();if(!f||!d)return;
+  const url=URL.createObjectURL(f);
+  try{const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});
+    const w0=im.naturalWidth||300,h0=im.naturalHeight||150,k=Math.min(1,600/w0,300/h0);const cv=document.createElement("canvas");cv.width=Math.round(w0*k);cv.height=Math.round(h0*k);cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+    localStorage.setItem("imp-cal-logo:"+d.c.id,cv.toDataURL("image/png"))}
+  catch(_){toast("Não consegui usar esse arquivo como logo.",true)}finally{URL.revokeObjectURL(url)}
+  const bx=$("#cimgBox");if(bx){bx.innerHTML=cimgHtml();await cimgRender()}});
+
+/* ---- sugestões do cliente: a equipe aceita (a live é editada na hora) ou recusa ---- */
+function sugBloco(e){const s=sugLista(e);if(!s.length)return "";
+  const fm=(i,f)=>`${dCurta(i)} ${hm2(i)}–${hm2(f||i)}`;
+  return `<div class="sugs">${s.map((x,k)=>{const j=S.jobs.find(y=>eqId(y.id,x.id));const mexida=j&&x.de_inicio&&new Date(j.inicio).getTime()!==new Date(x.de_inicio).getTime();
+    const txt=x.tipo==="remover"?`Tirar <b>${fm(x.de_inicio,x.de_fim)}</b>`:`<b>${fm(x.de_inicio,x.de_fim)}</b> → <b>${fm(x.inicio,x.fim)}</b>`;
+    const est=x.decisao==="aceita"?`<span class="tag o">✅ aceita${x.decidido_por?" por "+esc(String(nome(x.decidido_por)||"").split(" ")[0]):""}</span>`:x.decisao==="recusada"?`<span class="tag x">recusada</span>`
+      :`<button type="button" class="btn sm p" data-act="sugOk" data-id="${e.id}" data-v="${k}">Aceitar e aplicar</button><button type="button" class="btn sm" data-act="sugNo" data-id="${e.id}" data-v="${k}">Recusar</button>`;
+    return `<div class="sug"><span>${txt}${!j?` <span class="small muted">(live não encontrada)</span>`:mexida&&!x.decisao?` <span class="small" style="color:var(--warn)">⚠️ a live mudou desde o envio</span>`:""}</span><span class="sugb">${est}</span></div>`}).join("")}
+    ${s.every(x=>x.decisao)&&s.some(x=>x.decisao==="recusada")?`<div class="small" style="color:var(--warn);margin-top:2px">Algumas foram recusadas: gere um novo link para o cliente confirmar.</div>`:""}</div>`}
+async function sugDecidir(btn,envId,idx,aceita){
+  const e=[...(S.calcEnv||[]),...(S.sexEnv||[]),...(S.calResp||[])].find(x=>eqId(x.id,envId));if(!e)return;
+  const s=JSON.parse(JSON.stringify(sugLista(e)));const it=s[idx];if(!it||it.decisao)return;btn.disabled=true;let aviso="";
+  if(aceita){
+    if(it.tipo==="alterar"&&!(it.inicio&&it.fim&&new Date(it.fim)>new Date(it.inicio))){btn.disabled=false;return toast("O horário sugerido é inválido",true)}
+    const r=await db.from("imp_jobs").update(it.tipo==="remover"?{status:"cancelado"}:{inicio:it.inicio,fim:it.fim}).eq("id",it.id).select().single();
+    if(r.error){btn.disabled=false;return toast("Erro ao alterar a live: "+r.error.message,true)}
+    const i=S.jobs.findIndex(j=>eqId(j.id,it.id));if(i>=0)Object.assign(S.jobs[i],r.data);
+    if(it.tipo==="alterar"){const w=atencao(S.jobs.filter(j=>new Date(j.inicio)>=d0())).filter(y=>y.ids.some(z=>eqId(z,it.id)));if(w.length)aviso=" · "+w[0].t}}
+  it.decisao=aceita?"aceita":"recusada";it.decidido_por=S.me.id;it.decidido_em=new Date().toISOString();
+  const itens=(e.itens||[]).map(i=>!aceita||!eqId(i.id,it.id)?i:it.tipo==="remover"?null:Object.assign({},i,{inicio:it.inicio,fim:it.fim})).filter(Boolean);
+  const status=s.every(x=>x.decisao)&&e.aprova_com_ajustes&&s.every(x=>x.decisao==="aceita")?"aprovado":null;
+  const r2=await db.rpc("imp_cal_decidir",{p_id:String(e.id),p_sug:s,p_itens:itens,p_status:status});btn.disabled=false;
+  if(r2.error||!r2.data)return toast(r2.error&&/function|schema cache/i.test(r2.error.message||"")?"Falta rodar o SQL implay_calendario_sugestoes.sql":(aceita?"A live foi alterada, mas não consegui registrar a decisão":"Não consegui registrar a decisão"),true);
+  e.sugestoes=s;e.itens=itens;if(status)e.status=status;
+  toast((aceita?"Aplicado na live":"Sugestão recusada")+aviso,!!aviso);calcRefresh();sexRefresh();render()}
+
+/* ---- avisos: banner de sexta e "Precisa de você" quando o cliente responde ---- */
+function sexBanner(){if(!S.me||S.me.papel==="seller"||!sexSexta())return "";
+  if(S.sexEnv===undefined&&!S._sexL){S._sexL=true;sexLoad().finally(()=>{S._sexL=false;if(["painel","jobs"].includes(S.tab)&&$("#sheet").hidden)render()})}
+  if(!S.sexEnv)return "";const {a,b,rows}=sexLinhas();const n=rows.filter(x=>sexStatus(x,a,b).precisa).length;if(!n)return "";
+  return `<div class="card confb" data-act="sexOpen"><b>📆 Semana que vem: ${n} marca${n>1?"s":""} para mandar o calendário</b><span class="small muted"> · gerar ›</span></div>`}
+async function calRespLoad(){if(!S.me||S.me.papel==="seller")return;
+  const r=await db.from("imp_cal_envios").select("*").not("resposta_em","is",null).gte("resposta_em",new Date(Date.now()-21*864e5).toISOString()).order("resposta_em",{ascending:false}).limit(100);
+  S.calResp=r.error?null:(r.data||[]);if(sexSexta()||S.sexEnv!==undefined)await sexLoad()}
+const calVistos=()=>{try{return JSON.parse(localStorage.getItem("imp-cal-vistos")||"{}")}catch(_){return {}}};
+const _loadAll77=loadAll;loadAll=async function(){await _loadAll77.apply(this,arguments);try{await calRespLoad()}catch(e){console.warn(e)}};
+const _pend77=pendencias;pendencias=function(){const p=_pend77();if(!S.me||S.me.papel==="seller"||!S.calResp)return p;const vistos=calVistos();
+  S.calResp.filter(e=>e.status==="ajuste"&&(sugPend(e)>0||(!sugLista(e).length&&!vistos[e.id]))).slice(0,5).forEach(e=>{const n=sugPend(e);
+    p.unshift({t:`${e.marca}: ${n?`${n} sugest${n>1?"ões":"ão"} de mudança no calendário`:"pediu ajuste no calendário"}`,v:dmy(parseYmd(e.ini))+" a "+dmy(parseYmd(e.fim)),act:"calResp",a:String(e.id)})});return p};
+const _hJobs77=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm ${sexSexta()?"p":""}" data-act="sexOpen">📆 Semana que vem</button>`+(_hJobs77?_hJobs77():"");
+const _painel77=VIEWS.painel;VIEWS.painel=()=>{const h=_painel77();const b=sexBanner();if(!b)return h;const i=h.indexOf('<div class="sec"><h2>Próximas lives');return i>=0?h.slice(0,i)+b+h.slice(i):b+h};
+const _agenda77=VIEWS.agenda;VIEWS.agenda=()=>sexBanner()+_agenda77();
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act,id=a.dataset.id,v=a.dataset.v;
+  if(!["sexOpen","sexImg","sexWa","sexAbrir","calcImg","cimgWa","cimgBaixar","cimgCopiar","cimgShare","cimgLogo","cimgLogoX","cimgVolta","sugOk","sugNo","calResp"].includes(act))return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const cli=cid=>S.clientes.find(x=>eqId(x.id,cid));
+  switch(act){
+    case"sexOpen":return sexOpen();
+    case"sexImg":return cimgOpen(id,"sem1","sex");
+    case"sexAbrir":S.calc={cid:id,per:"sem1"};return calcOpen();
+    case"sexWa":{const c=cli(id);if(!c)return;const [x,y]=sexPer();return sexWhats(a,c,calcLives(c.id,x,y),x,y)}
+    case"calcImg":if(!S.calc.cid)return toast("Escolha a marca primeiro",true);return cimgOpen(S.calc.cid,S.calc.per,"calc");
+    case"cimgBaixar":{if(!S.cimg.canvas)return;const u=URL.createObjectURL(await cimgBlob());const l=document.createElement("a");l.href=u;l.download=cimgNome();document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return}
+    case"cimgCopiar":if(await cimgCopiar())toast("Imagem copiada");return;
+    case"cimgShare":{if(!S.cimg.canvas)return;const f=new File([await cimgBlob()],cimgNome(),{type:"image/png"});try{if(navigator.canShare({files:[f]}))await navigator.share({files:[f]})}catch(_){}return}
+    case"cimgWa":{const d=cimgDados();if(!d||!S.cimg.canvas)return;return sexWhats(a,d.c,d.l,d.a,d.b,async()=>{if(await cimgCopiar())toast("Imagem copiada: cole na conversa")})}
+    case"cimgLogo":{const f=$("#cimgFile");if(f)f.click();return}
+    case"cimgLogoX":{const d=cimgDados();try{localStorage.removeItem("imp-cal-logo:"+d.c.id)}catch(_){}const bx=$("#cimgBox");if(bx){bx.innerHTML=cimgHtml();await cimgRender()}return}
+    case"cimgVolta":if(S.cimg.volta==="sex")return sexOpen();if(S.cimg.volta==="calc")return calcOpen();return closeSheet();
+    case"sugOk":return sugDecidir(a,id,Number(v),true);
+    case"sugNo":return sugDecidir(a,id,Number(v),false);
+    case"calResp":{const r=(S.calResp||[]).find(x=>eqId(x.id,v));if(!r)return;const m=calVistos();m[r.id]=1;try{localStorage.setItem("imp-cal-vistos",JSON.stringify(m))}catch(_){}
+      const per=["sem0","sem1","mes0","mes1"].find(k=>{const [x,y]=calcPer(k);return ymd(x)===r.ini&&ymd(new Date(y-1))===r.fim})||"sem1";S.calc={cid:r.cliente_id,per};return calcOpen()}}},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
