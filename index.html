@@ -652,6 +652,8 @@ form.jobf .jsel{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf .jsel .
 #mapaOv .mbox{width:min(560px,100%)}#mapaOv .mplan{position:relative;width:100%;aspect-ratio:800/1470;border:2px solid var(--line,#444);border-radius:10px;margin-bottom:12px}
 #mapaOv .mplan .mtile{position:absolute;min-height:0;padding:4px 6px;border-radius:6px;gap:0;overflow:hidden}#mapaOv .mplan .mtile b{font-size:15px}#mapaOv .mplan .mtile span{font-size:10px}
 #mapaOv .acts{position:static!important;background:none!important;box-shadow:none!important}#mapaOv .mfix{position:absolute;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:.5;border:1px dashed var(--line,#444);border-radius:6px;text-align:center}
+.pmgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:640px){.pmgrid{grid-template-columns:1fr}}.pmcol h4{margin:0 0 4px}.pmsub{font-size:11px;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin:14px 0 6px;font-weight:700}
+.pmck{display:flex;gap:10px;align-items:flex-start;padding:7px 2px;border-bottom:1px solid var(--line,#2a2a2a);cursor:pointer}.pmck input{margin-top:3px;width:18px;height:18px;flex:none}.pmck small{display:block;opacity:.65;font-size:11.5px}
 </style>
 </head>
 <body>
@@ -1177,9 +1179,9 @@ function openMembro(id){const m=id?S.membros.find(x=>x.id===id):{papel:"basico",
   const jobsM=id?S.jobs.filter(j=>j.principal_id===id||j.substituto_id===id):[];
   openSheet(`<form onsubmit="return false"><h3>${id?esc(m.nome):"Cadastrar pessoa"}</h3>
    ${id&&m.papel==="seller"?kycPainel(m):""}
-   ${id&&m.status==="pendente"&&m.obs==="PEDIU ACESSO AO ERP"&&isSocio()?`<div class="warnbox" style="margin-bottom:10px"><b>${esc(m.email)}</b> criou conta e pediu acesso ao ERP${m.created_at?" em "+new Date(m.created_at).toLocaleDateString("pt-BR"):""}. Ajuste o nome abaixo e libere:<div class="row" style="margin-top:8px;flex-wrap:wrap"><button type="button" class="btn p sm" data-act="acessoLib" data-id="${id}" data-v="basico">Liberar como Equipe</button><button type="button" class="btn sm" data-act="acessoLib" data-id="${id}" data-v="socio">Liberar como Sócio</button><button type="button" class="btn d sm" data-act="acessoLib" data-id="${id}" data-v="recusar">Recusar</button></div><div class="small" style="margin-top:6px">Se a pessoa for seller (faz lives), recuse e mande o link do app do seller.</div></div>`:""}
+   ${id&&m.status==="pendente"&&m.obs==="PEDIU ACESSO AO ERP"&&isSocio()?`<div class="warnbox" style="margin-bottom:10px"><b>${esc(m.email)}</b> criou conta e pediu acesso ao ERP${m.created_at?" em "+new Date(m.created_at).toLocaleDateString("pt-BR"):""}. Ajuste o nome abaixo e libere:<div class="row" style="margin-top:8px;flex-wrap:wrap"><button type="button" class="btn p sm" data-act="acessoLib" data-id="${id}" data-v="basico">Liberar como Equipe</button><button type="button" class="btn sm" data-act="acessoLib" data-id="${id}" data-v="operador">Liberar como Operador</button><button type="button" class="btn sm" data-act="acessoLib" data-id="${id}" data-v="socio">Liberar como Sócio</button><button type="button" class="btn d sm" data-act="acessoLib" data-id="${id}" data-v="recusar">Recusar</button></div><div class="small" style="margin-top:6px">Se a pessoa for seller (faz lives), recuse e mande o link do app do seller.</div></div>`:""}
    <div class="cols2">${fld("nome","Nome",m.nome,"text","required")}${fld("email","E-mail (o mesmo do login)",m.email,"email",id?"readonly":"required")}</div>
-   <div class="fld"><label>Acesso</label>${seg("papel",[["socio","Sócio (tudo)"],["basico","Equipe (lança, sem aprovar)"],["seller","Seller (só o app)"]],m.papel)}</div>
+   <div class="fld"><label>Acesso</label>${seg("papel",[["socio","Sócio (tudo)"],["basico","Equipe (lança, sem aprovar)"],["operador","Operador (lives)"],["seller","Seller (só o app)"]],m.papel)}</div>
    <div class="fld"><label>Vínculo</label>${seg("vinculo",[["socio","Sócio"],["clt","CLT"],["freelancer","Freelancer"],["pj","PJ"],["mei","MEI"]],m.vinculo)}</div>
    <div class="fld"><label>Situação</label>${seg("status",[["ativo","Ativo"],["pendente","Pendente"],["inativo","Inativo"]],m.status)}</div>
    <div class="cols2">${fld("telefone","Telefone",m.telefone,"tel")}${fld("cidade","Cidade",m.cidade)}</div>
@@ -1649,7 +1651,7 @@ VIEWS.equipe=()=>{const v=S.f.eq.view||"cards";const tg=`<div class="chips" styl
   if(v==="lista")return tg+_eqOld();
   const R=rangeOf("tri");const card=m=>{const js=S.jobs.filter(j=>j.principal_id===m.id&&j.status==="realizado");const gm=js.reduce((s,j)=>s+(Number(j.gmv)||0),0);const prox=S.jobs.filter(j=>(j.principal_id===m.id||j.substituto_id===m.id)&&j.status==="aberto"&&new Date(j.inicio)>new Date()).length;
     const cor=m.papel==="socio"?"var(--volt)":m.papel==="seller"?"var(--flash)":"var(--cobalt)";
-    return `<div class="pcard" data-act="membro" data-id="${m.id}"><div class="av" style="background:${cor};color:${m.papel==="socio"||m.papel==="seller"?"#131411":"#fff"}">${esc(iniciais(m.nome))}</div><div class="t">${esc(m.nome)}</div><div class="s">${m.papel==="socio"?"Sócio":m.papel==="basico"?"Equipe":"Seller"} · ${VINC[m.vinculo]||m.vinculo}</div>${m.obs?`<div class="s">${esc(m.obs.slice(0,60))}</div>`:""}
+    return `<div class="pcard" data-act="membro" data-id="${m.id}"><div class="av" style="background:${cor};color:${m.papel==="socio"||m.papel==="seller"?"#131411":"#fff"}">${esc(iniciais(m.nome))}</div><div class="t">${esc(m.nome)}</div><div class="s">${m.papel==="socio"?"Sócio":m.papel==="basico"?"Equipe":m.papel==="operador"?"Operador":"Seller"} · ${VINC[m.vinculo]||m.vinculo}</div>${m.obs?`<div class="s">${esc(m.obs.slice(0,60))}</div>`:""}
     ${m.papel!=="socio"?`<div class="pst"><span><b>${js.length}</b>lives</span><span><b>${brlK(gm)}</b>GMV</span><span><b>${prox}</b>próx.</span></div>`:`<div class="pst"><span><b>${S.propostas.filter(p=>m.user_id&&p.created_by===m.user_id).length}</b>propostas</span><span><b>${S.fin.filter(f=>f.reembolso_para===m.id&&["solicitado","aprovado"].includes(f.reembolso)).length}</b>reemb.</span></div>`}
     <div class="s" style="margin-top:6px">${esc(m.telefone||m.email)}</div>${m.obs==="PEDIU ACESSO AO ERP"&&m.status==="pendente"?`<span class="tag f">pediu acesso ao ERP</span>`:m.status!=="ativo"?`<span class="tag w">${m.status}</span>`:""}${m.papel==="seller"&&m.status!=="ativo"?kycTag(m):""}</div>`};
   const grp=(t,l)=>l.length?`<div class="sec"><h2>${t} <span class="muted small">${l.length}</span></h2></div><div class="pgrid">${l.map(card).join("")}</div>`:"";
@@ -2552,7 +2554,7 @@ function VPessoa(){const m=S.membros.find(x=>x.id===S.pessoa);if(!m)return `<div
    <div style="min-width:0;flex:1"><h2 style="margin:0;font-size:22px">${esc(m.nome)}</h2><div class="row" style="gap:6px;margin-top:4px"><span class="tag ${m.papel==="socio"?"v":m.papel==="seller"?"f":"c"}">${m.papel==="socio"?"sócio":m.papel==="basico"?"equipe CLT":"seller"}</span>${m.status!=="ativo"?`<span class="tag w">${m.status}</span>`:`<span class="tag o">ativo</span>`}${pos>=0&&rk.length>1?`<span class="tag">#${pos+1} de ${rk.length} em GMV/hora</span>`:""}</div></div>
    </div>
    <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:6px">${wa?`<a class="btn sm" href="https://wa.me/${wa.length<=11?"55":""}${wa}" target="_blank" rel="noopener">WhatsApp</a>`:""}${m.papel==="seller"?`<button class="btn sm" data-act="relatorio" data-id="${m.id}">Relatório de autonomia</button>`:""}${isSocio()||m.id===S.me.id?`<button class="btn p sm" data-act="pesEditar" data-id="${m.id}">Editar dados</button>`:""}${isSocio()&&m.id!==S.me.id?(m.status==="inativo"?`<button class="btn sm" data-act="pesStatus" data-id="${m.id}" data-v="ativo">Reativar</button>`:`<button class="btn sm" data-act="pesStatus" data-id="${m.id}" data-v="inativo" title="Sai do time, mas o histórico fica">Desligar</button>`)+`<button class="btn d sm" data-act="pesApagar" data-id="${m.id}">Apagar</button>`:""}</div></div>
-  ${m.status==="pendente"&&isSocio()?(m.obs==="PEDIU ACESSO AO ERP"?`<div class="warnbox" style="margin-top:12px"><b>${esc(m.email)}</b> pediu acesso ao ERP. Libere aqui:<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px"><button class="btn p sm" data-act="pesLib" data-id="${m.id}" data-v="basico">Liberar como Equipe</button><button class="btn sm" data-act="pesLib" data-id="${m.id}" data-v="socio">Liberar como Sócio</button><button class="btn d sm" data-act="pesLib" data-id="${m.id}" data-v="recusar">Recusar</button></div></div>`
+  ${m.status==="pendente"&&isSocio()?(m.obs==="PEDIU ACESSO AO ERP"?`<div class="warnbox" style="margin-top:12px"><b>${esc(m.email)}</b> pediu acesso ao ERP. Libere aqui:<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px"><button class="btn p sm" data-act="pesLib" data-id="${m.id}" data-v="basico">Liberar como Equipe</button><button class="btn sm" data-act="pesLib" data-id="${m.id}" data-v="operador">Liberar como Operador</button><button class="btn sm" data-act="pesLib" data-id="${m.id}" data-v="socio">Liberar como Sócio</button><button class="btn d sm" data-act="pesLib" data-id="${m.id}" data-v="recusar">Recusar</button></div></div>`
     :m.papel==="seller"?`<div class="warnbox" style="margin-top:12px">Seller aguardando aprovação. <button class="btn p sm" data-act="pesEditar" data-id="${m.id}" style="margin-left:6px">Conferir identidade e aprovar</button></div>`:""):""}
   <div class="row" style="margin:14px 0 6px;align-items:center"><h2 style="font-size:16px;margin:0 10px 0 0">Performance</h2>${chips("pesPer",PES_PER,per)}</div>
   <div class="mks six">${mini("Lives realizadas",st.js.length,subst?subst+" como substituto":"")}${mini("Horas no ar",nf(st.h,1)+" h")}${mini("GMV",brlK(st.g),"","v")}${mini("GMV por hora",brlK(st.gh))}${mini("Pedidos",nf(st.p),st.p?"ticket "+brl(st.tk):"")}${mini(m.papel==="seller"?"Cachês":"Próximas",m.papel==="seller"?brlK(st.cache):prox.length,m.papel==="seller"?prox.length+" lives agendadas":"")}</div>
@@ -2610,8 +2612,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="78";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="79";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["79","23/11","🛠️ Novo papel Operador: cuida das lives sem ver financeiro, propostas, contratos, senhas e dados da equipe. Em Equipe → ⚙️ Acessos por papel, o sócio escolhe o que o Operador e o Seller (app) podem ver."],
  ["78","23/11","Mapa: a sala 33 voltou (abaixo da 32) e já pode ser escolhida."],
  ["77","23/11","🗺️ O mapa agora é a planta real do estúdio: salas 01 a 05, baias 11 a 18 e 21 a 27, e as cabines 31 e 32. Recepção, banheiros, controle e copa aparecem só como referência. Lives que tinham sala no formato antigo (E1, P2…) mostram \"sala antiga\": escolha de novo."],
  ["76","23/11","🗺️ Mapa das salas: na tela da live, ao lado de Sala, o botão \"Escolher no mapa\" abre o estúdio em quadrinhos. Verde = livre, vermelho = ocupada naquele horário (mostra a marca). Toque na sala e pronto."],
@@ -4389,6 +4392,47 @@ document.addEventListener("click",e=>{const b=e.target.closest('[data-act="mapaS
   if(act==="mapaFechar"){$("#mapaOv").hidden=true;return}
   const v=b.dataset.v;const x=mapaOcup().oc[v];if(x&&!confirm(`A sala ${v} já tem ${x.marca||"uma live"} nesse horário (${hm(x.inicio)}–${hm(x.fim)}). Usar mesmo assim?`))return;
   const s=$('#sheetIn select[name="espaco"]');if(s){s.value=v;s.dispatchEvent(new Event("change",{bubbles:true}))}$("#mapaOv").hidden=true;toast(v?"Sala "+v+" escolhida":"Sem sala")},true);
+/* ================= v79 · PAPEL OPERADOR + PERMISSÕES POR PAPEL ================= */
+const PERM_DEF={operador:{tabs:["painel","jobs","central","amostras","equip","tarefas"],valores:false,conferir:true},seller:{mural:true,marcas:true}};
+S.perm=JSON.parse(JSON.stringify(PERM_DEF));
+function isOp(){return S.me&&S.me.papel==="operador"}
+function permMerge(v){const p=JSON.parse(JSON.stringify(PERM_DEF));if(v&&v.operador)Object.assign(p.operador,v.operador);if(v&&v.seller)Object.assign(p.seller,v.seller);return p}
+function tabsTodas(){return MENU.flatMap(([g,it])=>it.map(x=>[x[0],x[1],g]))}
+function opPode(t){return !isOp()||S.perm.operador.tabs.includes(t)}
+const _loadAll79=loadAll;loadAll=async function(){await _loadAll79();if(S.demo)return;try{const r=await db.from("imp_config").select("valor").eq("chave","permissoes").maybeSingle();S.permSemSQL=!!r.error;if(!r.error&&r.data)S.perm=permMerge(r.data.valor)}catch(_){}};
+const _render79=render;render=function(){if(isOp()&&!opPode(S.tab)){const t=S.perm.operador.tabs[0]||"painel";S.tab=opPode("painel")?"painel":t}_render79.apply(this,arguments);
+  if(isOp()){document.querySelectorAll('[data-act="tab"][data-v]').forEach(b=>{if(!opPode(b.dataset.v)&&!b.closest(".logo,.brand"))b.style.display="none"});
+    document.querySelectorAll(".sgrp").forEach(g=>{let n=g.nextElementSibling,vis=false;while(n&&!n.classList.contains("sgrp")){if(n.style.display!=="none"&&n.matches('[data-act="tab"]'))vis=true;n=n.nextElementSibling}if(!vis)g.style.display="none"});
+    document.querySelectorAll(".rl").forEach(e=>{if(e.textContent==="Equipe")e.textContent="Operador"});
+    {const q=document.querySelector('input[placeholder^="Buscar live"]');if(q)(q.closest(".search,.srch,.sbar")||q.parentElement).style.visibility="hidden"}
+    document.querySelectorAll('[data-act="backup"],[data-act="propNova"],[data-act="finNovo"],[data-act="cliNovo"],[data-act="orcNovo"]').forEach(b=>b.style.display="none");
+    const val=S.perm.operador.valores,rx=val?/^(receita do mês|resultado do mês|contratos ativos)$/i:/^(receita do mês|resultado do mês|contratos ativos|gmv do mês)$/i;
+    document.querySelectorAll(".mk .l").forEach(l=>{if(rx.test(l.textContent.trim()))l.closest(".mk").style.display="none"});
+    const rp=val?/^funil comercial/i:/^(funil comercial|gmv · 6 meses|top marcas|top sellers)/i;
+    document.querySelectorAll(".panel h3, .panel h4").forEach(h=>{if(rp.test(h.textContent.trim())){const pn=h.closest(".panel");if(pn)pn.style.display="none"}})}};
+const _openJob79=openJob;openJob=function(){_openJob79.apply(this,arguments);if(!isOp()||S.perm.operador.valores)return;const box=$("#sheetIn");if(!box)return;
+  box.querySelectorAll(".sec h2").forEach(h=>{if(/Financeiro desta live/.test(h.textContent)){const sec=h.closest(".sec");const fin=$("#jobFin");const nx=fin&&fin.nextElementSibling;[sec,fin,nx&&nx.classList.contains("row")?nx:null].forEach(e=>e&&(e.style.display="none"))}});
+  box.querySelectorAll('[name="valor_seller"],[name="valor"],[name="valor_cliente"],[name="gmv"]').forEach(i=>{const f=i.closest(".fld");if(f)f.style.display="none"})};
+/* tela de permissões (sócio) */
+function permHtml(){const p=S.perm,ab=tabsTodas();const ck=(on,attr,lab,sub)=>`<label class="pmck"><input type="checkbox" ${attr} ${on?"checked":""}><span><b>${lab}</b>${sub?`<small>${sub}</small>`:""}</span></label>`;
+  return `<h3>⚙️ O que cada papel vê</h3>
+  ${S.permSemSQL?`<div class="warnbox">Falta rodar o SQL implay_operador.sql para salvar estas escolhas.</div>`:""}
+  <div class="pmgrid"><div class="pmcol"><h4>🛠️ Operador</h4><p class="small muted">Cuida das lives no dia a dia. Nunca vê: senhas dos clientes e aportes.</p>
+   <div class="pmsub">Telas do menu</div>${ab.map(([k,l,g])=>ck(p.operador.tabs.includes(k),`data-pm="op-tab" data-v="${k}"`,l,g)).join("")}
+   <div class="pmsub">Dentro das lives</div>${ck(p.operador.valores,'data-pm="op-valores"',"Ver valores","cachê do seller e financeiro da live")}${ck(p.operador.conferir,'data-pm="op-conferir"',"Conferir lives","dupla checagem do calendário")}</div>
+  <div class="pmcol"><h4>🎤 Seller (app)</h4><p class="small muted">Sempre vê: Minha agenda e Perfil.</p>
+   ${ck(p.seller.mural,'data-pm="sl-mural"',"Lives abertas","escolher vagas no mural")}${ck(p.seller.marcas,'data-pm="sl-marcas"',"Marcas","briefing e materiais das marcas em que tem live")}</div></div>
+  <div class="acts"><button type="button" class="btn p" data-act="permSalvar">Salvar</button><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
+function permLer(){const p=JSON.parse(JSON.stringify(S.perm));p.operador.tabs=[...document.querySelectorAll('[data-pm="op-tab"]:checked')].map(i=>i.dataset.v);
+  p.operador.valores=!!$('[data-pm="op-valores"]').checked;p.operador.conferir=!!$('[data-pm="op-conferir"]').checked;p.seller.mural=!!$('[data-pm="sl-mural"]').checked;p.seller.marcas=!!$('[data-pm="sl-marcas"]').checked;return p}
+const _hEq79=HEADACT.equipe;HEADACT.equipe=()=>(isSocio()?`<button class="btn sm" data-act="permAbrir">⚙️ Acessos por papel</button>`:"")+(_hEq79?_hEq79():"");
+document.addEventListener("click",async e=>{const a=e.target.closest('[data-act="permAbrir"],[data-act="permSalvar"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="permAbrir")return openSheet(permHtml());
+  const p=permLer();a.disabled=true;const r=await db.from("imp_config").upsert({chave:"permissoes",valor:p,atualizado_em:new Date().toISOString(),atualizado_por:S.me.id},{onConflict:"chave"});a.disabled=false;
+  if(r.error)return toast(/relation|schema cache|does not exist/i.test(r.error.message||"")?"Falta rodar o SQL implay_operador.sql":"Erro: "+r.error.message,true);S.perm=p;toast("Acessos salvos");closeSheet();render()},true);
+/* conferência só se permitido */
+const _confBanner79=confBanner;confBanner=function(){if(isOp()&&!S.perm.operador.conferir)return "";return _confBanner79()};
+const _confPode79=confPodeEu;confPodeEu=function(j){if(isOp()&&!S.perm.operador.conferir)return false;return _confPode79(j)};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
