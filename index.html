@@ -649,6 +649,9 @@ form.jobf .jsel{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf .jsel .
 #mapaOv .mtile.on{outline:3px solid var(--volt,#D5FF3F);outline-offset:1px}#mapaOv .mtile i{position:absolute;top:6px;right:8px;font-style:normal;font-weight:800}
 #mapaOv .mlg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 3px 0 8px;vertical-align:-1px}#mapaOv .mlg.livre{background:rgba(70,200,120,.8)}#mapaOv .mlg.oc{background:rgba(255,77,109,.8)}
 @media(max-width:520px){#mapaOv .mrow{grid-template-columns:repeat(2,1fr)}}
+#mapaOv .mbox{width:min(560px,100%)}#mapaOv .mplan{position:relative;width:100%;aspect-ratio:800/1470;border:2px solid var(--line,#444);border-radius:10px;margin-bottom:12px}
+#mapaOv .mplan .mtile{position:absolute;min-height:0;padding:4px 6px;border-radius:6px;gap:0;overflow:hidden}#mapaOv .mplan .mtile b{font-size:15px}#mapaOv .mplan .mtile span{font-size:10px}
+#mapaOv .acts{position:static!important;background:none!important;box-shadow:none!important}#mapaOv .mfix{position:absolute;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:.5;border:1px dashed var(--line,#444);border-radius:6px;text-align:center}
 </style>
 </head>
 <body>
@@ -665,8 +668,8 @@ const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-erp-auth"}});
 
-const ESPACOS=[...Array.from({length:8},(_,i)=>"E"+(i+1)),...Array.from({length:8},(_,i)=>"P"+(i+1)),"B1","B2","C1"];
-const ESPACO_NOME={E:"Economy",P:"Premium",B:"Business",C:"Cabine"};
+const ESPACOS=["01","02","03","04","05","11","12","13","14","15","16","17","18","21","22","23","24","25","26","27","31","32"];
+const ESPACO_NOME={"0":"Sala","1":"Baia","2":"Baia","3":"Cabine"};const ESP_G=[["0","Salas (01–05)"],["1","Baias 11–18"],["2","Baias 21–27"],["3","Cabines 31–32"]];
 const ESTUDIO="Estúdio IMPlay · Av. Paulista, 2198, salas 161/162";
 const CAT_ENT=[["aporte","Aporte Tae & Dani"],["fixo_cliente","Fixo do cliente"],["variavel_cliente","% sobre vendas"],["aluguel_espaco","Aluguel do espaço"],["rendimento","Rendimento / juros"],["outra_entrada","Outra entrada"]];
 const CAT_SAI=[["seller","Cachê de seller","variavel"],["aluguel_imovel","Aluguel do imóvel","fixa"],["condominio_iptu","Condomínio / IPTU","fixa"],["obra","Obra","variavel"],["equipamentos","Equipamentos","variavel"],["salarios","Salários CLT","fixa"],["comissao","Comissão CLT","variavel"],["impostos","Impostos","variavel"],["contador","Contador","fixa"],["marketing","Marketing","variavel"],["limpeza","Limpeza","fixa"],["contas","Energia / água / internet","fixa"],["seguro","Seguro","fixa"],["taxas","Taxas, registros e certificados","variavel"],["caucao","Caução do aluguel","variavel"],["live_custos","Custos de live (viagem, transporte)","variavel"],["caixinha","Caixinha","variavel"],["devolucao_aporte","Devolução de aporte","variavel"],["moveis","Móveis e decoração","variavel"],["outra_saida","Outra saída","variavel"]];
@@ -706,7 +709,7 @@ function timeSel(name,d){const h=d?d.getHours():10,m=d?Math.round(d.getMinutes()
 function seg(name,opts,val,cls=""){return `<input type="hidden" name="${name}" value="${esc(val??"")}"><div class="seg ${cls}" data-seg="${name}">${opts.map(o=>{const[v,l]=Array.isArray(o)?o:[o,o];return `<button type="button" data-v="${esc(v)}" class="${String(v)===String(val??"")?"on":""}">${esc(l)}</button>`}).join("")}</div>`}
 function dLong(v){if(!v)return"";const d=parseYmd(v);return DL[d.getDay()]+", "+d.getDate()+" de "+ML[d.getMonth()]+" de "+d.getFullYear()}
 function dateFld(name,label,val,req){const ref=val?parseYmd(val):new Date();return `<div class="fld"><label>${label}</label><input type="hidden" name="${name}" value="${val||""}"><div class="dsel ${val?"":"vazio"}" data-dsel="${name}"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>${val?dLong(val):"Toque no dia abaixo"}</span></div><div class="cal" data-cal="${name}" data-m="${ymd(ref)}">${calHtml(name,ref,val||"")}</div></div>`}
-function espSeg(val){const G=[["E","Economy"],["P","Premium"],["B","Business"],["C","Cabine"]];return `<input type="hidden" name="espaco" value="${esc(val||"")}"><div class="espg" data-seg="espaco">${G.map(([k,l])=>`<div class="erow"><span class="elab">${l}</span><div class="ebtns">${ESPACOS.filter(e=>e[0]===k).map(e=>`<button type="button" data-v="${e}" class="${e===val?"on":""}">${e}</button>`).join("")}</div></div>`).join("")}</div>`}
+function espSeg(val){const G=ESP_G;return `<input type="hidden" name="espaco" value="${esc(val||"")}"><div class="espg" data-seg="espaco">${G.map(([k,l])=>`<div class="erow"><span class="elab">${l}</span><div class="ebtns">${ESPACOS.filter(e=>e[0]===k).map(e=>`<button type="button" data-v="${e}" class="${e===val?"on":""}">${e}</button>`).join("")}</div></div>`).join("")}</div>`}
 function calHtml(name,ref,sel){const today=new Date();
   const first=new Date(ref.getFullYear(),ref.getMonth(),1);const start=new Date(first);start.setDate(1-first.getDay());
   const jobsDia={};S.jobs.forEach(j=>{if(j.status==="cancelado")return;const k=ymd(new Date(j.inicio));jobsDia[k]=(jobsDia[k]||0)+1});
@@ -1622,8 +1625,8 @@ VIEWS.relatorios=()=>{const {R,lives,fin}=rpData();const t=S.rp.tab;
     <div class="grid2"><div class="panel"><h3>Receita por tipo</h3>${bars(Object.entries(gr).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[CAT_NOME[k]||k,v]),brl,"var(--volt)")}</div><div class="panel"><h3>Despesas por categoria</h3>${bars(Object.entries(gc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[CAT_NOME[k]||k,v]))}</div></div>
     <div class="hint">Receita = entradas recebidas, sem aportes. Despesas = saídas pagas, sem devolução de aporte. Cachês pagos direto pelo cliente ao seller não entram no caixa.</div>`}
   if(t==="estudio"){const js=S.jobs.filter(j=>j.status!=="cancelado"&&j.local_tipo==="estudio"&&inR(j.inicio,R));const dias=Math.max(1,Math.round((Math.min(R[1],new Date(Date.now()+864e5))-R[0])/864e5));const cap=12*dias;
-    const g={};ESPACOS.forEach(e=>g[e]=0);js.forEach(j=>{if(j.espaco)g[j.espaco]+=hrs(j)});const tot=Object.values(g).reduce((a,b)=>a+b,0);
-    const tipo={Economy:0,Premium:0,Business:0,Cabine:0};Object.entries(g).forEach(([e,v])=>tipo[ESPACO_NOME[e[0]]]+=v);
+    const g={};ESPACOS.forEach(e=>g[e]=0);js.forEach(j=>{if(j.espaco in g)g[j.espaco]+=hrs(j)});const tot=Object.values(g).reduce((a,b)=>a+b,0);
+    const tipo={Sala:0,Baia:0,Cabine:0};Object.entries(g).forEach(([e,v])=>tipo[ESPACO_NOME[e[0]]]+=v);
     const aluguel=js.filter(j=>j.modalidade==="aluguel").length;
     S._csv=[["Espaço","Horas reservadas","Ocupação % (12h/dia)"],...ESPACOS.map(e=>[e,nf(g[e],1),nf(g[e]/cap*100,1)])];
     return head+`<div class="mks">${mini("Horas reservadas",nf(tot,1)+" h","","v")}${mini("Ocupação média",nf(tot/(cap*ESPACOS.length)*100,1)+"%","base 12 h/dia × "+ESPACOS.length+" espaços")}${mini("Lives no estúdio",js.length)}${mini("Só aluguel",aluguel,"","c")}${mini("Dias no período",dias)}</div>
@@ -2607,8 +2610,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="76";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="77";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["77","23/11","🗺️ O mapa agora é a planta real do estúdio: salas 01 a 05, baias 11 a 18 e 21 a 27, e as cabines 31 e 32. Recepção, banheiros, controle e copa aparecem só como referência. Lives que tinham sala no formato antigo (E1, P2…) mostram \"sala antiga\": escolha de novo."],
  ["76","23/11","🗺️ Mapa das salas: na tela da live, ao lado de Sala, o botão \"Escolher no mapa\" abre o estúdio em quadrinhos. Verde = livre, vermelho = ocupada naquele horário (mostra a marca). Toque na sala e pronto."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
@@ -3363,9 +3367,9 @@ function openJobResumo(id){const j=S.jobs.find(x=>x.id===id);if(!j)return;const 
     ${R("Equipamento",esc(j.equipamento||""))}${R("Contrato",p?esc(p.contrato_numero||pn(p.numero)):"")}${R("Requisitos",esc(j.requisitos||""))}${R("Observações",esc(j.obs||""))}</div>
    <div class="acts"><button type="button" class="btn p" data-act="jobEditar" data-id="${id}">Editar</button><button type="button" class="btn" data-act="fechar">Fechar</button>
     ${j.status==="aberto"?`<button type="button" class="btn" data-act="jobDup" data-id="${id}">Duplicar</button><button type="button" class="btn d" data-act="jobStatus" data-id="${id}" data-v="cancelado">Cancelar live</button>`:`<button type="button" class="btn" data-act="jobStatus" data-id="${id}" data-v="aberto">Reabrir</button>`}</div></form>`)}
-function espOpts(val,ini,fim,selfId){const G=[["E","Economy"],["P","Premium"],["B","Business"],["C","Cabine"]];
+function espOpts(val,ini,fim,selfId){const G=ESP_G;
   const oc={};if(ini&&fim)S.jobs.filter(x=>x.id!==selfId&&x.status!=="cancelado"&&x.local_tipo==="estudio"&&x.espaco&&new Date(x.inicio)<fim&&ini<new Date(x.fim)).forEach(x=>oc[x.espaco]=`${x.marca||"live"} ${hm(x.inicio)}`);
-  return `<option value="">— escolher sala —</option>`+G.map(([k,l])=>`<optgroup label="${l}">${ESPACOS.filter(e=>e[0]===k).map(e=>`<option value="${e}" ${e===val?"selected":""}>${e}${oc[e]?` · ocupada (${esc(oc[e])})`:""}</option>`).join("")}</optgroup>`).join("")}
+  return `<option value="">— escolher sala —</option>`+(val&&!ESPACOS.includes(val)?`<option value="${esc(val)}" selected>${esc(val)} (sala antiga — escolha de novo)</option>`:"")+G.map(([k,l])=>`<optgroup label="${l}">${ESPACOS.filter(e=>e[0]===k).map(e=>`<option value="${e}" ${e===val?"selected":""}>${e}${oc[e]?` · ocupada (${esc(oc[e])})`:""}</option>`).join("")}</optgroup>`).join("")}
 function jobEspRefresh(){const f=$("#sheetIn form");const s=f&&f.querySelector("select[name=espaco]");if(!s)return;const d=f.querySelector("[name=data]").value,h=f.querySelector("[name=hora]").value,m=(f.querySelector("[name=min]")||{}).value||0,n=num(f.querySelector("[name=horas]").value);
   if(!d||!h||!n)return;const a=combine(d,h,m),b=new Date(a.getTime()+n*36e5);const v=s.value;s.innerHTML=espOpts(v,a,b,s.dataset.self||null)}
 document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#sheetIn")&&["data","hora","min"].includes(e.target.name)){jobQuandoSync();jobEspRefresh()}});
@@ -4364,14 +4368,17 @@ document.addEventListener("click",e=>{const b=e.target.closest('#sheetIn [data-a
   const i=$('#sheetIn [name="principal_id"]');if(!i)return;i.value=b.dataset.v||"";b.parentElement.querySelectorAll(".pch").forEach(x=>x.classList.toggle("on",x===b));
   const sub=$('#sheetIn [name="substituto_id"]');if(sub&&i.value&&sub.value===i.value){sub.value="";sub.dispatchEvent(new Event("change",{bubbles:true}))}},true);
 /* v76 · mapa de salas para escolher a sala da live */
+const PLANTA=[["03",115,32,410,236],["02",418,32,620,236],["01",626,32,890,236],["04",115,241,410,446],["05",115,451,410,655],
+ ["banheiros",457,265,655,537],["31",659,265,890,400],["32",659,402,890,537],["controle",693,543,890,698],["copa",693,704,890,826],["recepção",418,660,688,826],
+ ...["11","12","13","14","15","16","17","18"].map((c,i)=>[c,115,658+i*102.4,237,656+(i+1)*102.4]),...["21","22","23","24","25","26","27"].map((c,i)=>[c,290,658+i*102.4,410,656+(i+1)*102.4]),
+ ["corredor",418,832,664,1477],["elevadores",668,1000,890,1477]];
 function mapaOcup(){const f=$("#sheetIn form");const s=f&&f.querySelector("select[name=espaco]");const d=f&&f.querySelector("[name=data]").value,h=f&&f.querySelector("[name=hora]").value,m=(f&&f.querySelector("[name=min]")||{}).value||0,n=f&&num(f.querySelector("[name=horas]").value);
   const oc={};if(d&&h&&n){const a=combine(d,h,m),b=new Date(a.getTime()+n*36e5);S.jobs.filter(x=>x.id!==(s&&s.dataset.self)&&x.status!=="cancelado"&&x.local_tipo==="estudio"&&x.espaco&&new Date(x.inicio)<b&&a<new Date(x.fim)).forEach(x=>oc[x.espaco]=x);return {oc,a,b}}return {oc,a:null,b:null}}
 function mapaHtml(){const f=$("#sheetIn form");const cur=f&&f.querySelector("select[name=espaco]").value;const {oc,a,b}=mapaOcup();
-  const G=[["B","Business","as maiores"],["P","Premium","médias"],["E","Economy","menores"],["C","Cabine",""]];
   const tile=e=>{const x=oc[e];return `<button type="button" class="mtile ${x?"oc":"livre"} ${e===cur?"on":""}" data-act="mapaPick" data-v="${e}">${e===cur?"<i>✓</i>":""}<b>${e}</b><span>${x?esc(x.marca||"ocupada")+" · "+hm(x.inicio)+"–"+hm(x.fim):"livre"}</span></button>`};
   return `<div class="mbox"><div class="mhead"><b>🗺️ Mapa do estúdio</b><button type="button" class="btn sm" data-act="mapaFechar">✕</button></div>
    <div class="small muted" style="margin:-4px 0 12px">${a?`${a.toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})} · ${hm(a)}–${hm(b)} · <span class="mlg livre"></span> livre <span class="mlg oc"></span> ocupada`:"Escolha a data e o horário para ver o que está ocupado."}</div>
-   ${G.map(([k,l,sub])=>`<div class="mgrp"><div class="mlab">${l}${sub?` <span class="muted">· ${sub}</span>`:""}</div><div class="mrow">${ESPACOS.filter(e=>e[0]===k).map(tile).join("")}</div></div>`).join("")}
+   <div class="mplan">${PLANTA.map(([c,x1,y1,x2,y2])=>{const st=`left:${(x1-100)/8}%;top:${(y1-20)/14.7}%;width:${(x2-x1)/8}%;height:${(y2-y1)/14.7}%`;return ESPACOS.includes(c)?tile(c).replace('class="mtile','style="'+st+'" class="mtile'):`<div class="mfix" style="${st}">${c}</div>`}).join("")}${(cur&&!ESPACOS.includes(cur))?"":""}</div>
    <div class="acts"><button type="button" class="btn" data-act="mapaPick" data-v="">Sem sala</button><button type="button" class="btn" data-act="mapaFechar">Fechar</button></div></div>`}
 function mapaAbrir(){let o=$("#mapaOv");if(!o){o=document.createElement("div");o.id="mapaOv";document.body.appendChild(o)}o.innerHTML=mapaHtml();o.hidden=false}
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act="mapaSala"],[data-act="mapaPick"],[data-act="mapaFechar"],#mapaOv');if(!b)return;
