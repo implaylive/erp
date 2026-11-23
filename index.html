@@ -638,6 +638,17 @@ form.jobf .seg,form.jobf .pchips,form.jobf .row{gap:10px!important}form.jobf .se
 form.jobf input:not([type=checkbox]):not([type=radio]),form.jobf select{min-height:40px;height:40px;padding:6px 12px;font-size:15px}form.jobf textarea{min-height:70px}
 form.jobf .hint{font-size:12.5px;margin-top:6px}form.jobf .jtop{gap:14px}form.jobf .jsub select{max-width:340px}
 form.jobf .jsel{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf .jsel .pch{padding:8px 14px}form.jobf .jtop{align-items:end}form.jobf [data-pick] .pchips,form.jobf .pchips{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf details.jmais{margin:6px 0 4px}form.jobf details.jmais summary{cursor:pointer;font-size:13px;opacity:.8}
+#mapaOv{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}#mapaOv[hidden]{display:none}
+#mapaOv .mbox{background:var(--bg,#0b0b0b);color:inherit;border:1px solid var(--line,#2a2a2a);border-radius:18px;padding:18px;width:min(640px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#mapaOv .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:17px}
+#mapaOv .mgrp{border:1px dashed var(--line,#333);border-radius:14px;padding:10px 12px;margin-bottom:12px}#mapaOv .mlab{font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700}
+#mapaOv .mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+#mapaOv .mtile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px;border-radius:12px;border:1.5px solid transparent;cursor:pointer;text-align:left;min-height:62px;font:inherit;color:inherit}
+#mapaOv .mtile b{font-size:16px}#mapaOv .mtile span{font-size:11px;line-height:1.25;opacity:.85}
+#mapaOv .mtile.livre{background:rgba(70,200,120,.14);border-color:rgba(70,200,120,.55)}#mapaOv .mtile.oc{background:rgba(255,77,109,.12);border-color:rgba(255,77,109,.5)}
+#mapaOv .mtile.on{outline:3px solid var(--volt,#D5FF3F);outline-offset:1px}#mapaOv .mtile i{position:absolute;top:6px;right:8px;font-style:normal;font-weight:800}
+#mapaOv .mlg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 3px 0 8px;vertical-align:-1px}#mapaOv .mlg.livre{background:rgba(70,200,120,.8)}#mapaOv .mlg.oc{background:rgba(255,77,109,.8)}
+@media(max-width:520px){#mapaOv .mrow{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -873,7 +884,7 @@ function openJob(id,preset={}){
    <div data-show="modalidade=servico" class="sbox eqoff">${pickM("equipamento","Equipamento (pode marcar mais de um)",j.equipamento||"",["Celular","Câmera profissional","2 câmeras","Iluminação extra","Microfone de lapela","Cenário da marca"],{ph:"Outro equipamento: escreva aqui"})}</div>
    <div class="sec"><h2>Local</h2></div>
    <div class="fld">${seg("local_tipo",[["estudio","Nosso estúdio"],["cliente","Terceiros"]],j.local_tipo==="online"?"cliente":j.local_tipo)}</div>
-   <div class="fld" data-show="local_tipo=estudio"><label>Sala</label><select name="espaco" data-1c="lista" data-self="${id||""}">${espOpts(j.espaco,ini,fim,id)}</select><div class="hint">As salas ocupadas no mesmo horário aparecem marcadas.</div></div>
+   <div class="fld" data-show="local_tipo=estudio"><label style="display:flex;justify-content:space-between;align-items:center">Sala<button type="button" class="btn sm p" data-act="mapaSala" style="min-height:30px;padding:4px 12px;font-size:12px;letter-spacing:0;text-transform:none">🗺️ Escolher no mapa</button></label><select name="espaco" data-1c="lista" data-self="${id||""}">${espOpts(j.espaco,ini,fim,id)}</select><div class="hint">As salas ocupadas no mesmo horário aparecem marcadas.</div></div>
    <div data-show="local_tipo=cliente">${fld("local_endereco","Onde é a live",j.local_endereco,"text",'placeholder="Ex.: loja da marca, Shopping X, endereço…"')}</div>
    <div class="sec"><h2>Quando</h2></div>
    <div class="jqt"><div class="fld"><label>Data</label><input type="date" name="data" value="${ini?ymd(ini):""}"></div>
@@ -2596,8 +2607,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="75";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="76";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["76","23/11","🗺️ Mapa das salas: na tela da live, ao lado de Sala, o botão \"Escolher no mapa\" abre o estúdio em quadrinhos. Verde = livre, vermelho = ocupada naquele horário (mostra a marca). Toque na sala e pronto."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
  ["74","22/11","🔎 Conferência: toda live criada ou alterada fica aguardando conferência de outra pessoa da equipe (aviso no Painel e em Lives; o ERP guarda quem mudou e quem conferiu). 📆 Calendário da marca: escolha a marca e o período, copie o texto com os horários certos ou gere um link para o cliente aprovar ou pedir ajuste; a resposta aparece no ERP e avisa se o calendário mudou depois do OK. ⚠️ Pontos de atenção na aba Simultâneas: seller sem descanso, sala com troca rápida ou conflito e picos de lives."],
  ["73","21/11","📅 Agenda: a visão Semana agora começa em hoje e mostra os próximos 7 dias (as setas andam de 7 em 7). Nova aba ⚡ Simultâneas: escolha o dia e veja as lives agrupadas por horário, com quantas acontecem ao mesmo tempo e o pico do dia."],
@@ -4351,6 +4363,24 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
 document.addEventListener("click",e=>{const b=e.target.closest('#sheetIn [data-act="pselSet"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
   const i=$('#sheetIn [name="principal_id"]');if(!i)return;i.value=b.dataset.v||"";b.parentElement.querySelectorAll(".pch").forEach(x=>x.classList.toggle("on",x===b));
   const sub=$('#sheetIn [name="substituto_id"]');if(sub&&i.value&&sub.value===i.value){sub.value="";sub.dispatchEvent(new Event("change",{bubbles:true}))}},true);
+/* v76 · mapa de salas para escolher a sala da live */
+function mapaOcup(){const f=$("#sheetIn form");const s=f&&f.querySelector("select[name=espaco]");const d=f&&f.querySelector("[name=data]").value,h=f&&f.querySelector("[name=hora]").value,m=(f&&f.querySelector("[name=min]")||{}).value||0,n=f&&num(f.querySelector("[name=horas]").value);
+  const oc={};if(d&&h&&n){const a=combine(d,h,m),b=new Date(a.getTime()+n*36e5);S.jobs.filter(x=>x.id!==(s&&s.dataset.self)&&x.status!=="cancelado"&&x.local_tipo==="estudio"&&x.espaco&&new Date(x.inicio)<b&&a<new Date(x.fim)).forEach(x=>oc[x.espaco]=x);return {oc,a,b}}return {oc,a:null,b:null}}
+function mapaHtml(){const f=$("#sheetIn form");const cur=f&&f.querySelector("select[name=espaco]").value;const {oc,a,b}=mapaOcup();
+  const G=[["B","Business","as maiores"],["P","Premium","médias"],["E","Economy","menores"],["C","Cabine",""]];
+  const tile=e=>{const x=oc[e];return `<button type="button" class="mtile ${x?"oc":"livre"} ${e===cur?"on":""}" data-act="mapaPick" data-v="${e}">${e===cur?"<i>✓</i>":""}<b>${e}</b><span>${x?esc(x.marca||"ocupada")+" · "+hm(x.inicio)+"–"+hm(x.fim):"livre"}</span></button>`};
+  return `<div class="mbox"><div class="mhead"><b>🗺️ Mapa do estúdio</b><button type="button" class="btn sm" data-act="mapaFechar">✕</button></div>
+   <div class="small muted" style="margin:-4px 0 12px">${a?`${a.toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})} · ${hm(a)}–${hm(b)} · <span class="mlg livre"></span> livre <span class="mlg oc"></span> ocupada`:"Escolha a data e o horário para ver o que está ocupado."}</div>
+   ${G.map(([k,l,sub])=>`<div class="mgrp"><div class="mlab">${l}${sub?` <span class="muted">· ${sub}</span>`:""}</div><div class="mrow">${ESPACOS.filter(e=>e[0]===k).map(tile).join("")}</div></div>`).join("")}
+   <div class="acts"><button type="button" class="btn" data-act="mapaPick" data-v="">Sem sala</button><button type="button" class="btn" data-act="mapaFechar">Fechar</button></div></div>`}
+function mapaAbrir(){let o=$("#mapaOv");if(!o){o=document.createElement("div");o.id="mapaOv";document.body.appendChild(o)}o.innerHTML=mapaHtml();o.hidden=false}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="mapaSala"],[data-act="mapaPick"],[data-act="mapaFechar"],#mapaOv');if(!b)return;
+  if(b.id==="mapaOv"){if(e.target===b){b.hidden=true}return}
+  e.preventDefault();e.stopImmediatePropagation();const act=b.dataset.act;
+  if(act==="mapaSala")return mapaAbrir();
+  if(act==="mapaFechar"){$("#mapaOv").hidden=true;return}
+  const v=b.dataset.v;const x=mapaOcup().oc[v];if(x&&!confirm(`A sala ${v} já tem ${x.marca||"uma live"} nesse horário (${hm(x.inicio)}–${hm(x.fim)}). Usar mesmo assim?`))return;
+  const s=$('#sheetIn select[name="espaco"]');if(s){s.value=v;s.dispatchEvent(new Event("change",{bubbles:true}))}$("#mapaOv").hidden=true;toast(v?"Sala "+v+" escolhida":"Sem sala")},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
