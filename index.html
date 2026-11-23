@@ -668,8 +668,8 @@ const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-erp-auth"}});
 
-const ESPACOS=["01","02","03","04","05","11","12","13","14","15","16","17","18","21","22","23","24","25","26","27","31","32"];
-const ESPACO_NOME={"0":"Sala","1":"Baia","2":"Baia","3":"Cabine"};const ESP_G=[["0","Salas (01–05)"],["1","Baias 11–18"],["2","Baias 21–27"],["3","Cabines 31–32"]];
+const ESPACOS=["01","02","03","04","05","11","12","13","14","15","16","17","18","21","22","23","24","25","26","27","31","32","33"];
+const ESPACO_NOME={"0":"Sala","1":"Baia","2":"Baia","3":"Cabine"};const ESP_G=[["0","Salas (01–05)"],["1","Baias 11–18"],["2","Baias 21–27"],["3","Cabines 31–33"]];
 const ESTUDIO="Estúdio IMPlay · Av. Paulista, 2198, salas 161/162";
 const CAT_ENT=[["aporte","Aporte Tae & Dani"],["fixo_cliente","Fixo do cliente"],["variavel_cliente","% sobre vendas"],["aluguel_espaco","Aluguel do espaço"],["rendimento","Rendimento / juros"],["outra_entrada","Outra entrada"]];
 const CAT_SAI=[["seller","Cachê de seller","variavel"],["aluguel_imovel","Aluguel do imóvel","fixa"],["condominio_iptu","Condomínio / IPTU","fixa"],["obra","Obra","variavel"],["equipamentos","Equipamentos","variavel"],["salarios","Salários CLT","fixa"],["comissao","Comissão CLT","variavel"],["impostos","Impostos","variavel"],["contador","Contador","fixa"],["marketing","Marketing","variavel"],["limpeza","Limpeza","fixa"],["contas","Energia / água / internet","fixa"],["seguro","Seguro","fixa"],["taxas","Taxas, registros e certificados","variavel"],["caucao","Caução do aluguel","variavel"],["live_custos","Custos de live (viagem, transporte)","variavel"],["caixinha","Caixinha","variavel"],["devolucao_aporte","Devolução de aporte","variavel"],["moveis","Móveis e decoração","variavel"],["outra_saida","Outra saída","variavel"]];
@@ -2610,8 +2610,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="77";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="78";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["78","23/11","Mapa: a sala 33 voltou (abaixo da 32) e já pode ser escolhida."],
  ["77","23/11","🗺️ O mapa agora é a planta real do estúdio: salas 01 a 05, baias 11 a 18 e 21 a 27, e as cabines 31 e 32. Recepção, banheiros, controle e copa aparecem só como referência. Lives que tinham sala no formato antigo (E1, P2…) mostram \"sala antiga\": escolha de novo."],
  ["76","23/11","🗺️ Mapa das salas: na tela da live, ao lado de Sala, o botão \"Escolher no mapa\" abre o estúdio em quadrinhos. Verde = livre, vermelho = ocupada naquele horário (mostra a marca). Toque na sala e pronto."],
  ["75","23/11","Tela da live mais limpa: mais espaço entre as opções, campos menores (Cliente e Marca lado a lado) e o seller agora é escolhido direto pelo nome. Vaga no app, equipe extra e convidado ficam em \"Mais opções\"."],
@@ -4369,7 +4370,7 @@ document.addEventListener("click",e=>{const b=e.target.closest('#sheetIn [data-a
   const sub=$('#sheetIn [name="substituto_id"]');if(sub&&i.value&&sub.value===i.value){sub.value="";sub.dispatchEvent(new Event("change",{bubbles:true}))}},true);
 /* v76 · mapa de salas para escolher a sala da live */
 const PLANTA=[["03",115,32,410,236],["02",418,32,620,236],["01",626,32,890,236],["04",115,241,410,446],["05",115,451,410,655],
- ["banheiros",457,265,655,537],["31",659,265,890,400],["32",659,402,890,537],["controle",693,543,890,698],["copa",693,704,890,826],["recepção",418,660,688,826],
+ ["banheiros",457,265,655,537],["31",659,265,890,354],["32",659,356,890,445],["33",659,447,890,537],["controle",693,543,890,698],["copa",693,704,890,826],["recepção",418,660,688,826],
  ...["11","12","13","14","15","16","17","18"].map((c,i)=>[c,115,658+i*102.4,237,656+(i+1)*102.4]),...["21","22","23","24","25","26","27"].map((c,i)=>[c,290,658+i*102.4,410,656+(i+1)*102.4]),
  ["corredor",418,832,664,1477],["elevadores",668,1000,890,1477]];
 function mapaOcup(){const f=$("#sheetIn form");const s=f&&f.querySelector("select[name=espaco]");const d=f&&f.querySelector("[name=data]").value,h=f&&f.querySelector("[name=hora]").value,m=(f&&f.querySelector("[name=min]")||{}).value||0,n=f&&num(f.querySelector("[name=horas]").value);
