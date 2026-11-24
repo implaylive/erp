@@ -2639,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="92";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="93";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["93","24/11","🔑 Esqueci a senha agora funciona sozinho: a pessoa digita o e-mail, recebe um link e cria a senha nova, sem precisar de sócio."],
  ["92","24/11","📊 Relatórios → Por live: cada live realizada com GMV, GMV por hora, pedidos, itens, visualizações e nota; filtro por marca e período, totais no topo e CSV. No resumo da live, botão “Ver relatório”."],
  ["91","24/11","Lançar resultados: agora respeita a plataforma (TikTok não cai em live de Instagram), escolhe pela maior sobreposição de horário e não liga a uma live com mais de 3 h de diferença."],
  ["90","24/11","📥 Lives → Lançar resultados: cole o GMV de várias lives de uma vez (marca, horário, GMV, itens, pedidos). O ERP acha cada live pelo horário, mostra para conferir e grava tudo; se a live não existir no ERP, cria como realizada."],
@@ -3770,7 +3771,11 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-act=
 const _bootTS=boot;boot=async function(){await _bootTS();try{if(S.me&&S.me.id){const {data,error}=await db.rpc("imp_precisa_trocar");if(!error&&data===true)openTrocaSenha()}}catch(_){}};
 /* ---------- v42: Esqueci a senha + Resetar senha (sócio) ---------- */
 document.addEventListener("click",e=>{const a=e.target.closest("#esqueci");if(!a)return;e.preventDefault();
-  toast("Fale com um sócio da IMPlay: ele gera uma senha temporária para você em 1 toque (Equipe › seu nome › Resetar senha).")},true);
+  const inp=document.querySelector('#lf input[type=email],#lf input[name=email],#lf input:not([type=password])');let em=((inp&&inp.value)||"").trim();
+  if(!/@/.test(em))em=(prompt("Digite o seu e-mail de acesso:")||"").trim();if(!/@/.test(em))return;
+  db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname}).then(({error})=>{if(error)return toast("Não deu para enviar: "+error.message+". Peça a um sócio: Equipe › seu nome › Resetar senha.",true);
+    toast("Pronto! Enviamos um link para "+em+". Abra o e-mail (veja o spam também) e crie a senha nova.")})},true);
+db.auth.onAuthStateChange(ev=>{if(ev==="PASSWORD_RECOVERY"){S.recSenha=true;setTimeout(()=>{if(typeof openTrocaSenha==="function"){openTrocaSenha();const h=$("#tsF h3");if(h)h.textContent="Crie sua nova senha";const p=$("#tsF p");if(p)p.textContent="Digite a nova senha duas vezes (mínimo 8 caracteres)."}},1500)}});
 const _renderLoginES=renderLogin;renderLogin=function(...a){_renderLoginES(...a);const h=document.querySelector("#lf .hint");if(h&&!document.getElementById("esqueci"))h.insertAdjacentHTML("beforebegin",`<div style="text-align:center;margin:8px 0"><a href="#" id="esqueci" class="small">Esqueci a senha</a></div>`)};
 const _openMembroRS=openMembro;openMembro=function(id){_openMembroRS(id);const m=id&&S.membros.find(x=>x.id===id);
   if(!m||!isSocio()||!["socio","basico"].includes(m.papel)||!m.email)return;const acts=document.querySelector("#sheetIn form .acts");if(!acts)return;
