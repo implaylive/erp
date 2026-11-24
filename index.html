@@ -2639,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="89";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="90";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["90","24/11","📥 Lives → Lançar resultados: cole o GMV de várias lives de uma vez (marca, horário, GMV, itens, pedidos). O ERP acha cada live pelo horário, mostra para conferir e grava tudo; se a live não existir no ERP, cria como realizada."],
  ["89","24/11","📊 Desempenho também no resumo da live (a janela que abre ao clicar na live): botão “Lançar desempenho” e, depois de preenchido, os números aparecem ali."],
  ["88","24/11","📊 Desempenho da live: na tela de cada live, caixa para GMV, pedidos, horário real, visualizações, pico, seguidores, curtidas, comentários, cliques, cupons, nota de 1 a 5, comentário e prints do TikTok Shop (dá para arrastar)."],
  ["87","24/11","Central do cliente mostra só contratos assinados. Operador alocado aparece na agenda e na lista de lives (🎛). Agenda do celular: título como 🎵 Marca · TikTok · Seller, com operador, briefing e observações na descrição."],
@@ -4957,6 +4958,38 @@ const _resumo89=openJobResumo;openJobResumo=function(id){_resumo89.apply(this,ar
    :`<div style="margin-top:12px"><button type="button" class="btn ${pas?"p":""}" style="width:100%;padding:12px" data-act="dsIr" data-id="${j.id}">📊 Lançar desempenho da live</button></div>`;
   box.insertAdjacentHTML("afterend",html)};
 document.addEventListener("click",e=>{const a=e.target.closest('[data-act="dsIr"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();closeSheet();openJob(a.dataset.id);setTimeout(()=>{const b=$("#dsBox");if(b){b.open=true;b.scrollIntoView({behavior:"smooth",block:"start"});const g=b.querySelector('[name="dsp_gmv"]');if(g)g.focus({preventScroll:true})}},150)},true);
+
+/* ================= v90 · IMPORTAR RESULTADOS (GMV) DAS LIVES ================= */
+const imNorm=t=>String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+function imData(d,h){const m=String(d).trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/);if(!m)return null;let y=m[3]?Number(m[3]):new Date().getFullYear();if(y<100)y+=2000;const [hh,mm,ss]=(String(h||"0:0").trim()+":0:0").split(":").map(Number);return new Date(y,Number(m[2])-1,Number(m[1]),hh||0,mm||0,ss||0)}
+function imParse(tx){const out=[];String(tx||"").split(/\r?\n/).forEach((ln,i)=>{ln=ln.trim();if(!ln||/^marca\s*;/i.test(ln)||ln.startsWith("#"))return;const c=ln.split(";").map(x=>x.trim());
+  const [marca,plat,di,hi,df,hf,gmv,itens,ped]=c;const ini=imData(di,hi);let fim=imData(df||di,hf);if(ini&&fim&&fim<=ini)fim=new Date(+fim+864e5);
+  out.push({n:i+1,marca,plat:plat||"",ini,fim,gmv:num(String(gmv||"").replace(/r\$\s*/i,"")),itens:itens?Number(itens):null,ped:ped?Number(ped):null,ok:!!(marca&&ini&&fim)})});return out}
+function imMatch(rows){const usados=new Set();const cand=r=>{const k=imNorm(r.marca);return S.jobs.filter(j=>j.status!=="cancelado"&&!usados.has(j.id)&&(()=>{const m=imNorm(j.marca||cliNome(j.cliente_id));return m&&k&&(m.includes(k)||k.includes(m))})()&&ymd(new Date(j.inicio))===ymd(r.ini))
+    .map(j=>{const a=Math.max(+new Date(j.inicio),+r.ini),b=Math.min(+new Date(j.fim||j.inicio),+r.fim);return {j,ov:b-a,dist:Math.abs(+new Date(j.inicio)-+r.ini)}}).sort((x,y)=>(y.ov>0)-(x.ov>0)||y.ov-x.ov||x.dist-y.dist)};
+  rows.filter(r=>r.ok).sort((a,b)=>a.ini-b.ini).forEach(r=>{const c=cand(r)[0];r.job=c?c.j:null;if(c)usados.add(c.j.id);r.cli=(S.clientes||[]).find(x=>{const m=imNorm(x.marca||x.nome);const k=imNorm(r.marca);return m&&k&&(m.includes(k)||k.includes(m))})||null});return rows}
+function imHtml(){return `<h3>📥 Lançar resultados das lives</h3><div class="hint">Cole uma live por linha, no formato:<br><code>Marca;Plataforma;Data início;Hora início;Data fim;Hora fim;GMV;Itens;Pedidos</code><br>O ERP encontra a live pela marca e pelo horário, e grava GMV, itens, pedidos e o horário real.</div>
+  <textarea id="imTx" rows="10" style="width:100%;font-family:ui-monospace,monospace;font-size:12px;background:transparent;color:inherit" placeholder="Hidratei;TikTok;24/11/2026;12:21:31;24/11/2026;14:58:26;1424,32;;">${esc(S.imTx||"")}</textarea>
+  <div class="row" style="gap:8px;margin-top:8px"><button type="button" class="btn p" data-act="imVer">Conferir</button><button type="button" class="btn" data-act="fechar">Fechar</button></div><div id="imOut"></div>`}
+function imPrev(){const rows=imMatch(imParse($("#imTx").value));S.imRows=rows;const hm=d=>d?String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"):"";
+  const tr=rows.map((r,i)=>!r.ok?`<tr><td colspan="5" class="neg">Linha ${r.n}: não entendi a data ou a marca</td></tr>`:`<tr><td><input type="checkbox" data-im="${i}" ${r.job||r.cli?"checked":""} ${!r.job&&!r.cli?"disabled":""}></td><td><b>${esc(r.marca)}</b><div class="s">${dmy(r.ini)} ${hm(r.ini)}–${hm(r.fim)}</div></td><td class="r">${r.gmv!=null?brl(r.gmv):"—"}${r.itens!=null?`<div class="s">${r.itens} itens</div>`:""}${r.ped!=null?`<div class="s">${r.ped} pedidos</div>`:""}</td>
+   <td>${r.job?`✅ ${jn(r.job.numero)} · ${hm(new Date(r.job.inicio))}–${hm(new Date(r.job.fim))}${r.job.principal_id?" · "+esc(nome(r.job.principal_id)):""}${r.job.gmv!=null?`<div class="s w">já tinha GMV ${brl(r.job.gmv)} (será trocado)</div>`:""}`:r.cli?`<span class="tag w">sem live no ERP</span><div class="s">marcado = cria a live como realizada</div>`:`<span class="tag x">marca não encontrada</span>`}</td></tr>`).join("");
+  const nOk=rows.filter(r=>r.job).length,nNovo=rows.filter(r=>!r.job&&r.cli).length;
+  $("#imOut").innerHTML=`<div class="small" style="margin:12px 0 6px"><b>${nOk}</b> encontradas · <b>${nNovo}</b> sem live no ERP · ${rows.filter(r=>r.ok&&!r.job&&!r.cli).length} marca não encontrada</div>
+   <div class="tblw"><table class="tb"><thead><tr><th></th><th>Live</th><th class="r">Resultado</th><th>No ERP</th></tr></thead><tbody>${tr}</tbody></table></div>
+   <label class="small" style="display:block;margin:10px 0"><input type="checkbox" id="imReal" checked> Marcar as lives como realizadas</label>
+   <button type="button" class="btn p" data-act="imSalvar">Lançar marcadas</button>`}
+async function imSalvar(){const rows=S.imRows||[];const marc=[...document.querySelectorAll("[data-im]")].filter(c=>c.checked).map(c=>rows[Number(c.dataset.im)]);if(!marc.length)return toast("Nada marcado",true);
+  const real=$("#imReal").checked;const temDs=S.jobs.some(x=>"desempenho" in x);let ok=0,er=0,novo=0;
+  for(const r of marc){const up={gmv:r.gmv,inicio_real:r.ini.toISOString(),fim_real:r.fim.toISOString()};if(r.ped!=null)up.pedidos=r.ped;
+    if(temDs&&r.itens!=null){const d=Object.assign({},(r.job&&r.job.desempenho)||{});d.itens=r.itens;up.desempenho=d}
+    let res;if(r.job){if(real&&r.job.status==="aberto")up.status="realizado";res=await db.from("imp_jobs").update(up).eq("id",r.job.id)}
+    else{res=await db.from("imp_jobs").insert(Object.assign({cliente_id:r.cli.id,marca:r.cli.marca||r.cli.nome||r.marca,plataforma:r.plat||null,modalidade:"servico",local_tipo:"estudio",inicio:r.ini.toISOString(),fim:r.fim.toISOString(),status:"realizado",seller_pago_por:"cliente",publicado:false,obs:"Lançada pela importação de resultados"},up));if(!res.error)novo++}
+    if(res.error){er++;console.warn(res.error);toast("Erro na "+r.marca+" "+dmy(r.ini)+": "+res.error.message,true)}else ok++}
+  toast(`${ok} lançadas${novo?` (${novo} criadas)`:""}${er?` · ${er} com erro`:""}`,!!er);if(!er){S.imTx="";closeSheet()}await refresh()}
+const _hJobs90=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm" data-act="imOpen">📥 Lançar resultados</button>`+(_hJobs90?_hJobs90():"");
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="imOpen"],[data-act="imVer"],[data-act="imSalvar"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();
+  if(a.dataset.act==="imOpen")return openSheet(imHtml());if(a.dataset.act==="imVer"){S.imTx=$("#imTx").value;return imPrev()}imSalvar()},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
