@@ -2638,8 +2638,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="85";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="86";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["86","24/11","📄 Contratos → Resumo (1 página): todos os clientes com contrato, o deal (pacote, valor por mês, % sobre vendas), vigência, condições e lives do mês. Dá para imprimir ou salvar em PDF."],
  ["85","24/11","📥 Briefing da live: agora dá para arrastar o PDF ou imagem direto para a caixa do briefing (ou usar o botão Subir arquivo)."],
  ["84","24/11","🗓️ Disponibilidade: as sellers marcam no app os períodos em que podem fazer live na semana (todo domingo). Em Equipe → Disponibilidade aparece a grade; na tela da live, cada seller mostra ✅ ou ⛔ para aquele horário. 📋 Briefing de cada live: na tela da live, logo abaixo das Promoções, escreva o briefing do dia e suba PDFs, imagens ou links. A seller escalada abre no app dela, no botão 📋 Briefing do cartão da live, junto com o briefing da marca."],
  ["83","24/11","📊 Histórico de acessos (Equipe → Acessos, só sócios): quantas vezes cada pessoa entrou, quando, por quanto tempo, de qual aparelho e o que fez (telas abertas e o que criou, alterou ou apagou)."],
@@ -4887,6 +4888,27 @@ function dispHtml(off){const seg=new Date();seg.setHours(0,0,0,0);seg.setDate(se
   <div class="acts"><button class="btn" data-act="fechar">Fechar</button></div>`}
 const _hEq84=HEADACT.equipe;HEADACT.equipe=()=>`<button class="btn sm" data-act="dispAbrir">🗓️ Disponibilidade</button>`+(_hEq84?_hEq84():"");
 document.addEventListener("click",e=>{const a=e.target.closest('[data-act="dispAbrir"],[data-act="dispSem"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const off=a.dataset.act==="dispSem"?Number(a.dataset.v):1;if(a.dataset.act==="dispAbrir")openSheet(`<div id="dispBox">${dispHtml(off)}</div>`);else $("#dispBox").innerHTML=dispHtml(off)},true);
+
+/* ================= v86 · RESUMO DE CONTRATOS (1 página) ================= */
+function crsLinhas(){const out=[],vistos=new Set();const OK=x=>!["cancelado","recusado","substituido","encerrado"].includes(x.status);
+  ctrUltimas().filter(OK).forEach(c=>{const o=(S.orcs||[]).find(z=>z.id===c.orcamento_id)||null;const op=c.opcoes||{};vistos.add(c.cliente_id);
+    const it=o?ctrmItens(o):[];const deal=it.map(x=>x.h?`${esc(x.nm)}: ${brl(x.h.vh)}/h × ${x.h.hmin}h = <b>${brl(x.h.mensal)}/mês</b>`:`${esc(x.nm)}${x.qtd>1?" ×"+x.qtd:""}: <b>${brl(x.sub)}${x.mensal?"/mês":""}</b>`).join("<br>")||"—";
+    const perc=[...new Set(it.map(x=>Number(x.i.perc)).filter(v=>v>0))];const fixo=it.filter(x=>x.mensal).reduce((t,x)=>t+(Number(x.sub)||0),0);const fim=o&&op.inicio?ctrmFim(o,op):null;
+    out.push({marca:c.marca||cliNome(c.cliente_id)||"",cli:cliNome(c.cliente_id)||"",num:ctn(c.numero),st:c.status,deal,perc,fixo,ini:op.inicio,fim,cond:[op.aviso?`aviso ${op.aviso}d`:"",op.multa?({nao:"sem multa","1":"multa 1 mens.","50":"multa 50% rest."})[op.multa]:"",op.exclusividade==="sim"?"exclusividade":"",op.renovacao==="auto"?"renova auto":""].filter(Boolean).join(" · "),cid:c.cliente_id})});
+  (S.propostas||[]).filter(p=>p.status==="aceita"&&!vistos.has(p.cliente_id)).forEach(p=>{vistos.add(p.cliente_id);out.push({marca:p.marca||"",cli:cliNome(p.cliente_id)||"",num:p.contrato_numero||"",st:"aceita",deal:`${esc(p.pacote||"Pacote")}${p.valor_fixo?`: <b>${brl(p.valor_fixo)}/mês</b>`:""}`,perc:p.perc_variavel?[Number(p.perc_variavel)]:[],fixo:Number(p.valor_fixo)||0,ini:p.contrato_inicio,fim:p.contrato_fim?parseYmd(p.contrato_fim):null,cond:"",cid:p.cliente_id})});
+  (S.clientes||[]).filter(c=>!vistos.has(c.id)&&cliContrato(c.id)).forEach(c=>{const {o}=cliContrato(c.id);const it=ctrmItens(o);out.push({marca:c.marca||c.nome||"",cli:c.razao_social||c.nome||"",num:"proposta "+on(o.numero),st:"sem contrato",deal:it.map(x=>`${esc(x.nm)}: <b>${brl(x.h?x.h.mensal:x.sub)}${x.mensal?"/mês":""}</b>`).join("<br>")||"—",perc:[...new Set(it.map(x=>Number(x.i.perc)).filter(v=>v>0))],fixo:it.filter(x=>x.mensal).reduce((t,x)=>t+(Number(x.h?x.h.mensal:x.sub)||0),0),ini:null,fim:null,cond:"",cid:c.id})});
+  return out.sort((a,b)=>String(a.marca).localeCompare(String(b.marca)))}
+function crsImprimir(){const L=crsLinhas();const w=window.open("","_blank");if(!w)return toast("Libere pop-ups para abrir o resumo",true);const hoje=new Date(new Date().toDateString());
+  const stN={assinado:"assinado",enviado:"aguard. assinatura",aprovado:"para enviar",aguardando:"aguard. aprovação",aceita:"aceita",["sem contrato"]:"sem contrato"};
+  const tot=L.reduce((t,x)=>t+x.fixo,0);const nAss=L.filter(x=>x.st==="assinado").length;
+  const rows=L.map(x=>{const m=x.cid?cenMes(x.cid):{l:[],nFeitas:0};const venc=x.fim&&x.fim<hoje,ren=x.fim&&!venc&&(x.fim-hoje)/864e5<=30;
+    return `<tr><td><b>${esc(x.marca)}</b><div class="s">${esc(x.cli)}</div></td><td>${esc(x.num)}<div class="s ${x.st==="assinado"?"ok":"w"}">${stN[x.st]||x.st}</div></td><td>${x.deal}${x.perc.length?`<div>+ <b>${x.perc.map(v=>numIn(v)).join("/")}%</b> sobre vendas</div>`:""}</td><td>${x.ini?parseYmd(x.ini).toLocaleDateString("pt-BR"):"—"} → ${x.fim?x.fim.toLocaleDateString("pt-BR"):"indet."}${venc?`<div class="s w">vencido</div>`:ren?`<div class="s w">renovar</div>`:""}</td><td>${esc(x.cond||"—")}</td><td class="r">${m.l.length}<div class="s">${m.nFeitas} feitas</div></td></tr>`}).join("");
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Resumo de contratos IMPlay ${dmy(hoje)}</title><style>@page{size:A4 landscape;margin:10mm}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:18px;color:#111;font-size:11.5px}h1{font-size:18px;margin:0}.top{display:flex;gap:18px;margin:6px 0 12px;color:#444}.top b{color:#111}table{width:100%;border-collapse:collapse}th{text-align:left;background:#111;color:#D5FF3F;padding:6px;font-size:11px}td{padding:6px;border-bottom:1px solid #e5e5e5;vertical-align:top}.s{color:#777;font-size:10.5px}.ok{color:#2a8a2a}.w{color:#c06000}.r{text-align:right}.bar{display:flex;gap:8px;margin-bottom:12px}.bar button{padding:8px 14px;border-radius:99px;border:1px solid #ccc;background:#fff;cursor:pointer}@media print{.bar{display:none}body{margin:0}}</style></head><body>
+  <div class="bar"><button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button><button onclick="window.close()">✕ Fechar aba</button></div>
+  <h1>Resumo de contratos · IMPlay</h1><div class="top"><span>Gerado em <b>${dmy(hoje)}</b></span><span><b>${L.length}</b> clientes</span><span><b>${nAss}</b> assinados</span><span>Fixo mensal total: <b>${brl(tot)}</b> (+ % sobre vendas)</span></div>
+  <table><thead><tr><th>Cliente</th><th>Contrato</th><th>Deal</th><th>Vigência</th><th>Condições</th><th class="r">Lives no mês</th></tr></thead><tbody>${rows||`<tr><td colspan="6">Nenhum contrato ativo.</td></tr>`}</tbody></table></body></html>`);w.document.close()}
+const _haCtr86=HEADACT.contratos;HEADACT.contratos=()=>(isSocio()?`<button class="btn sm" data-act="crsPrint">📄 Resumo (1 página)</button>`:"")+_haCtr86();
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="crsPrint"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();crsImprimir()},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
