@@ -1784,7 +1784,7 @@ document.addEventListener("click",async e=>{const a=e.target.closest("[data-act]
     case"ctrCli":{e.stopPropagation();const p=S.propostas.find(x=>x.id===id);closeSheet();showCtr(ctrCliente(p));break}
     case"ctrSel":{e.stopPropagation();closeSheet();openCtrSellerEscolha(id);break}
     case"rpPrint":showCtr(`<div class="rprint"><h1 style="font-size:18px;margin-bottom:10px">Implay · Relatório · ${esc((RPT.find(x=>x[0]===S.rp.tab)||[])[1]||"")} · ${PER_LAB[S.rp.per]}</h1>${$("#main").innerHTML}</div>`,"landscape");break;
-    case"rpCsv":if(!S._csv||!["marcas","sellers","resultado","estudio","autonomia"].includes(S.rp.tab)){const {lives}=rpData();csvDownload("implay_vendas.csv",[["Nº","Data","Marca","Seller","Horas","GMV","Pedidos"],...lives.map(j=>[jn(j.numero),new Date(j.inicio).toLocaleDateString("pt-BR"),j.marca,nome(j.principal_id),nf(hrs(j),1),nf(j.gmv||0,2),j.pedidos||""])])}else csvDownload("implay_"+S.rp.tab+".csv",S._csv);break;
+    case"rpCsv":if(!S._csv||!["marcas","sellers","resultado","estudio","autonomia","lives"].includes(S.rp.tab)){const {lives}=rpData();csvDownload("implay_vendas.csv",[["Nº","Data","Marca","Seller","Horas","GMV","Pedidos"],...lives.map(j=>[jn(j.numero),new Date(j.inicio).toLocaleDateString("pt-BR"),j.marca,nome(j.principal_id),nf(hrs(j),1),nf(j.gmv||0,2),j.pedidos||""])])}else csvDownload("implay_"+S.rp.tab+".csv",S._csv);break;
   }},true);
 
 const _openProp=openProp;openProp=function(id){_openProp(id);const p=id&&S.propostas.find(x=>x.id===id);if(p&&p.status==="aceita"){const a=$("#sheetIn .acts");if(a)a.insertAdjacentHTML("afterbegin",`<button type="button" class="btn f" data-act="ctrCli" data-id="${id}">Gerar contrato</button>`)}};
@@ -2639,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="91";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="92";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["92","24/11","📊 Relatórios → Por live: cada live realizada com GMV, GMV por hora, pedidos, itens, visualizações e nota; filtro por marca e período, totais no topo e CSV. No resumo da live, botão “Ver relatório”."],
  ["91","24/11","Lançar resultados: agora respeita a plataforma (TikTok não cai em live de Instagram), escolhe pela maior sobreposição de horário e não liga a uma live com mais de 3 h de diferença."],
  ["90","24/11","📥 Lives → Lançar resultados: cole o GMV de várias lives de uma vez (marca, horário, GMV, itens, pedidos). O ERP acha cada live pelo horário, mostra para conferir e grava tudo; se a live não existir no ERP, cria como realizada."],
  ["89","24/11","📊 Desempenho também no resumo da live (a janela que abre ao clicar na live): botão “Lançar desempenho” e, depois de preenchido, os números aparecem ali."],
@@ -4993,6 +4994,29 @@ async function imSalvar(){const rows=S.imRows||[];const marc=[...document.queryS
 const _hJobs90=HEADACT.jobs;HEADACT.jobs=()=>`<button class="btn sm" data-act="imOpen">📥 Lançar resultados</button>`+(_hJobs90?_hJobs90():"");
 document.addEventListener("click",e=>{const a=e.target.closest('[data-act="imOpen"],[data-act="imVer"],[data-act="imSalvar"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();
   if(a.dataset.act==="imOpen")return openSheet(imHtml());if(a.dataset.act==="imVer"){S.imTx=$("#imTx").value;return imPrev()}imSalvar()},true);
+
+/* ================= v92 · RELATÓRIO POR LIVE (desempenho) ================= */
+RPT.splice(1,0,["lives","📊 Por live"]);
+const _vRel92=VIEWS.relatorios;VIEWS.relatorios=()=>{if(S.rp.tab!=="lives")return _vRel92();
+  const {R,lives}=rpData();const head=_vRel92().split('<div class="mks">')[0];const mq=S.rp.marca||"";
+  const marcas=[...new Set(lives.map(j=>j.marca||cliNome(j.cliente_id)||"—"))].sort();
+  const L=lives.filter(j=>!mq||(j.marca||cliNome(j.cliente_id)||"—")===mq).sort((a,b)=>a.inicio<b.inicio?1:-1);
+  const D=j=>(j.desempenho&&typeof j.desempenho==="object")?j.desempenho:{};
+  const gmv=L.reduce((t,j)=>t+(Number(j.gmv)||0),0),h=L.reduce((t,j)=>t+hrs(j),0),ped=L.reduce((t,j)=>t+(Number(j.pedidos)||0),0),it=L.reduce((t,j)=>t+(Number(D(j).itens)||0),0);
+  const sem=L.filter(j=>j.gmv==null).length;const best=L.slice().sort((a,b)=>(b.gmv||0)-(a.gmv||0))[0];
+  const hm=x=>x?new Date(x).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}):"";
+  S._csv=[["Nº","Data","Início","Fim","Marca","Plataforma","Seller","Operador","Horas","GMV","GMV/h","Pedidos","Itens","Visualizações","Pico","Seguidores","Nota","Comentário"],...L.map(j=>{const d=D(j),hh=hrs(j);return [jn(j.numero),new Date(j.inicio).toLocaleDateString("pt-BR"),hm(j.inicio_real||j.inicio),hm(j.fim_real||j.fim),j.marca||cliNome(j.cliente_id)||"",j.plataforma||"",nome(j.principal_id)||"",nome(j.operador_id)||"",nf(hh,1),j.gmv!=null?nf(j.gmv,2):"",j.gmv&&hh?nf(j.gmv/hh,2):"",j.pedidos??"",d.itens??"",d.views??"",d.pico??"",d.seguidores??"",d.nota??"",d.obs||""]})];
+  const rows=L.map(j=>{const d=D(j),hh=hrs(j);return `<tr data-act="job" data-id="${j.id}"><td data-l="Data">${new Date(j.inicio).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})}<div class="s">${hm(j.inicio_real||j.inicio)}–${hm(j.fim_real||j.fim)} · ${nf(hh,1)} h</div></td>
+    <td class="m0"><div class="t">${esc(j.marca||cliNome(j.cliente_id)||"")}${platTag(j)}</div><div class="s">${jn(j.numero)}${j.principal_id?" · "+esc(nome(j.principal_id)):""}${j.operador_id?" · 🎛 "+esc(nome(j.operador_id)):""}</div></td>
+    <td data-l="GMV" class="r">${j.gmv!=null?`<b>${brl(j.gmv)}</b>`:`<span class="tag w">sem GMV</span>`}</td><td data-l="GMV/h" class="r">${j.gmv&&hh?brl(j.gmv/hh):"—"}</td>
+    <td data-l="Pedidos" class="r">${j.pedidos??"—"}</td><td data-l="Itens" class="r">${d.itens??"—"}</td><td data-l="Views" class="r">${d.views!=null?nf(d.views):"—"}</td><td data-l="Nota">${d.nota?"★".repeat(d.nota):"—"}${Array.isArray(d.prints)&&d.prints.length?` <span class="s">📎${d.prints.length}</span>`:""}</td></tr>`}).join("");
+  return head+`<div class="tool"><select id="rpMarca"><option value="">Todas as marcas (${marcas.length})</option>${marcas.map(m=>`<option ${m===mq?"selected":""}>${esc(m)}</option>`).join("")}</select></div>
+   <div class="mks">${mini("GMV",brlK(gmv),L.length+" lives","v")}${mini("Horas no ar",nf(h,1)+" h")}${mini("GMV por hora",brlK(h?gmv/h:0))}${mini("Pedidos",ped?nf(ped):"—")}${mini("Itens vendidos",it?nf(it):"—")}${mini("Melhor live",best&&best.gmv?brlK(best.gmv):"—",best&&best.gmv?(best.marca||"")+" · "+dCurta(best.inicio):"")}${sem?mini("Sem GMV lançado",sem,"veja na tabela","f"):""}</div>
+   <div class="tblw"><table class="tb"><thead><tr><th>Data</th><th>Live</th><th class="r">GMV</th><th class="r">GMV/h</th><th class="r">Pedidos</th><th class="r">Itens</th><th class="r">Views</th><th>Nota</th></tr></thead><tbody>${rows||`<tr><td colspan="8" class="muted">Nenhuma live realizada neste período.</td></tr>`}</tbody></table></div>
+   <div class="small muted" style="margin-top:8px">Só lives marcadas como realizadas. Clique numa live para ver ou lançar o desempenho.</div>`};
+document.addEventListener("change",e=>{if(e.target.id!=="rpMarca")return;S.rp.marca=e.target.value;render()});
+const _resumo92=openJobResumo;openJobResumo=function(id){_resumo92.apply(this,arguments);const b=$('#sheetIn [data-act="dsIr"]');if(b&&!$("#sheetIn [data-act=dsRel]"))b.insertAdjacentHTML("afterend",` <button type="button" class="btn sm" data-act="dsRel">Ver relatório</button>`)};
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="dsRel"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();closeSheet();S.rp.tab="lives";S.tab="relatorios";render();window.scrollTo(0,0)},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
