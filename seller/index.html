@@ -94,6 +94,8 @@ h1,h2,h3{font-weight:800}
 .cen summary{cursor:pointer;list-style:none}.cen summary::-webkit-details-marker{display:none}.cs{background:var(--card2);border:1px solid var(--linha);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13.5px;line-height:1.5}.cs h4{margin:0 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--cinza)}.cs.ok{border-color:rgba(124,227,139,.5)}.cs.no{border-color:rgba(239,100,120,.6)}.cs a{color:var(--volt)}.cp{padding:4px 0;border-top:1px solid var(--linha)}.cp:first-of-type{border-top:0}
 .agbtn{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.agst{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.6}
 .cfx{margin-top:12px;padding:10px 12px;border-radius:12px;border:1px dashed var(--linha);font-size:13.5px}.cfx.ok{border-style:solid;border-color:rgba(124,227,139,.6)}.cfx.no{border-style:solid;border-color:rgba(239,100,120,.7)}.cfal{border-color:#ffb547;font-size:14px}
+.dspg{display:grid;grid-template-columns:54px repeat(3,1fr);gap:6px;align-items:center}.dsph,.dspd{font-size:12px;font-weight:700;text-align:center}.dsph small,.dspd small{display:block;font-weight:400;opacity:.65;font-size:10.5px}.dspd{text-align:left}
+.dspc{height:40px;border-radius:10px;border:1px solid var(--line,#333);background:transparent;color:inherit;font-size:16px;cursor:pointer}.dspc.on{background:var(--volt,#D5FF3F);color:#000;border-color:var(--volt,#D5FF3F);font-weight:800}
 </style>
 </head>
 <body>
@@ -107,7 +109,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="8";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="9";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -322,7 +324,46 @@ async function lgIni(){if(!LG.ok)return;const u=navigator.userAgent;const ap=(/i
   const r=await db.from("imp_sessoes").insert({app:"seller",aparelho:ap}).select("id").single();if(r.error){LG.ok=false;return}LG.sid=r.data.id;LG.last=Date.now();db.from("imp_atividade").insert({sessao_id:LG.sid,tipo:"entrou",detalhe:"app seller"}).then(()=>{})}
 function lgPing(){if(!LG.ok||document.visibilityState!=="visible")return;const ag=Date.now();if(!LG.sid||ag-LG.last>30*60e3){LG.sid=null;return lgIni()}LG.last=ag;db.from("imp_sessoes").update({ultimo:new Date().toISOString()}).eq("id",LG.sid).then(()=>{})}
 setInterval(lgPing,60e3);document.addEventListener("visibilitychange",lgPing);
+/* ---------- v9: briefing da live + disponibilidade da semana ---------- */
+const DSP_P=[["manha","Manhã","8h–12h"],["tarde","Tarde","12h–18h"],["noite","Noite","18h–23h"]];
+const DSP_D=["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+function dspSeg(off){const d=new Date();d.setHours(0,0,0,0);const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow+7*off);return d}
+function dspYmd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+S.dsp={};
+async function dspLoad(){const r=await db.from("imp_disponibilidade").select("*").gte("semana",dspYmd(dspSeg(0)));if(!r.error){S.dsp={};(r.data||[]).forEach(x=>S.dsp[x.semana]=x);S.dspOk=true}else S.dspOk=false}
+function dspBanner(){if(!S.dspOk)return "";const w=dspYmd(dspSeg(1));const tem=S.dsp[w];const d=new Date().getDay();
+  return `<div class="card" style="border-color:${tem?"var(--line)":"var(--volt)"};margin-bottom:12px"><b>🗓️ Disponibilidade da próxima semana</b><div class="small muted" style="margin:4px 0 10px">${tem?`Enviada ✓ (${(tem.slots||[]).length} períodos). Dá para mudar até a semana começar.`:`Marque os dias e períodos em que você pode fazer live${d===0?" — hoje é domingo, dia de enviar!":"."}`}</div><button class="btn ${tem?"":"p"}" data-act="dspAbrir" data-v="1">${tem?"Ver / mudar":"Marcar disponibilidade"}</button> <button class="btn" data-act="dspAbrir" data-v="0">Esta semana</button></div>`}
+function dspHtml(off){const seg=dspSeg(off);const w=dspYmd(seg);const cur=new Set((S.dsp[w]&&S.dsp[w].slots)||[]);S.dspSel=cur;S.dspW=w;
+  const dias=DSP_D.map((n,i)=>{const d=new Date(seg);d.setDate(seg.getDate()+i);return [n,d]});
+  return `<h3>🗓️ Minha disponibilidade</h3><div class="small muted" style="margin-bottom:10px">Semana de ${seg.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}. Toque nos períodos em que você <b>pode</b> fazer live. Você continua livre para aceitar ou recusar cada live.</div>
+  <div class="dspg"><div></div>${DSP_P.map(([k,t,h])=>`<div class="dsph">${t}<small>${h}</small></div>`).join("")}
+  ${dias.map(([n,d])=>`<div class="dspd">${n}<small>${d.getDate()}/${d.getMonth()+1}</small></div>`+DSP_P.map(([k])=>{const id=dspYmd(d)+"|"+k;return `<button type="button" class="dspc ${cur.has(id)?"on":""}" data-act="dspTog" data-v="${id}">${cur.has(id)?"✓":""}</button>`}).join("")).join("")}</div>
+  <div class="row" style="gap:8px;margin:10px 0"><button type="button" class="btn" data-act="dspTudo">Marcar tudo</button><button type="button" class="btn" data-act="dspNada">Limpar</button></div>
+  <textarea id="dspObs" rows="2" placeholder="Observação (opcional): ex.: quinta só até 20h" style="width:100%">${esc((S.dsp[w]&&S.dsp[w].obs)||"")}</textarea>
+  <div class="row" style="gap:8px;margin-top:12px"><button class="btn p" data-act="dspSalvar">Enviar disponibilidade</button><button class="btn" data-act="fecharSheet">Fechar</button></div>`}
+async function briefAbrir(id){const j=(S.meus||[]).find(x=>x.id===id)||{};openSheet(`<h3>📋 ${esc(j.marca||"Live")}</h3><p class="muted">Carregando…</p>`);
+  const r=await db.rpc("imp_briefing_live",{p_job:id});const b=r.data||{};const lk=t=>esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>");
+  const arqs=Array.isArray(b.arqs)?b.arqs:[];const pr=Array.isArray(b.promocoes)?b.promocoes:[];
+  const m=(S.marcas||[]).find(x=>(b.cliente_id&&x.cliente_id===b.cliente_id)||String(x.marca||"").toLowerCase()===String(j.marca||"").toLowerCase());
+  const v=(m&&m.central)||{};const sec=CEN_T.filter(([k])=>(v[k]||"").trim()).map(([k,t])=>`<div class="cs ${k==="falar"?"ok":k==="nao_falar"?"no":""}"><h4>${t}</h4><div>${lk(v[k])}</div></div>`).join("");const mats=(m&&Array.isArray(m.materiais))?m.materiais:[];
+  $("#sheetIn").innerHTML=`<h3>📋 ${esc(j.marca||b.marca||"Live")}</h3><div class="small muted" style="margin-bottom:12px">${j.inicio?dExt(j.inicio)+" · "+hm(j.inicio)+"–"+hm(j.fim):""}${b.plataforma?" · "+esc(b.plataforma):""}</div>
+   ${r.error?`<div class="banner">Não deu para abrir o briefing agora. Tente de novo em instantes.</div>`:""}
+   <div class="cs" style="border-color:var(--volt)"><h4>🎯 Briefing desta live</h4>${(b.briefing||"").trim()?`<div>${lk(b.briefing)}</div>`:`<div class="muted">A equipe ainda não escreveu o briefing desta live.</div>`}
+   ${arqs.map(x=>`<div class="cp"><a href="#" data-act="matSel" data-tipo="${x.tipo==="link"?"link":"arquivo"}" data-url="${esc(x.url||"")}" data-cam="${esc(x.caminho||"")}">${x.tipo==="link"?"🔗":"📄"} ${esc(x.titulo||"arquivo")}</a></div>`).join("")}</div>
+   ${pr.length?`<div class="cs"><h4>🔥 Promoções da live</h4>${pr.map(p=>`<div class="cp"><b>${esc(p.produto||p.nome||"")}</b>${(p.preco||p.de)?` · de ${esc(p.preco||p.de)}`:""}${(p.preco_live||p.por)?` por <b>${esc(p.preco_live||p.por)}</b>`:""}${p.flash?" ⚡ flash":""}${p.hora?` · ${esc(p.hora)}`:""}</div>`).join("")}</div>`:""}
+   ${m?`<h4 style="margin:16px 0 6px">Sobre a marca</h4>${sec}${mats.length?`<div class="cs"><h4>📚 Materiais</h4>${mats.map(x=>`<div class="cp"><a href="#" data-act="matSel" data-tipo="${x.tipo}" data-url="${esc(x.url||"")}" data-cam="${esc(x.caminho||"")}">${x.tipo==="link"?"🔗":"📄"} ${esc(x.titulo)}</a></div>`).join("")}</div>`:""}`:""}
+   <button class="btn" style="margin-top:12px" data-act="fecharSheet">Fechar</button>`}
+document.addEventListener("click",async e=>{const a=e.target.closest('[data-act="dspAbrir"],[data-act="dspTog"],[data-act="dspTudo"],[data-act="dspNada"],[data-act="dspSalvar"],[data-act="brief"],[data-act="fecharSheet"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act,v=a.dataset.v;
+  if(act==="fecharSheet")return closeSheet();
+  if(act==="brief")return briefAbrir(a.dataset.id);
+  if(act==="dspAbrir"){S.dspOff=Number(v);return openSheet(dspHtml(S.dspOff))}
+  if(act==="dspTog"){S.dspSel.has(v)?S.dspSel.delete(v):S.dspSel.add(v);a.classList.toggle("on");a.textContent=S.dspSel.has(v)?"✓":"";return}
+  if(act==="dspTudo"||act==="dspNada"){document.querySelectorAll(".dspc").forEach(b=>{const k=b.dataset.v;if(act==="dspTudo")S.dspSel.add(k);else S.dspSel.delete(k);b.classList.toggle("on",act==="dspTudo");b.textContent=act==="dspTudo"?"✓":""});return}
+  if(act==="dspSalvar"){a.disabled=true;const row={semana:S.dspW,slots:[...S.dspSel].sort(),obs:($("#dspObs").value||"").trim()||null,atualizado_em:new Date().toISOString()};
+    const ex=S.dsp[S.dspW];const r=ex?await db.from("imp_disponibilidade").update(row).eq("id",ex.id).select().single():await db.from("imp_disponibilidade").insert(row).select().single();a.disabled=false;
+    if(r.error)return toast("Não deu para salvar: "+r.error.message,true);S.dsp[S.dspW]=r.data;closeSheet();toast("Disponibilidade enviada ✓");render()}},true);
 async function load(){
+  dspLoad();
   if(!LG.sid&&LG.ok)lgIni();
   try{const r=await db.from("imp_config").select("valor").eq("chave","permissoes").maybeSingle();S.perm=(r&&!r.error&&r.data&&r.data.valor&&r.data.valor.seller)||{}}catch(_){S.perm={}}
   const [a,b,c,d]=await Promise.all([db.rpc("imp_mural"),db.rpc("imp_meus_jobs"),db.rpc("imp_central_seller"),db.rpc("imp_minhas_confirmacoes")]);
@@ -341,7 +382,7 @@ function render(){
   $("#app").innerHTML=`<div class="wrap"><div class="top"><div><img class="logoimg" src="${LOGO_LIMA}" alt="IMPlay" data-act="tab" data-v="mural" style="cursor:pointer" title="Início"><div class="live" style="margin-top:8px">● app do seller</div></div><div class="small muted" style="text-align:right">${esc(S.me.nome)}</div></div>
   <div class="tabs">${[["mural","Lives abertas"],["meus","Minha agenda"+(prox.length?" ("+prox.length+")":"")],["marcas","Marcas"+((S.marcas||[]).length?" ("+S.marcas.length+")":"")],["perfil","Perfil"]].filter(([k])=>slPode(k)).map(([k,l])=>`<button data-act="tab" data-v="${k}" class="${S.tab===k?"on":""}">${l}</button>`).join("")}</div>
   ${conv.map(j=>`<div class="banner"><b>A vaga de principal abriu.</b><br>${esc(j.marca)} · ${dExt(j.inicio)}, ${hm(j.inicio)}. Quer assumir? (você decide)<button class="btn" style="margin-top:10px;background:#fff;color:#000" data-act="pegar" data-id="${j.id}" data-v="principal">Quero ser o principal</button></div>`).join("")}
-  ${S.tab==="mural"?mural():S.tab==="meus"?meus():S.tab==="marcas"?marcasView():perfil()}
+  ${S.tab==="mural"?mural():S.tab==="meus"?dspBanner()+meus():S.tab==="marcas"?marcasView():perfil()}
   <div class="foot">Conectado como ${esc(S.email)} · <a href="#" data-act="sair" style="color:var(--cinza)">Sair desta conta</a> · Versão ${APP_VERSAO}</div></div>`;
 }
 function vaga(j,tipo){const livre=tipo==="principal"?j.principal_livre:j.substituto_livre;const minha=j.minha_vaga===tipo;const ped=j.meu_pedido===tipo;
@@ -355,7 +396,7 @@ function cardMural(j){return `<div class="card job">
 function cardMeu(j){return `<div class="card job"><div class="marca">${esc(j.marca||"Live")}</div>
    <div class="quando">${dExt(j.inicio)} · ${hm(j.inicio)}–${hm(j.fim)} (${horas(j.inicio,j.fim)})</div><div class="det">📍 ${esc(local(j))}</div>
    ${j.situacao==="aguardando"?`<span class="tag w">aguardando aprovação · ${j.minha_vaga}</span>`:`<span class="tag ${j.minha_vaga==="principal"?"v":"f"}">${j.minha_vaga}</span>`}${j.valor_seller?`<span class="tag">${brl(j.valor_seller)}</span>`:""}
-   ${j.situacao==="aguardando"?`<div class="small muted" style="margin-top:8px">A IMPlay confirma quem faz cada live. Você recebe a resposta aqui.</div><button class="btn" style="margin-top:12px" data-act="desistir" data-id="${j.id}">Desistir do pedido</button>`:`<button class="btn d" style="margin-top:12px" data-act="cancelar" data-id="${j.id}">Cancelar minha participação</button>`}</div>`}
+   ${j.situacao==="aguardando"?`<div class="small muted" style="margin-top:8px">A IMPlay confirma quem faz cada live. Você recebe a resposta aqui.</div><button class="btn" style="margin-top:12px" data-act="desistir" data-id="${j.id}">Desistir do pedido</button>`:`<button class="btn p" style="margin-top:12px" data-act="brief" data-id="${j.id}">📋 Briefing da live</button> <button class="btn d" style="margin-top:12px" data-act="cancelar" data-id="${j.id}">Cancelar minha participação</button>`}</div>`}
 /* ---------- calendário ---------- */
 S.cal=S.cal||{view:"cal",mes:null,dia:null};
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];

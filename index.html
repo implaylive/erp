@@ -673,6 +673,8 @@ form.jobf .jsel{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf .jsel .
 .fngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.fncard{border:1px solid var(--line,#2a2a2a);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px}.fncard:hover{border-color:var(--volt)}
 .fnh{display:flex;justify-content:space-between;gap:8px;align-items:center}.fnlinks{display:flex;gap:12px;align-items:center;font-size:13px}.fnlinks a{color:var(--voltx,#D5FF3F)}
 .fncot{display:grid;grid-template-columns:2fr 1fr 1.2fr 1.6fr auto;gap:6px;margin-bottom:6px}@media(max-width:640px){.fncot{grid-template-columns:1fr 1fr}}
+.jbarq{display:flex;gap:8px;align-items:center;padding:4px 0}.jbarq a{flex:1}
+.dsp.ok{color:#46c878}.dsptb td{white-space:nowrap}.dspm{display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;font-size:10px;border-radius:4px;margin-right:2px;opacity:.25;border:1px solid var(--line,#444)}.dspm.on{opacity:1;background:var(--volt,#D5FF3F);color:#000;border-color:transparent;font-weight:800}
 </style>
 </head>
 <body>
@@ -954,6 +956,7 @@ async function saveJob(id){
     valor_seller:app?num(f.valor_seller):null,seller_pago_por:f.seller_pago_por||"cliente",requisitos:app?(f.requisitos||null):null,publicado:app,
     principal_id:srv?(f.principal_id||null):null,substituto_id:srv?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null,promocoes:jobPromosLer()};
   if(S.jobs.some(x=>"operador_id" in x))row.operador_id=f.operador_id||null;
+  if(S.jobs.some(x=>"briefing" in x)&&$("#jbArqs")){row.briefing=(f.briefing||"").trim()||null;row.briefing_arqs=S.jbArqs||[]}
   if(row.principal_id&&row.principal_id===row.substituto_id)return toast("Principal e substituto precisam ser pessoas diferentes",true);
   if(id&&f.ireal_h!==undefined){const j=S.jobs.find(x=>x.id===id);const base=ymd(new Date(j.inicio));
     let ir=combine(f.data||base,f.ireal_h,f.ireal_m),fr=combine(f.data||base,f.freal_h,f.freal_m);if(fr<=ir)fr=new Date(fr.getTime()+864e5);
@@ -2634,8 +2637,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="83";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="84";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["84","24/11","🗓️ Disponibilidade: as sellers marcam no app os períodos em que podem fazer live na semana (todo domingo). Em Equipe → Disponibilidade aparece a grade; na tela da live, cada seller mostra ✅ ou ⛔ para aquele horário. 📋 Briefing de cada live: na tela da live, logo abaixo das Promoções, escreva o briefing do dia e suba PDFs, imagens ou links. A seller escalada abre no app dela, no botão 📋 Briefing do cartão da live, junto com o briefing da marca."],
  ["83","24/11","📊 Histórico de acessos (Equipe → Acessos, só sócios): quantas vezes cada pessoa entrou, quando, por quanto tempo, de qual aparelho e o que fez (telas abertas e o que criou, alterou ou apagou)."],
  ["82","24/11","📦 Fornecedores (menu Operação): cadastro de quem vende o quê, com contato, WhatsApp, site e cotações com preço e data. Busca por produto (ex.: \"tripé\") e filtro por categoria."],
  ["81","23/11","📆 Semana que vem: nova visão dentro de Lives (ao lado de Calendário), com contador de quem falta de quinta a domingo, e aviso com barra de progresso no Painel. Mostra a semana inteira por marca, o progresso (aprovadas, aguardando, pediram mudança, para enviar) e um cartão por marca com a miniatura da imagem. 🖼️ Gerar a imagem no padrão IMPlay (com a logo da marca) e abrir o WhatsApp com o texto e o link, ou baixar todas as imagens de uma vez. A página do cliente deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
@@ -4838,6 +4842,45 @@ document.addEventListener("click",async e=>{const a=e.target.closest('[data-act^
   if(act==="lgSessao"){const tr=$("#lgd-"+v);if(!tr)return;if(!tr.hidden){tr.hidden=true;return}tr.hidden=false;tr.firstElementChild.innerHTML=`<span class="small muted">Carregando…</span>`;
     const r=await db.from("imp_atividade").select("em,tipo,detalhe").eq("sessao_id",v).order("em");
     tr.firstElementChild.innerHTML=(r.data||[]).map(x=>`<div class="small" style="padding:2px 0">${hm(x.em)} · ${x.tipo==="tela"?"👀 abriu "+esc(x.detalhe):x.tipo==="acao"?"✏️ "+esc(x.detalhe):x.tipo==="entrou"?"🔑 entrou":esc(x.tipo+" "+(x.detalhe||""))}</div>`).join("")||`<span class="small muted">Sem registros.</span>`}},true);
+/* ================= v84 · BRIEFING DE CADA LIVE ================= */
+function jbArqHtml(l){return l.length?l.map((x,i)=>`<div class="jbarq">${x.tipo==="link"?"🔗":"📄"} <a href="#" data-act="jbAbrir" data-i="${i}">${esc(x.titulo||x.url||"arquivo")}</a> <button type="button" class="btn sm" data-act="jbDel" data-i="${i}">✕</button></div>`).join(""):`<div class="small muted">Nenhum arquivo.</div>`}
+function jobBriefHtml(j){S.jbArqs=Array.isArray(j.briefing_arqs)?JSON.parse(JSON.stringify(j.briefing_arqs)):[];const tem=(j.briefing||"").trim()||S.jbArqs.length;
+  return `<details class="sbox prbox" ${tem?"open":""}><summary><b>📋 Briefing desta live</b> <span class="small muted">(roteiro, ofertas do dia, observações · a seller escalada vê no app)</span></summary>
+  <textarea name="briefing" rows="5" placeholder="Ex.: abrir com o kit X; flash às 20h no produto Y; não falar de concorrente; usar a camiseta da marca…" style="width:100%;margin-top:8px">${esc(j.briefing||"")}</textarea>
+  <div class="small muted" style="margin:8px 0 4px">Arquivos (PDF, imagem) e links</div><div id="jbArqs">${jbArqHtml(S.jbArqs)}</div>
+  <div class="row" style="gap:8px;margin-top:6px"><label class="btn sm" style="cursor:pointer">📎 Subir arquivo<input type="file" id="jbFile" multiple hidden></label><button type="button" class="btn sm" data-act="jbLink">🔗 Colar link</button></div></details>`}
+const _openJob84=openJob;openJob=function(id){_openJob84.apply(this,arguments);const j=(id&&S.jobs.find(x=>x.id===id))||{};const pr=$("#sheetIn details.prbox");if(pr&&!$("#jbArqs"))pr.insertAdjacentHTML("afterend",jobBriefHtml(j))};
+document.addEventListener("change",async e=>{if(e.target.id!=="jbFile")return;const fs=[...e.target.files];e.target.value="";const cid=($('#sheetIn [name="cliente_id"]')||{}).value;if(!cid)return toast("Escolha o cliente antes de subir arquivos",true);
+  for(const f of fs){if(f.size>20e6){toast(f.name+": máximo 20 MB",true);continue}const cam=`${cid}/live/${Date.now()}-${f.name.normalize("NFD").replace(/[^\w.\-]+/g,"_")}`;toast("Enviando "+f.name+"…");
+    const r=await db.storage.from(CLI_BUCKET).upload(cam,f,{contentType:f.type||undefined});if(r.error){toast("Erro: "+r.error.message,true);continue}S.jbArqs.push({tipo:"arquivo",titulo:f.name,caminho:cam})}
+  $("#jbArqs").innerHTML=jbArqHtml(S.jbArqs)});
+document.addEventListener("click",async e=>{const a=e.target.closest('#sheetIn [data-act^="jb"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const i=Number(a.dataset.i);
+  if(a.dataset.act==="jbDel"){S.jbArqs.splice(i,1);$("#jbArqs").innerHTML=jbArqHtml(S.jbArqs);return}
+  if(a.dataset.act==="jbLink"){const u=prompt("Cole o link (Drive, Canva, vídeo…):");if(!u)return;const t=prompt("Nome do link:",u.replace(/^https?:\/\//,"").slice(0,40))||u;S.jbArqs.push({tipo:"link",titulo:t,url:/^https?:/.test(u)?u:"https://"+u});$("#jbArqs").innerHTML=jbArqHtml(S.jbArqs);return}
+  if(a.dataset.act==="jbAbrir"){const x=S.jbArqs[i];if(x.tipo==="link")return window.open(x.url,"_blank");const w=window.open("","_blank");const r=await db.storage.from(CLI_BUCKET).createSignedUrl(x.caminho,3600);if(r.error){if(w)w.close();return toast("Erro: "+r.error.message,true)}if(w)w.location=r.data.signedUrl}},true);
+/* v84 · disponibilidade das sellers */
+S.disp=[];
+const _loadAll84=loadAll;loadAll=async function(){await _loadAll84();if(S.demo)return;const d=new Date();d.setDate(d.getDate()-8);const r=await db.from("imp_disponibilidade").select("*").gte("semana",ymd(d));S.dispOk=!r.error;S.disp=r.data||[]};
+function dispPer(dt){const h=dt.getHours();return h<12?"manha":h<18?"tarde":"noite"}
+function dispDe(mid,ini){const d=new Date(ini);const k=ymd(d)+"|"+dispPer(d);const seg=new Date(d);seg.setHours(0,0,0,0);seg.setDate(seg.getDate()-((seg.getDay()+6)%7));const w=S.disp.find(x=>x.membro_id===mid&&x.semana===ymd(seg));if(!w)return null;return (w.slots||[]).includes(k)}
+function dispMarcar(){const f=$("#sheetIn form.jobf");if(!f)return;const dv=f.querySelector("[name=data]"),hv=f.querySelector("[name=hora]");if(!dv||!dv.value||!hv||hv.value==="")return;const mi=(f.querySelector("[name=min]")||{}).value||0;const ini=combine(dv.value,hv.value,mi);
+  f.querySelectorAll('[data-act="pselSet"][data-v]').forEach(b=>{if(!b.dataset.v)return;b.querySelectorAll(".dsp").forEach(x=>x.remove());const s=dispDe(b.dataset.v,ini);b.insertAdjacentHTML("beforeend",`<span class="dsp ${s===true?"ok":s===false?"no":"nd"}" title="${s===true?"disponível nesse horário":s===false?"marcou que não pode":"não enviou disponibilidade"}">${s===true?" ✅":s===false?" ⛔":""}</span>`)})}
+const _openJob84b=openJob;openJob=function(){_openJob84b.apply(this,arguments);dispMarcar()};
+document.addEventListener("change",e=>{if(e.target.closest&&e.target.closest("#sheetIn form.jobf")&&["data","hora","min"].includes(e.target.name))dispMarcar()});
+document.addEventListener("click",e=>{if(e.target.closest&&e.target.closest('#sheetIn form.jobf [data-act="hset"],#sheetIn form.jobf [data-act="mset"]'))setTimeout(dispMarcar,0)});
+function dispHtml(off){const seg=new Date();seg.setHours(0,0,0,0);seg.setDate(seg.getDate()-((seg.getDay()+6)%7)+7*off);const w=ymd(seg);
+  const sel=S.membros.filter(m=>m.status==="ativo"&&m.papel==="seller").sort((a,b)=>String(a.nome).localeCompare(String(b.nome)));
+  const dias=[0,1,2,3,4,5,6].map(i=>{const d=new Date(seg);d.setDate(seg.getDate()+i);return d});const P=[["manha","M"],["tarde","T"],["noite","N"]];
+  const env=sel.filter(m=>S.disp.some(x=>x.membro_id===m.id&&x.semana===w));
+  return `<h3>🗓️ Disponibilidade das sellers</h3><div class="chips" style="margin-bottom:8px"><button data-act="dispSem" data-v="0" class="${off===0?"on":""}">Esta semana</button><button data-act="dispSem" data-v="1" class="${off===1?"on":""}">Próxima semana</button></div>
+  ${!S.dispOk?`<div class="warnbox">Falta rodar o SQL implay_briefing_live.sql.</div>`:""}
+  <div class="small muted" style="margin-bottom:8px">${env.length} de ${sel.length} enviaram · M = manhã (8–12h) · T = tarde (12–18h) · N = noite (18–23h)</div>
+  <div class="tw"><table class="dsptb"><thead><tr><th>Seller</th>${dias.map(d=>`<th>${["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"][(d.getDay()+6)%7]}<br><small>${d.getDate()}/${d.getMonth()+1}</small></th>`).join("")}</tr></thead><tbody>
+  ${sel.map(m=>{const r=S.disp.find(x=>x.membro_id===m.id&&x.semana===w);const sl=new Set((r&&r.slots)||[]);return `<tr><td><b>${esc(String(m.nome).split(" ").slice(0,2).join(" "))}</b>${r&&r.obs?`<div class="small muted">${esc(r.obs)}</div>`:""}</td>${r?dias.map(d=>`<td>${P.map(([k,l])=>`<span class="dspm ${sl.has(ymd(d)+"|"+k)?"on":""}">${l}</span>`).join("")}</td>`).join(""):`<td colspan="7" class="muted small">não enviou</td>`}</tr>`}).join("")}</tbody></table></div>
+  <p class="small muted">Na tela da live, ao escolher a seller, aparece ✅ (disponível nesse horário) ou ⛔ (marcou que não pode).</p>
+  <div class="acts"><button class="btn" data-act="fechar">Fechar</button></div>`}
+const _hEq84=HEADACT.equipe;HEADACT.equipe=()=>`<button class="btn sm" data-act="dispAbrir">🗓️ Disponibilidade</button>`+(_hEq84?_hEq84():"");
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="dispAbrir"],[data-act="dispSem"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const off=a.dataset.act==="dispSem"?Number(a.dataset.v):1;if(a.dataset.act==="dispAbrir")openSheet(`<div id="dispBox">${dispHtml(off)}</div>`);else $("#dispBox").innerHTML=dispHtml(off)},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
