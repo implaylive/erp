@@ -109,7 +109,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="9";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="10";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -349,7 +349,7 @@ async function briefAbrir(id){const j=(S.meus||[]).find(x=>x.id===id)||{};openSh
   $("#sheetIn").innerHTML=`<h3>📋 ${esc(j.marca||b.marca||"Live")}</h3><div class="small muted" style="margin-bottom:12px">${j.inicio?dExt(j.inicio)+" · "+hm(j.inicio)+"–"+hm(j.fim):""}${b.plataforma?" · "+esc(b.plataforma):""}</div>
    ${r.error?`<div class="banner">Não deu para abrir o briefing agora. Tente de novo em instantes.</div>`:""}
    <div class="cs" style="border-color:var(--volt)"><h4>🎯 Briefing desta live</h4>${(b.briefing||"").trim()?`<div>${lk(b.briefing)}</div>`:`<div class="muted">A equipe ainda não escreveu o briefing desta live.</div>`}
-   ${arqs.map(x=>`<div class="cp"><a href="#" data-act="matSel" data-tipo="${x.tipo==="link"?"link":"arquivo"}" data-url="${esc(x.url||"")}" data-cam="${esc(x.caminho||"")}">${x.tipo==="link"?"🔗":"📄"} ${esc(x.titulo||"arquivo")}</a></div>`).join("")}</div>
+   ${arqs.map(x=>`<button type="button" class="btn p" style="width:100%;margin-top:10px;padding:14px;text-align:left" data-act="matSel" data-tipo="${x.tipo==="link"?"link":"arquivo"}" data-url="${esc(x.url||"")}" data-cam="${esc(x.caminho||"")}">${x.tipo==="link"?"🔗 Abrir link":"📄 Abrir arquivo"}: ${esc(x.titulo||"arquivo")}</button>`).join("")}</div>
    ${pr.length?`<div class="cs"><h4>🔥 Promoções da live</h4>${pr.map(p=>`<div class="cp"><b>${esc(p.produto||p.nome||"")}</b>${(p.preco||p.de)?` · de ${esc(p.preco||p.de)}`:""}${(p.preco_live||p.por)?` por <b>${esc(p.preco_live||p.por)}</b>`:""}${p.flash?" ⚡ flash":""}${p.hora?` · ${esc(p.hora)}`:""}</div>`).join("")}</div>`:""}
    ${m?`<h4 style="margin:16px 0 6px">Sobre a marca</h4>${sec}${mats.length?`<div class="cs"><h4>📚 Materiais</h4>${mats.map(x=>`<div class="cp"><a href="#" data-act="matSel" data-tipo="${x.tipo}" data-url="${esc(x.url||"")}" data-cam="${esc(x.caminho||"")}">${x.tipo==="link"?"🔗":"📄"} ${esc(x.titulo)}</a></div>`).join("")}</div>`:""}`:""}
    <button class="btn" style="margin-top:12px" data-act="fecharSheet">Fechar</button>`}
@@ -382,7 +382,7 @@ function render(){
   $("#app").innerHTML=`<div class="wrap"><div class="top"><div><img class="logoimg" src="${LOGO_LIMA}" alt="IMPlay" data-act="tab" data-v="mural" style="cursor:pointer" title="Início"><div class="live" style="margin-top:8px">● app do seller</div></div><div class="small muted" style="text-align:right">${esc(S.me.nome)}</div></div>
   <div class="tabs">${[["mural","Lives abertas"],["meus","Minha agenda"+(prox.length?" ("+prox.length+")":"")],["marcas","Marcas"+((S.marcas||[]).length?" ("+S.marcas.length+")":"")],["perfil","Perfil"]].filter(([k])=>slPode(k)).map(([k,l])=>`<button data-act="tab" data-v="${k}" class="${S.tab===k?"on":""}">${l}</button>`).join("")}</div>
   ${conv.map(j=>`<div class="banner"><b>A vaga de principal abriu.</b><br>${esc(j.marca)} · ${dExt(j.inicio)}, ${hm(j.inicio)}. Quer assumir? (você decide)<button class="btn" style="margin-top:10px;background:#fff;color:#000" data-act="pegar" data-id="${j.id}" data-v="principal">Quero ser o principal</button></div>`).join("")}
-  ${S.tab==="mural"?mural():S.tab==="meus"?dspBanner()+meus():S.tab==="marcas"?marcasView():perfil()}
+  ${S.tab==="mural"?mural():S.tab==="meus"?briefBanner()+dspBanner()+meus():S.tab==="marcas"?marcasView():perfil()}
   <div class="foot">Conectado como ${esc(S.email)} · <a href="#" data-act="sair" style="color:var(--cinza)">Sair desta conta</a> · Versão ${APP_VERSAO}</div></div>`;
 }
 function vaga(j,tipo){const livre=tipo==="principal"?j.principal_livre:j.substituto_livre;const minha=j.minha_vaga===tipo;const ped=j.meu_pedido===tipo;
@@ -396,7 +396,7 @@ function cardMural(j){return `<div class="card job">
 function cardMeu(j){return `<div class="card job"><div class="marca">${esc(j.marca||"Live")}</div>
    <div class="quando">${dExt(j.inicio)} · ${hm(j.inicio)}–${hm(j.fim)} (${horas(j.inicio,j.fim)})</div><div class="det">📍 ${esc(local(j))}</div>
    ${j.situacao==="aguardando"?`<span class="tag w">aguardando aprovação · ${j.minha_vaga}</span>`:`<span class="tag ${j.minha_vaga==="principal"?"v":"f"}">${j.minha_vaga}</span>`}${j.valor_seller?`<span class="tag">${brl(j.valor_seller)}</span>`:""}
-   ${j.situacao==="aguardando"?`<div class="small muted" style="margin-top:8px">A IMPlay confirma quem faz cada live. Você recebe a resposta aqui.</div><button class="btn" style="margin-top:12px" data-act="desistir" data-id="${j.id}">Desistir do pedido</button>`:`<button class="btn p" style="margin-top:12px" data-act="brief" data-id="${j.id}">📋 Briefing da live</button> <button class="btn d" style="margin-top:12px" data-act="cancelar" data-id="${j.id}">Cancelar minha participação</button>`}</div>`}
+   ${j.situacao==="aguardando"?`<div class="small muted" style="margin-top:8px">A IMPlay confirma quem faz cada live. Você recebe a resposta aqui.</div><button class="btn" style="margin-top:12px" data-act="desistir" data-id="${j.id}">Desistir do pedido</button>`:`<button class="btn p" style="margin-top:12px;width:100%;padding:14px;font-size:16px" data-act="brief" data-id="${j.id}">📋 Abrir briefing da live</button><button class="btn d" style="margin-top:10px" data-act="cancelar" data-id="${j.id}">Cancelar minha participação</button>`}</div>`}
 /* ---------- calendário ---------- */
 S.cal=S.cal||{view:"cal",mes:null,dia:null};
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -422,6 +422,8 @@ function calView(list,card,vazio){
    ${dia.length?`<h3 class="diah">${dExt(dia[0].inicio)}</h3>`+dia.map(card).join(""):""}`}
 function mural(){
   return `<p class="small muted" style="margin-top:0">Escolha só o que quiser fazer e toque em <b>Quero</b>. A IMPlay confirma quem faz cada live, e você vê a resposta em Minha agenda. O substituto entra se o principal não puder.</p>`+calView(S.mural,cardMural,"Nenhuma live aberta agora. Volte mais tarde ✦")}
+function briefBanner(){const now=new Date();const p=(S.meus||[]).filter(j=>j.status==="aberto"&&j.situacao!=="aguardando"&&new Date(j.fim)>now).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio))[0];if(!p)return "";
+  return `<div class="card" style="border-color:var(--volt);margin-bottom:12px"><b>🎬 Sua próxima live: ${esc(p.marca||"Live")}</b><div class="small muted" style="margin:4px 0 10px">${dExt(p.inicio)} · ${hm(p.inicio)}–${hm(p.fim)}</div><button class="btn p" style="width:100%;padding:14px;font-size:16px" data-act="brief" data-id="${p.id}">📋 Abrir briefing</button></div>`}
 function meus(){
   const now=new Date();const prox=S.meus.filter(j=>j.status==="aberto"&&new Date(j.fim)>now).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio));const pass=S.meus.filter(j=>!(j.status==="aberto"&&new Date(j.fim)>now));
   const passCard=j=>`<div class="card job" style="opacity:.8"><div class="marca">${esc(j.marca||"Live")}</div><div class="quando">${dExt(j.inicio)} · ${hm(j.inicio)}–${hm(j.fim)}</div><span class="tag ${j.status==="realizado"?"o":""}">${j.status==="aberto"?"passou":j.status}</span><span class="tag">${j.minha_vaga}</span></div>`;
