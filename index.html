@@ -957,6 +957,7 @@ async function saveJob(id){
     valor_seller:app?num(f.valor_seller):null,seller_pago_por:f.seller_pago_por||"cliente",requisitos:app?(f.requisitos||null):null,publicado:app,
     principal_id:srv?(f.principal_id||null):null,substituto_id:srv?(f.substituto_id||null):null,obs:f.obs||null,plataforma:f.plataforma||null,promocoes:jobPromosLer()};
   if(S.jobs.some(x=>"operador_id" in x))row.operador_id=f.operador_id||null;
+  if(id&&$("#dsBox")){const d=dsLer(f);row.gmv=d.gmv;row.pedidos=d.pedidos;if(d.ir)row.inicio_real=d.ir;if(d.fr)row.fim_real=d.fr;if(S.jobs.some(x=>"desempenho" in x))row.desempenho=d.extra}
   if(S.jobs.some(x=>"briefing" in x)&&$("#jbArqs")){row.briefing=(f.briefing||"").trim()||null;row.briefing_arqs=S.jbArqs||[]}
   if(row.principal_id&&row.principal_id===row.substituto_id)return toast("Principal e substituto precisam ser pessoas diferentes",true);
   if(id&&f.ireal_h!==undefined){const j=S.jobs.find(x=>x.id===id);const base=ymd(new Date(j.inicio));
@@ -2638,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="87";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="88";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["88","24/11","📊 Desempenho da live: na tela de cada live, caixa para GMV, pedidos, horário real, visualizações, pico, seguidores, curtidas, comentários, cliques, cupons, nota de 1 a 5, comentário e prints do TikTok Shop (dá para arrastar)."],
  ["87","24/11","Central do cliente mostra só contratos assinados. Operador alocado aparece na agenda e na lista de lives (🎛). Agenda do celular: título como 🎵 Marca · TikTok · Seller, com operador, briefing e observações na descrição."],
  ["86","24/11","📄 Contratos → Resumo (1 página): todos os clientes com contrato, o deal (pacote, valor por mês, % sobre vendas), vigência, condições e lives do mês. Dá para imprimir ou salvar em PDF."],
  ["85","24/11","📥 Briefing da live: agora dá para arrastar o PDF ou imagem direto para a caixa do briefing (ou usar o botão Subir arquivo)."],
@@ -4911,6 +4913,38 @@ function crsImprimir(){const L=crsLinhas();const w=window.open("","_blank");if(!
 const _haCtr86=HEADACT.contratos;HEADACT.contratos=()=>(isSocio()?`<button class="btn sm" data-act="crsPrint">📄 Resumo (1 página)</button>`:"")+_haCtr86();
 document.addEventListener("click",e=>{const a=e.target.closest('[data-act="crsPrint"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();crsImprimir()},true);
 
+
+/* ================= v88 · DESEMPENHO DA LIVE ================= */
+const DS_M=[["itens","Itens vendidos"],["views","Visualizações"],["pico","Pico ao vivo"],["seguidores","Novos seguidores"],["curtidas","Curtidas"],["comentarios","Comentários"],["cliques","Cliques no produto"],["cupons","Cupons usados"]];
+function dsHm(iso){if(!iso)return "";const d=new Date(iso);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function dsHtml(j){const d=(j.desempenho&&typeof j.desempenho==="object")?j.desempenho:{};S.dsPrints=Array.isArray(d.prints)?JSON.parse(JSON.stringify(d.prints)):[];const tem=j.gmv!=null||j.pedidos!=null||Object.keys(d).length;const pas=new Date(j.inicio)<new Date();const temCol=S.jobs.some(x=>"desempenho" in x);
+  return `<details class="sbox prbox" id="dsBox" ${tem||pas?"open":""}><summary><b>📊 Desempenho da live</b> <span class="small muted">(preencha depois da live)</span></summary>
+  <div class="cols2" style="margin-top:8px">${moneyFld("dsp_gmv","GMV vendido (R$)",j.gmv)}${fld("dsp_pedidos","Pedidos",j.pedidos??"","number",'min="0"')}</div>
+  <div class="cols2">${fld("dsp_ini","Começou às",dsHm(j.inicio_real),"time")}${fld("dsp_fim","Terminou às",dsHm(j.fim_real),"time")}</div>
+  ${temCol?`<div class="cols2">${DS_M.map(([k,t])=>fld("dsp_"+k,t,d[k]??"","number",'min="0"')).join("")}</div>
+  <div class="fld"><label>Nota da live</label><div class="pchips">${[1,2,3,4,5].map(n=>`<button type="button" class="pch ${Number(d.nota)===n?"on":""}" data-act="dsNota" data-v="${n}">${"★".repeat(n)}</button>`).join("")}</div><input type="hidden" name="dsp_nota" value="${esc(d.nota||"")}"></div>
+  ${area("dsp_obs","Como foi (o que funcionou, problemas)",d.obs)}
+  <div class="small muted" style="margin:8px 0 4px">Prints / relatório do TikTok Shop (prova do GMV)</div><div id="dsArqs">${dsArqHtml()}</div>
+  <div id="dsDrop" class="jbdrop">📥 Arraste os prints aqui<br><span class="small muted">ou</span> <label class="btn sm" style="cursor:pointer">📎 Escolher arquivo<input type="file" id="dsFile" multiple hidden accept="image/*,application/pdf"></label></div>`
+  :`<div class="hint">Para guardar visualizações, seguidores, nota e prints, falta rodar o SQL <b>implay_desempenho.sql</b>. GMV, pedidos e horários já salvam.</div>`}</details>`}
+function dsArqHtml(){return S.dsPrints.length?S.dsPrints.map((x,i)=>`<div class="jbarq">📄 <a href="#" data-act="dsAbrir" data-i="${i}">${esc(x.titulo||"arquivo")}</a> <button type="button" class="btn sm" data-act="dsDel" data-i="${i}">✕</button></div>`).join(""):`<div class="small muted">Nenhum print.</div>`}
+function dsLer(f){const j=S.jobs.find(x=>x.id===($("#sheetIn [data-act=jobSalvar]")||{dataset:{}}).dataset.id)||{};const base=j.inicio?ymd(new Date(j.inicio)):ymd(new Date());
+  const tm=v=>{if(!v)return null;const [h,m]=v.split(":").map(Number);const d=parseYmd(base);d.setHours(h,m,0,0);return d};let ir=tm(f.dsp_ini),fr=tm(f.dsp_fim);if(ir&&fr&&fr<=ir)fr=new Date(+fr+864e5);
+  const ex={};DS_M.forEach(([k])=>{const v=f["dsp_"+k];if(v!==undefined&&v!=="")ex[k]=Number(v)});if(f.dsp_nota)ex.nota=Number(f.dsp_nota);if((f.dsp_obs||"").trim())ex.obs=f.dsp_obs.trim();if(S.dsPrints&&S.dsPrints.length)ex.prints=S.dsPrints;
+  return {gmv:num(f.dsp_gmv),pedidos:f.dsp_pedidos?Number(f.dsp_pedidos):null,ir:ir?ir.toISOString():null,fr:fr?fr.toISOString():null,extra:Object.keys(ex).length?ex:null}}
+async function dsSubir(fs){const cid=($('#sheetIn [name="cliente_id"]')||{}).value;if(!cid)return toast("Escolha o cliente da live antes",true);
+  for(const f of fs){if(f.size>20e6){toast(f.name+": máximo 20 MB",true);continue}const cam=`${cid}/desempenho/${Date.now()}-${f.name.normalize("NFD").replace(/[^\w.\-]+/g,"_")}`;toast("Enviando "+f.name+"…");
+    const r=await db.storage.from(CLI_BUCKET).upload(cam,f,{contentType:f.type||undefined});if(r.error){toast("Erro: "+r.error.message,true);continue}S.dsPrints.push({titulo:f.name,caminho:cam})}
+  if($("#dsArqs"))$("#dsArqs").innerHTML=dsArqHtml();if(fs.length)toast("Print anexado ✓ — clique em Salvar")}
+const _openJob88=openJob;openJob=function(id){_openJob88.apply(this,arguments);if(!id)return;const j=S.jobs.find(x=>x.id===id);if(!j||$("#dsBox"))return;const o=$('#sheetIn [name="obs"]');const fl=o&&o.closest(".fld");if(fl)fl.insertAdjacentHTML("beforebegin",dsHtml(j))};
+document.addEventListener("change",e=>{if(e.target.id!=="dsFile")return;const fs=[...e.target.files];e.target.value="";dsSubir(fs)});
+["dragenter","dragover"].forEach(t=>document.addEventListener(t,e=>{const z=e.target.closest&&e.target.closest("#dsDrop");if(!z)return;e.preventDefault();z.classList.add("on")}));
+document.addEventListener("dragleave",e=>{const z=e.target.closest&&e.target.closest("#dsDrop");if(z&&!z.contains(e.relatedTarget))z.classList.remove("on")});
+document.addEventListener("drop",e=>{const z=e.target.closest&&e.target.closest("#dsDrop");if(!z)return;e.preventDefault();z.classList.remove("on");const fs=[...(e.dataTransfer&&e.dataTransfer.files||[])];if(fs.length)dsSubir(fs)});
+document.addEventListener("click",async e=>{const a=e.target.closest('#sheetIn [data-act="dsNota"],#sheetIn [data-act="dsDel"],#sheetIn [data-act="dsAbrir"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const i=Number(a.dataset.i);
+  if(a.dataset.act==="dsNota"){a.parentElement.querySelectorAll(".pch").forEach(b=>b.classList.toggle("on",b===a));$('#sheetIn [name="dsp_nota"]').value=a.dataset.v;return}
+  if(a.dataset.act==="dsDel"){S.dsPrints.splice(i,1);$("#dsArqs").innerHTML=dsArqHtml();return}
+  const x=S.dsPrints[i];const w=window.open("","_blank");const r=await db.storage.from(CLI_BUCKET).createSignedUrl(x.caminho,3600);if(r.error){if(w)w.close();return toast("Erro: "+r.error.message,true)}if(w)w.location=r.data.signedUrl},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
