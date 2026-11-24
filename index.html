@@ -2639,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="93";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="94";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["94","24/11","Central do cliente: lista os contratos que ainda não foram marcados como assinados, com o botão “✅ Já está assinado”. Ao marcar, o cliente passa a aparecer na Central."],
  ["93","24/11","🔑 Esqueci a senha agora funciona sozinho: a pessoa digita o e-mail, recebe um link e cria a senha nova, sem precisar de sócio."],
  ["92","24/11","📊 Relatórios → Por live: cada live realizada com GMV, GMV por hora, pedidos, itens, visualizações e nota; filtro por marca e período, totais no topo e CSV. No resumo da live, botão “Ver relatório”."],
  ["91","24/11","Lançar resultados: agora respeita a plataforma (TikTok não cai em live de Instagram), escolhe pela maior sobreposição de horário e não liga a uma live com mais de 3 h de diferença."],
@@ -5022,6 +5023,14 @@ const _vRel92=VIEWS.relatorios;VIEWS.relatorios=()=>{if(S.rp.tab!=="lives")retur
 document.addEventListener("change",e=>{if(e.target.id!=="rpMarca")return;S.rp.marca=e.target.value;render()});
 const _resumo92=openJobResumo;openJobResumo=function(id){_resumo92.apply(this,arguments);const b=$('#sheetIn [data-act="dsIr"]');if(b&&!$("#sheetIn [data-act=dsRel]"))b.insertAdjacentHTML("afterend",` <button type="button" class="btn sm" data-act="dsRel">Ver relatório</button>`)};
 document.addEventListener("click",e=>{const a=e.target.closest('[data-act="dsRel"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();closeSheet();S.rp.tab="lives";S.tab="relatorios";render();window.scrollTo(0,0)},true);
+
+/* ================= v94 · central: contratos para marcar como assinados ================= */
+const _cenLista94=cenLista;cenLista=function(){const h=_cenLista94.apply(this,arguments);if(S.cenTodas)return h;
+  const pend=ctrUltimas().filter(c=>["aprovado","enviado"].includes(c.status)&&!(S.ctrs||[]).some(x=>x.cliente_id===c.cliente_id&&x.status==="assinado"));if(!pend.length)return h;
+  const box=`<div class="sbox" style="margin:0 0 14px;border-color:var(--volt)"><b>📝 ${pend.length} contrato${pend.length>1?"s":""} ainda não marcado${pend.length>1?"s":""} como assinado</b><div class="small muted" style="margin:4px 0 10px">A Central mostra só cliente com contrato <b>assinado</b>. Se já foi assinado, clique no botão e o cliente aparece aqui.</div>
+   ${pend.map(c=>`<div class="row" style="justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line)"><span><b>${esc(c.marca||cliNome(c.cliente_id)||"")}</b> <span class="small muted">${ctn(c.numero)} · ${c.status==="enviado"?"enviado, aguardando assinatura":"pronto para enviar"}</span></span><button type="button" class="btn p sm" data-act="ctrAssinou" data-id="${c.id}">✅ Já está assinado</button></div>`).join("")}</div>`;
+  const i=h.indexOf('<div class="empty">Nenhuma marca');const k=i>=0?i:h.indexOf('<div class="cgrid">');return h.slice(0,k)+box+h.slice(k)};
+const _ctrInfo94=openCtrInfo;openCtrInfo=function(){if(S.tab==="central"){closeSheet();render();return}return _ctrInfo94.apply(this,arguments)};
 if(!orcPreviewBoot())boot();
 </script>
 <script>
