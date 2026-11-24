@@ -8,8 +8,7 @@
 --   3) imp_cal_responder2: resposta do cliente com sugestões. A imp_cal_responder antiga continua existindo.
 --   4) imp_cal_decidir: a equipe registra aceitar/recusar de cada sugestão.
 --
--- REVISAR: imp_cal_equipe() assume que imp_membros.id = auth.uid() (é o que o ERP faz ao comparar alterado_por com S.me.id).
--- Se no projeto a ligação for outra coluna, ajuste só essa função.
+-- imp_cal_equipe(): ligação pelo imp_membros.user_id = auth.uid(); sócio, equipe e operador decidem.
 
 alter table public.imp_cal_envios add column if not exists sugestoes jsonb;
 alter table public.imp_cal_envios add column if not exists aprova_com_ajustes boolean not null default false;
@@ -19,7 +18,7 @@ create or replace function public.imp_cal_equipe() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from public.imp_membros m
-    where m.id::text = auth.uid()::text and m.papel in ('socio', 'basico') and m.status = 'ativo')
+    where m.user_id = auth.uid() and m.papel in ('socio', 'basico', 'operador') and m.status = 'ativo')
 $$;
 
 -- página pública do cliente: o link (token longo) é a credencial. Sem token válido, devolve nulo.
