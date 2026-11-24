@@ -107,7 +107,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-seller-auth"}});
-const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="7";
+const TERMO_VERSAO="v4-2026-10";const APP_VERSAO="8";
 async function checaVersao(){try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const t=await r.text();const m=t.match(/APP_VERSAO="([^"]+)"/);
   if(m&&m[1]!==APP_VERSAO&&!document.getElementById("novaVer")){const d=document.createElement("div");d.id="novaVer";d.innerHTML=`<b>Versão ${m[1]} disponível</b> <button class="btn p" style="padding:6px 14px;width:auto" onclick="location.reload()">Atualizar</button>`;d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:90;background:#111;border:1px solid var(--volt);border-radius:99px;padding:8px 10px 8px 16px;display:flex;gap:10px;align-items:center;font-size:13px;color:#fff";document.body.appendChild(d)}}catch(e){}}
 setInterval(checaVersao,5*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checaVersao()});setTimeout(checaVersao,8000);
@@ -316,7 +316,14 @@ document.addEventListener("input",e=>{const i=e.target;if(!i.closest||!i.closest
 document.addEventListener("change",e=>{const i=e.target;if(i.dataset&&i.dataset.foto)kycFoto(i);else if(i.closest&&i.closest("#kf"))kycValida()});
 
 /* ---------- dados ---------- */
+/* histórico de acessos (app seller) */
+const LG={sid:null,ok:true,last:0,tab:null};
+async function lgIni(){if(!LG.ok)return;const u=navigator.userAgent;const ap=(/iPhone|iPad/.test(u)?"iPhone/iPad":/Android/.test(u)?"Android":/Mac/.test(u)?"Mac":/Windows/.test(u)?"Windows":"Outro")+(/Mobile/.test(u)?" · celular":"");
+  const r=await db.from("imp_sessoes").insert({app:"seller",aparelho:ap}).select("id").single();if(r.error){LG.ok=false;return}LG.sid=r.data.id;LG.last=Date.now();db.from("imp_atividade").insert({sessao_id:LG.sid,tipo:"entrou",detalhe:"app seller"}).then(()=>{})}
+function lgPing(){if(!LG.ok||document.visibilityState!=="visible")return;const ag=Date.now();if(!LG.sid||ag-LG.last>30*60e3){LG.sid=null;return lgIni()}LG.last=ag;db.from("imp_sessoes").update({ultimo:new Date().toISOString()}).eq("id",LG.sid).then(()=>{})}
+setInterval(lgPing,60e3);document.addEventListener("visibilitychange",lgPing);
 async function load(){
+  if(!LG.sid&&LG.ok)lgIni();
   try{const r=await db.from("imp_config").select("valor").eq("chave","permissoes").maybeSingle();S.perm=(r&&!r.error&&r.data&&r.data.valor&&r.data.valor.seller)||{}}catch(_){S.perm={}}
   const [a,b,c,d]=await Promise.all([db.rpc("imp_mural"),db.rpc("imp_meus_jobs"),db.rpc("imp_central_seller"),db.rpc("imp_minhas_confirmacoes")]);
   if(a.error||b.error){toast(erro(a.error||b.error),true)}
@@ -327,6 +334,7 @@ async function refresh(){if(!S.me||S.me.status!=="ativo"||!S.me.termo_aceito_em|
 /* ---------- telas ---------- */
 function slPode(k){const p=S.perm||{};return !((k==="mural"&&p.mural===false)||(k==="marcas"&&p.marcas===false))}
 function render(){
+  if(LG.sid&&S.tab!==LG.tab){LG.tab=S.tab;db.from("imp_atividade").insert({sessao_id:LG.sid,tipo:"tela",detalhe:{mural:"Lives abertas",meus:"Minha agenda",marcas:"Marcas",perfil:"Perfil"}[S.tab]||S.tab}).then(()=>{})}
   if(!slPode(S.tab))S.tab="meus";
   const conv=S.meus.filter(j=>j.status==="aberto"&&j.situacao!=="aguardando"&&j.minha_vaga==="substituto"&&j.principal_livre&&new Date(j.inicio)>new Date()&&!S.meus.some(x=>x.id===j.id&&x.situacao==="aguardando"));
   const prox=S.meus.filter(j=>j.status==="aberto"&&new Date(j.fim)>new Date());

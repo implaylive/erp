@@ -670,6 +670,9 @@ form.jobf .jsel{display:flex;flex-wrap:wrap;gap:10px!important}form.jobf .jsel .
 .pmck{display:flex;gap:10px;align-items:flex-start;padding:7px 2px;border-bottom:1px solid var(--line,#2a2a2a);cursor:pointer}.pmck input{margin-top:3px;width:18px;height:18px;flex:none}.pmck small{display:block;opacity:.65;font-size:11.5px}
 .snk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.snk>div{border:1px solid var(--line,#2a2a2a);border-radius:12px;padding:8px 10px}.snk b{display:block;font-size:16px}.snk span{font-size:11px;opacity:.7}
 .snn{border-left:3px solid var(--line,#444);padding:6px 10px;margin-bottom:8px}.snn.elogio{border-color:#46c878}.snn.bo{border-color:#ff4d6d}
+.fngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.fncard{border:1px solid var(--line,#2a2a2a);border-radius:14px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px}.fncard:hover{border-color:var(--volt)}
+.fnh{display:flex;justify-content:space-between;gap:8px;align-items:center}.fnlinks{display:flex;gap:12px;align-items:center;font-size:13px}.fnlinks a{color:var(--voltx,#D5FF3F)}
+.fncot{display:grid;grid-template-columns:2fr 1fr 1.2fr 1.6fr auto;gap:6px;margin-bottom:6px}@media(max-width:640px){.fncot{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -2631,8 +2634,10 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="81";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="83";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["83","24/11","📊 Histórico de acessos (Equipe → Acessos, só sócios): quantas vezes cada pessoa entrou, quando, por quanto tempo, de qual aparelho e o que fez (telas abertas e o que criou, alterou ou apagou)."],
+ ["82","24/11","📦 Fornecedores (menu Operação): cadastro de quem vende o quê, com contato, WhatsApp, site e cotações com preço e data. Busca por produto (ex.: \"tripé\") e filtro por categoria."],
  ["81","23/11","📆 Semana que vem: nova visão dentro de Lives (ao lado de Calendário), com contador de quem falta de quinta a domingo, e aviso com barra de progresso no Painel. Mostra a semana inteira por marca, o progresso (aprovadas, aguardando, pediram mudança, para enviar) e um cartão por marca com a miniatura da imagem. 🖼️ Gerar a imagem no padrão IMPlay (com a logo da marca) e abrir o WhatsApp com o texto e o link, ou baixar todas as imagens de uma vez. A página do cliente deixa sugerir outro horário (ou tirar) live a live e aprovar com as mudanças; a equipe aceita (a live é editada na hora) ou recusa. Precisa rodar sql/implay_calendario_sugestoes.sql no Supabase."],
  ["80","23/11","🛠️ Operador responsável em cada live. 🗂️ Central do cliente mostra só contratos ativos (botão Todas para ver o resto). 📆 Calendário: Todas as marcas, escolher datas, filtrar TikTok/Instagram e ⬇️ Baixar/PDF. 📈 Histórico da seller em Equipe: lives, horas, GMV e anotações da equipe (elogio, BO, observação)."],
  ["79","23/11","🛠️ Novo papel Operador: cuida das lives sem ver financeiro, propostas, contratos, senhas e dados da equipe. Em Equipe → ⚙️ Acessos por papel, o sócio escolhe o que o Operador e o Seller (app) podem ver."],
@@ -4742,6 +4747,97 @@ function snRefresh(id){const b=$("#snBox");if(b)b.innerHTML=snHtml(id)}
 const _openMembro80=openMembro;openMembro=function(id){_openMembro80.apply(this,arguments);const m=id&&S.membros.find(x=>x.id===id);if(!m||m.papel!=="seller"||!S.me||S.me.papel==="seller")return;
   const f=$("#sheetIn form")||$("#sheetIn");if(!f)return;const acts=f.querySelector(".acts");const box=document.createElement("div");box.id="snBox";box.innerHTML=snHtml(id);if(acts)acts.before(box);else f.appendChild(box);
   db.from("imp_seller_notas").select("*").eq("membro_id",id).order("criado_em",{ascending:false}).then(r=>{S.snotas[id]=r.error?null:(r.data||[]);snRefresh(id)})};
+/* ================= v82 · FORNECEDORES ================= */
+IC.forn='<path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/>';
+{const g=MENU.find(x=>x[0]==="Operação");if(g&&!g[1].some(x=>x[0]==="fornecedores"))g[1].push(["fornecedores","Fornecedores","Contatos e cotações","forn"])}
+TAB_NOME.fornecedores="Fornecedores";TAB_SUB.fornecedores="Quem vende o quê, contato e o último preço cotado";
+if(!PERM_DEF.operador.tabs.includes("fornecedores"))PERM_DEF.operador.tabs.push("fornecedores");
+const FN_CAT=["Equipamento","Iluminação","Áudio","Cenário","Mobiliário","Gráfica","Informática","Serviço","Outros"];
+S.forns=null;S.fnQ="";S.fnCat="";
+async function fnLoad(){const r=await db.from("imp_fornecedores").select("*").order("nome");S.fnErr=r.error?r.error.message:null;S.forns=r.data||[];if(S.tab==="fornecedores")render()}
+const _loadAll82=loadAll;loadAll=async function(){await _loadAll82();if(!S.demo)fnLoad()};
+function fnUlt(f){const c=(f.cotacoes||[]).slice().sort((a,b)=>String(b.data||"").localeCompare(String(a.data||"")));return c[0]}
+VIEWS.fornecedores=()=>{if(S.forns===null)return `<div class="empty">Carregando…</div>`;
+  if(S.fnErr)return `<div class="warnbox">Falta rodar o SQL implay_fornecedores.sql.</div>`;
+  const q=S.fnQ.toLowerCase();const l=S.forns.filter(f=>f.ativo!==false&&(!S.fnCat||f.categoria===S.fnCat)&&(!q||[f.nome,f.categoria,f.contato,f.cidade,f.obs,...(f.cotacoes||[]).map(c=>c.item)].join(" ").toLowerCase().includes(q)));
+  const cats=[...new Set(S.forns.map(f=>f.categoria).filter(Boolean))].sort();
+  return `<div class="tool"><div class="q">${ic("search")}<input id="fnQ" value="${esc(S.fnQ)}" placeholder="Buscar fornecedor ou produto (ex.: tripé, LED)…"></div></div>
+   ${cats.length?`<div class="chips" style="margin-bottom:12px"><button data-act="fnCat" data-v="" class="${!S.fnCat?"on":""}">Todos <span class="n">${S.forns.length}</span></button>${cats.map(c=>`<button data-act="fnCat" data-v="${esc(c)}" class="${S.fnCat===c?"on":""}">${esc(c)}</button>`).join("")}</div>`:""}
+   ${!l.length?`<div class="empty" style="padding:30px;text-align:center">${S.forns.length?"Nada encontrado.":"Nenhum fornecedor ainda. Toque em <b>+ Fornecedor</b>."}</div>`:`<div class="fngrid">${l.map(f=>{const u=fnUlt(f);return `<div class="fncard" data-act="fnAbrir" data-id="${f.id}"><div class="fnh"><b>${esc(f.nome)}</b>${f.categoria?`<span class="tag">${esc(f.categoria)}</span>`:""}</div>
+     <div class="small muted">${[f.contato,f.cidade].filter(Boolean).map(esc).join(" · ")||"&nbsp;"}</div>
+     ${u?`<div class="fnu">💲 ${esc(u.item||"")} <b>${brl(u.valor)}</b> <span class="muted small">${u.data?fD(u.data):""}</span></div>`:`<div class="small muted fnu">sem cotação</div>`}
+     <div class="fnlinks">${f.whatsapp?`<a href="https://wa.me/${String(f.whatsapp).replace(/\D/g,"").replace(/^(?!55)/,"55")}" target="_blank" rel="noopener" data-stop="1">WhatsApp</a>`:""}${f.site?`<a href="${esc(/^https?:/.test(f.site)?f.site:"https://"+f.site)}" target="_blank" rel="noopener" data-stop="1">Site / loja</a>`:""}${(f.cotacoes||[]).length?`<span class="muted small">${f.cotacoes.length} cotaç${f.cotacoes.length>1?"ões":"ão"}</span>`:""}</div></div>`}).join("")}</div>`}`};
+const _hFn=HEADACT.fornecedores;HEADACT.fornecedores=()=>`<button class="btn sm p" data-act="fnNovo">+ Fornecedor</button>`;
+function fnCotRow(c,i){return `<div class="fncot" data-i="${i}"><input placeholder="Item (ex.: tripé de luz)" data-c="item" value="${esc(c.item||"")}"><input placeholder="Valor" inputmode="decimal" data-c="valor" value="${c.valor!=null&&c.valor!==""?String(c.valor).replace(".",","):""}"><input type="date" data-c="data" value="${esc(c.data||ymd(new Date()))}"><input placeholder="Link (opcional)" data-c="link" value="${esc(c.link||"")}"><button type="button" class="btn sm" data-act="fnCotDel" data-i="${i}">✕</button></div>`}
+function fnForm(f){f=f||{cotacoes:[]};S.fnEd=JSON.parse(JSON.stringify(f));
+  openSheet(`<form onsubmit="return false" class="jobf"><h3>${f.id?esc(f.nome):"Novo fornecedor"}</h3>
+   <div class="cols2">${fld("nome","Nome",f.nome)}${fld("cidade","Cidade",f.cidade)}</div>
+   <div class="fld"><label>Categoria</label><input type="hidden" name="categoria" value="${esc(f.categoria||"")}"><div class="pchips jsel">${FN_CAT.map(c=>`<button type="button" class="pch ${f.categoria===c?"on":""}" data-act="fnCatSet" data-v="${c}">${c}</button>`).join("")}</div></div>
+   <div class="cols2">${fld("contato","Contato (nome)",f.contato)}${fld("whatsapp","WhatsApp",f.whatsapp)}</div>
+   <div class="cols2">${fld("email","E-mail",f.email)}${fld("site","Site / loja / link",f.site)}</div>
+   ${area("obs","Observações",f.obs)}
+   <div class="sec"><h2>💲 Cotações</h2></div><div id="fnCots">${(f.cotacoes||[]).map(fnCotRow).join("")}</div>
+   <button type="button" class="btn sm" data-act="fnCotAdd">+ Cotação</button>
+   <div class="acts"><button type="button" class="btn p" data-act="fnSalvar" data-id="${f.id||""}">Salvar</button><button type="button" class="btn" data-act="fechar">Fechar</button>${f.id?`<button type="button" class="btn d" data-act="fnArq" data-id="${f.id}">Arquivar</button>`:""}</div></form>`)}
+function fnLerCots(){return [...document.querySelectorAll("#fnCots .fncot")].map(r=>{const o={};r.querySelectorAll("[data-c]").forEach(i=>o[i.dataset.c]=i.value.trim());o.valor=o.valor?num(o.valor):null;return o}).filter(c=>c.item||c.valor)}
+document.addEventListener("input",e=>{if(e.target.id==="fnQ"){S.fnQ=e.target.value;const pos=e.target.selectionStart;render();const i=$("#fnQ");if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(_){}}}});
+document.addEventListener("click",async e=>{if(e.target.closest("[data-stop]"))return;const a=e.target.closest('[data-act^="fn"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act,v=a.dataset.v;
+  if(act==="fnCat"){S.fnCat=v;return render()}
+  if(act==="fnNovo")return fnForm(null);
+  if(act==="fnAbrir")return fnForm(S.forns.find(x=>x.id===a.dataset.id));
+  if(act==="fnCatSet"){$('#sheetIn [name="categoria"]').value=v;a.parentElement.querySelectorAll(".pch").forEach(x=>x.classList.toggle("on",x===a));return}
+  if(act==="fnCotAdd"){const c=fnLerCots();c.push({data:ymd(new Date())});$("#fnCots").innerHTML=c.map(fnCotRow).join("");return}
+  if(act==="fnCotDel"){const c=fnLerCots();c.splice(Number(a.dataset.i),1);$("#fnCots").innerHTML=c.map(fnCotRow).join("");return}
+  if(act==="fnArq"){if(!confirm("Arquivar este fornecedor?"))return;const r=await db.from("imp_fornecedores").update({ativo:false}).eq("id",a.dataset.id);if(r.error)return toast("Erro: "+r.error.message,true);closeSheet();toast("Arquivado");return fnLoad()}
+  if(act==="fnSalvar"){const f=formData();if(!(f.nome||"").trim())return toast("Escreva o nome",true);
+    const row={nome:f.nome.trim(),categoria:f.categoria||null,contato:f.contato||null,whatsapp:f.whatsapp||null,email:f.email||null,site:f.site||null,cidade:f.cidade||null,obs:f.obs||null,cotacoes:fnLerCots(),atualizado_em:new Date().toISOString()};
+    a.disabled=true;const id=a.dataset.id;const r=id?await db.from("imp_fornecedores").update(row).eq("id",id):await db.from("imp_fornecedores").insert(row);a.disabled=false;
+    if(r.error)return toast(/relation|schema cache|does not exist/i.test(r.error.message||"")?"Falta rodar o SQL implay_fornecedores.sql":"Erro: "+r.error.message,true);
+    closeSheet();toast("Fornecedor salvo");return fnLoad()}},true);
+/* ================= v83 · HISTÓRICO DE ACESSOS ================= */
+const LOG_TAB={imp_jobs:"live",imp_orcamentos:"proposta",imp_contratos:"contrato",imp_clientes:"cliente",imp_fin:"lançamento",imp_membros:"pessoa da equipe",imp_tarefas:"tarefa",imp_fornecedores:"fornecedor",imp_amostras:"amostra",imp_equip:"equipamento",imp_cal_envios:"calendário enviado ao cliente",imp_seller_notas:"anotação de seller",imp_config:"acessos por papel",imp_precos:"tabela de preços",imp_cli_acessos:"senha de cliente"};
+const LG={sid:null,ok:true,last:0,tab:null};
+function lgAparelho(){const u=navigator.userAgent;return (/iPhone|iPad/.test(u)?"iPhone/iPad":/Android/.test(u)?"Android":/Mac/.test(u)?"Mac":/Windows/.test(u)?"Windows":"Outro")+(/Mobile/.test(u)?" · celular":"")}
+async function lgIni(){if(!LG.ok||S.demo||!S.me)return;const r=await db.from("imp_sessoes").insert({app:"erp",aparelho:lgAparelho()}).select("id").single();if(r.error){LG.ok=false;return}LG.sid=r.data.id;LG.last=Date.now();lgEv("entrou","")}
+function lgEv(tipo,det){if(!LG.ok||!LG.sid)return;db.from("imp_atividade").insert({sessao_id:LG.sid,tipo,detalhe:String(det||"").slice(0,300)}).then(()=>{})}
+function lgPing(){if(!LG.ok||!S.me||S.demo)return;if(document.visibilityState!=="visible")return;const ag=Date.now();if(!LG.sid||ag-LG.last>30*60e3){LG.sid=null;return lgIni()}LG.last=ag;db.from("imp_sessoes").update({ultimo:new Date().toISOString()}).eq("id",LG.sid).then(()=>{})}
+setInterval(lgPing,60e3);document.addEventListener("visibilitychange",lgPing);
+const _loadAll83=loadAll;loadAll=async function(){await _loadAll83();if(!LG.sid&&LG.ok&&S.me&&!S.demo)lgIni()};
+const _render83=render;render=function(){_render83.apply(this,arguments);if(LG.sid&&S.tab!==LG.tab){LG.tab=S.tab;lgEv("tela",TAB_NOME[S.tab]||S.tab)}};
+{const _from=db.from.bind(db);db.from=function(t){const q=_from(t);if(t==="imp_atividade"||t==="imp_sessoes")return q;
+  ["insert","update","upsert","delete"].forEach(op=>{const f=q[op];if(typeof f!=="function")return;q[op]=function(v){const nm=v&&!Array.isArray(v)?(v.marca||v.nome||v.titulo||v.descricao||""):Array.isArray(v)?v.length+" itens":"";
+    lgEv("acao",`${{insert:"criou",update:"alterou",upsert:"salvou",delete:"apagou"}[op]} ${LOG_TAB[t]||t.replace(/^imp_/,"")}${nm?": "+nm:""}`);return f.apply(this,arguments)}});return q}}
+/* tela para o sócio */
+S.lgDias=7;
+async function lgCarregar(){const desde=new Date(Date.now()-S.lgDias*864e5).toISOString();
+  const [a,b]=await Promise.all([db.from("imp_sessoes").select("*").gte("inicio",desde).order("inicio",{ascending:false}).limit(2000),db.from("imp_atividade").select("sessao_id,membro_id,tipo").gte("em",desde).eq("tipo","acao").limit(10000)]);
+  if(a.error){S.lgErr=a.error.message;S.lgSes=[];return}S.lgErr=null;S.lgSes=a.data||[];S.lgAc={};(b.data||[]).forEach(x=>S.lgAc[x.sessao_id]=(S.lgAc[x.sessao_id]||0)+1)}
+const lgMin=s=>Math.max(1,Math.round((new Date(s.ultimo)-new Date(s.inicio))/6e4));
+const lgDur=m=>m>=60?`${Math.floor(m/60)}h${String(m%60).padStart(2,"0")}`:`${m} min`;
+function lgHtml(){if(S.lgErr)return `<h3>📊 Acessos</h3><div class="warnbox">Falta rodar o SQL implay_acessos_log.sql.</div><div class="acts"><button class="btn" data-act="fechar">Fechar</button></div>`;
+  const por={};(S.lgSes||[]).forEach(s=>{(por[s.membro_id]=por[s.membro_id]||[]).push(s)});
+  const lin=Object.entries(por).map(([id,l])=>({id,n:l.length,min:l.reduce((a,s)=>a+lgMin(s),0),ult:l[0].ultimo,ac:l.reduce((a,s)=>a+(S.lgAc[s.id]||0),0)})).sort((a,b)=>b.min-a.min);
+  const nunca=S.membros.filter(m=>m.status==="ativo"&&!por[m.id]);
+  return `<h3>📊 Histórico de acessos</h3>
+  <div class="chips" style="margin-bottom:10px">${[[1,"Hoje"],[7,"7 dias"],[30,"30 dias"],[90,"90 dias"]].map(([d,t])=>`<button data-act="lgDias" data-v="${d}" class="${S.lgDias===d?"on":""}">${t}</button>`).join("")}</div>
+  ${S.lgSes===undefined?`<div class="small muted">Carregando…</div>`:`<div class="tw"><table><thead><tr><th>Pessoa</th><th>Acessos</th><th>Tempo total</th><th>Ações</th><th>Último acesso</th></tr></thead><tbody>
+   ${lin.map(r=>`<tr data-act="lgPessoa" data-v="${r.id}" style="cursor:pointer"><td><b>${esc(nome(r.id)||"?")}</b></td><td>${r.n}</td><td>${lgDur(r.min)}</td><td>${r.ac}</td><td>${new Date(r.ult).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Nenhum acesso no período.</td></tr>`}</tbody></table></div>
+   ${nunca.length?`<p class="small muted" style="margin-top:10px">Sem acesso no período: ${nunca.map(m=>esc(String(m.nome).split(" ")[0])).join(", ")}</p>`:""}`}
+  <p class="small muted">Conta desde a Versão 83. O tempo é medido enquanto o ERP ou o app do seller está aberto na tela.</p>
+  <div class="acts"><button class="btn" data-act="fechar">Fechar</button></div>`}
+async function lgPessoaHtml(id){const l=(S.lgSes||[]).filter(s=>s.membro_id===id);
+  return `<h3>📊 ${esc(nome(id)||"?")}</h3><button class="btn sm" data-act="lgVoltar">← Todos</button>
+  <div class="tw" style="margin-top:10px"><table><thead><tr><th>Quando</th><th>Duração</th><th>Onde</th><th>Ações</th></tr></thead><tbody>
+  ${l.map(s=>`<tr data-act="lgSessao" data-v="${s.id}" style="cursor:pointer"><td>${new Date(s.inicio).toLocaleString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}–${hm(s.ultimo)}</td><td>${lgDur(lgMin(s))}</td><td>${s.app==="seller"?"App seller":"ERP"} · ${esc(s.aparelho||"")}</td><td>${S.lgAc[s.id]||0} ›</td></tr><tr class="lgdet" id="lgd-${s.id}" hidden><td colspan="4"></td></tr>`).join("")}</tbody></table></div>
+  <div class="acts"><button class="btn" data-act="fechar">Fechar</button></div>`}
+const _hEq83=HEADACT.equipe;HEADACT.equipe=()=>(isSocio()?`<button class="btn sm" data-act="lgAbrir">📊 Acessos</button>`:"")+(_hEq83?_hEq83():"");
+document.addEventListener("click",async e=>{const a=e.target.closest('[data-act^="lg"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const act=a.dataset.act,v=a.dataset.v;
+  if(act==="lgAbrir"||act==="lgVoltar"){if(act==="lgAbrir"){S.lgSes=undefined;openSheet(`<div id="lgBox">${lgHtml()}</div>`);await lgCarregar()}$("#lgBox").innerHTML=lgHtml();return}
+  if(act==="lgDias"){S.lgDias=Number(v);S.lgSes=undefined;$("#lgBox").innerHTML=lgHtml();await lgCarregar();$("#lgBox").innerHTML=lgHtml();return}
+  if(act==="lgPessoa"){$("#lgBox").innerHTML=await lgPessoaHtml(v);return}
+  if(act==="lgSessao"){const tr=$("#lgd-"+v);if(!tr)return;if(!tr.hidden){tr.hidden=true;return}tr.hidden=false;tr.firstElementChild.innerHTML=`<span class="small muted">Carregando…</span>`;
+    const r=await db.from("imp_atividade").select("em,tipo,detalhe").eq("sessao_id",v).order("em");
+    tr.firstElementChild.innerHTML=(r.data||[]).map(x=>`<div class="small" style="padding:2px 0">${hm(x.em)} · ${x.tipo==="tela"?"👀 abriu "+esc(x.detalhe):x.tipo==="acao"?"✏️ "+esc(x.detalhe):x.tipo==="entrou"?"🔑 entrou":esc(x.tipo+" "+(x.detalhe||""))}</div>`).join("")||`<span class="small muted">Sem registros.</span>`}},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
