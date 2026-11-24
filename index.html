@@ -2639,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="90";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="91";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["91","24/11","Lançar resultados: agora respeita a plataforma (TikTok não cai em live de Instagram), escolhe pela maior sobreposição de horário e não liga a uma live com mais de 3 h de diferença."],
  ["90","24/11","📥 Lives → Lançar resultados: cole o GMV de várias lives de uma vez (marca, horário, GMV, itens, pedidos). O ERP acha cada live pelo horário, mostra para conferir e grava tudo; se a live não existir no ERP, cria como realizada."],
  ["89","24/11","📊 Desempenho também no resumo da live (a janela que abre ao clicar na live): botão “Lançar desempenho” e, depois de preenchido, os números aparecem ali."],
  ["88","24/11","📊 Desempenho da live: na tela de cada live, caixa para GMV, pedidos, horário real, visualizações, pico, seguidores, curtidas, comentários, cliques, cupons, nota de 1 a 5, comentário e prints do TikTok Shop (dá para arrastar)."],
@@ -4965,9 +4966,11 @@ function imData(d,h){const m=String(d).trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(
 function imParse(tx){const out=[];String(tx||"").split(/\r?\n/).forEach((ln,i)=>{ln=ln.trim();if(!ln||/^marca\s*;/i.test(ln)||ln.startsWith("#"))return;const c=ln.split(";").map(x=>x.trim());
   const [marca,plat,di,hi,df,hf,gmv,itens,ped]=c;const ini=imData(di,hi);let fim=imData(df||di,hf);if(ini&&fim&&fim<=ini)fim=new Date(+fim+864e5);
   out.push({n:i+1,marca,plat:plat||"",ini,fim,gmv:num(String(gmv||"").replace(/r\$\s*/i,"")),itens:itens?Number(itens):null,ped:ped?Number(ped):null,ok:!!(marca&&ini&&fim)})});return out}
-function imMatch(rows){const usados=new Set();const cand=r=>{const k=imNorm(r.marca);return S.jobs.filter(j=>j.status!=="cancelado"&&!usados.has(j.id)&&(()=>{const m=imNorm(j.marca||cliNome(j.cliente_id));return m&&k&&(m.includes(k)||k.includes(m))})()&&ymd(new Date(j.inicio))===ymd(r.ini))
-    .map(j=>{const a=Math.max(+new Date(j.inicio),+r.ini),b=Math.min(+new Date(j.fim||j.inicio),+r.fim);return {j,ov:b-a,dist:Math.abs(+new Date(j.inicio)-+r.ini)}}).sort((x,y)=>(y.ov>0)-(x.ov>0)||y.ov-x.ov||x.dist-y.dist)};
-  rows.filter(r=>r.ok).sort((a,b)=>a.ini-b.ini).forEach(r=>{const c=cand(r)[0];r.job=c?c.j:null;if(c)usados.add(c.j.id);r.cli=(S.clientes||[]).find(x=>{const m=imNorm(x.marca||x.nome);const k=imNorm(r.marca);return m&&k&&(m.includes(k)||k.includes(m))})||null});return rows}
+function imMatch(rows){const ok=rows.filter(r=>r.ok);const pl=t=>{t=String(t||"").toLowerCase();return t.includes("tik")?"tt":t.includes("insta")?"ig":""};
+  ok.forEach(r=>{r.job=null;const k=imNorm(r.marca);r.cli=(S.clientes||[]).find(x=>{const m=imNorm(x.marca||x.nome);return m&&k&&(m.includes(k)||k.includes(m))})||null});
+  const pares=[];ok.forEach(r=>{const k=imNorm(r.marca);S.jobs.forEach(j=>{if(j.status==="cancelado"||ymd(new Date(j.inicio))!==ymd(r.ini))return;const m=imNorm(j.marca||cliNome(j.cliente_id));if(!(m&&k&&(m.includes(k)||k.includes(m))))return;
+    const pj=pl(j.plataforma),pr=pl(r.plat);if(pj&&pr&&pj!==pr)return;const ov=Math.min(+new Date(j.fim||j.inicio),+r.fim)-Math.max(+new Date(j.inicio),+r.ini);const dist=Math.abs(+new Date(j.inicio)-+r.ini);if(ov<=0&&dist>3*36e5)return;pares.push({r,j,ov,dist})})});
+  pares.sort((a,b)=>(b.ov>0)-(a.ov>0)||b.ov-a.ov||a.dist-b.dist);const uj=new Set();pares.forEach(p=>{if(p.r.job||uj.has(p.j.id))return;p.r.job=p.j;uj.add(p.j.id)});return rows}
 function imHtml(){return `<h3>📥 Lançar resultados das lives</h3><div class="hint">Cole uma live por linha, no formato:<br><code>Marca;Plataforma;Data início;Hora início;Data fim;Hora fim;GMV;Itens;Pedidos</code><br>O ERP encontra a live pela marca e pelo horário, e grava GMV, itens, pedidos e o horário real.</div>
   <textarea id="imTx" rows="10" style="width:100%;font-family:ui-monospace,monospace;font-size:12px;background:transparent;color:inherit" placeholder="Hidratei;TikTok;24/11/2026;12:21:31;24/11/2026;14:58:26;1424,32;;">${esc(S.imTx||"")}</textarea>
   <div class="row" style="gap:8px;margin-top:8px"><button type="button" class="btn p" data-act="imVer">Conferir</button><button type="button" class="btn" data-act="fechar">Fechar</button></div><div id="imOut"></div>`}
