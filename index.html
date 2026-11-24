@@ -2639,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="88";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="89";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["89","24/11","📊 Desempenho também no resumo da live (a janela que abre ao clicar na live): botão “Lançar desempenho” e, depois de preenchido, os números aparecem ali."],
  ["88","24/11","📊 Desempenho da live: na tela de cada live, caixa para GMV, pedidos, horário real, visualizações, pico, seguidores, curtidas, comentários, cliques, cupons, nota de 1 a 5, comentário e prints do TikTok Shop (dá para arrastar)."],
  ["87","24/11","Central do cliente mostra só contratos assinados. Operador alocado aparece na agenda e na lista de lives (🎛). Agenda do celular: título como 🎵 Marca · TikTok · Seller, com operador, briefing e observações na descrição."],
  ["86","24/11","📄 Contratos → Resumo (1 página): todos os clientes com contrato, o deal (pacote, valor por mês, % sobre vendas), vigência, condições e lives do mês. Dá para imprimir ou salvar em PDF."],
@@ -4945,6 +4946,17 @@ document.addEventListener("click",async e=>{const a=e.target.closest('#sheetIn [
   if(a.dataset.act==="dsNota"){a.parentElement.querySelectorAll(".pch").forEach(b=>b.classList.toggle("on",b===a));$('#sheetIn [name="dsp_nota"]').value=a.dataset.v;return}
   if(a.dataset.act==="dsDel"){S.dsPrints.splice(i,1);$("#dsArqs").innerHTML=dsArqHtml();return}
   const x=S.dsPrints[i];const w=window.open("","_blank");const r=await db.storage.from(CLI_BUCKET).createSignedUrl(x.caminho,3600);if(r.error){if(w)w.close();return toast("Erro: "+r.error.message,true)}if(w)w.location=r.data.signedUrl},true);
+
+/* ================= v89 · desempenho no resumo da live ================= */
+const _resumo89=openJobResumo;openJobResumo=function(id){_resumo89.apply(this,arguments);const j=S.jobs.find(x=>x.id===id);const box=$("#sheetIn .jres");if(!j||!box)return;
+  const d=(j.desempenho&&typeof j.desempenho==="object")?j.desempenho:{};const tem=j.gmv!=null||j.pedidos!=null||Object.keys(d).length;const pas=new Date(j.inicio)<new Date();
+  const h=Math.max(0,(new Date(j.fim_real||j.fim)-new Date(j.inicio_real||j.inicio))/36e5);
+  const it=[["GMV",j.gmv!=null?brl(j.gmv):null],["Pedidos",j.pedidos],["GMV/hora",j.gmv&&h?brl(j.gmv/h):null],["Visualizações",d.views],["Pico",d.pico],["Seguidores",d.seguidores],["Itens",d.itens],["Cliques",d.cliques],["Cupons",d.cupons],["Nota",d.nota?"★".repeat(d.nota):null]].filter(x=>x[1]!=null&&x[1]!=="");
+  const html=tem?`<div class="sbox" style="margin-top:12px"><div class="row" style="justify-content:space-between;align-items:center"><b>📊 Desempenho</b><button type="button" class="btn sm" data-act="dsIr" data-id="${j.id}">Editar desempenho</button></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:8px">${it.map(([k,v])=>`<div><div class="small muted">${k}</div><b>${esc(String(v))}</b></div>`).join("")}</div>${d.obs?`<div class="small" style="margin-top:8px">${esc(d.obs)}</div>`:""}${Array.isArray(d.prints)&&d.prints.length?`<div class="small muted" style="margin-top:6px">📎 ${d.prints.length} print(s)</div>`:""}</div>`
+   :`<div style="margin-top:12px"><button type="button" class="btn ${pas?"p":""}" style="width:100%;padding:12px" data-act="dsIr" data-id="${j.id}">📊 Lançar desempenho da live</button></div>`;
+  box.insertAdjacentHTML("afterend",html)};
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="dsIr"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();closeSheet();openJob(a.dataset.id);setTimeout(()=>{const b=$("#dsBox");if(b){b.open=true;b.scrollIntoView({behavior:"smooth",block:"start"});const g=b.querySelector('[name="dsp_gmv"]');if(g)g.focus({preventScroll:true})}},150)},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
