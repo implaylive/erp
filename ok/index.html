@@ -5,51 +5,164 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>IMPlay · Agenda de lives</title>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#0c0d08">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-:root{--volt:#D5FF3F;--bg:#000;--card:#111;--line:#262626;--mut:#9a9a9a;--warn:#FFB84D}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-.w{max-width:560px;margin:0 auto;padding:22px 16px 60px}
-.logo{height:34px;margin-bottom:14px}h1{font-size:22px;margin:0 0 4px}.mut{color:var(--mut);font-size:13px}
-.dia{margin-top:18px;font-weight:700;text-transform:capitalize;color:var(--volt);font-size:14px}
-.it{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:8px}
-.it b{font-size:16px;min-width:118px}.pl{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:2px 10px}
-.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:22px}
-input,textarea{width:100%;background:#0a0a0a;color:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;margin-top:6px}
-textarea{min-height:80px}
-.bt{display:block;width:100%;border:0;border-radius:99px;padding:13px;font:600 15px inherit;margin-top:10px;cursor:pointer}
-.ok{background:var(--volt);color:#000}.aj{background:transparent;color:#fff;border:1px solid var(--line)}
-.st{border-radius:12px;padding:12px 14px;margin-top:18px;font-size:14px}.st.a{background:rgba(213,255,63,.12);border:1px solid var(--volt)}.st.j{background:rgba(255,184,77,.12);border:1px solid var(--warn)}
-.err{color:#ff6b6b}
+:root{--bg:#0c0d08;--row:#16170f;--line:#26271c;--lima:#dceb8c;--roxo:#8e3a87;--rosa:#e87cd1;--mut:#a9aaa2;--txt:#f3f3ec;--warn:#ffb84d;--bad:#ff7b7b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.4 Figtree,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;position:relative;overflow-x:hidden}
+/* cantos coloridos, como no cartão que vai pelo WhatsApp */
+body:before,body:after{content:"";position:absolute;z-index:0;pointer-events:none;border-radius:50%}
+body:before{width:170px;height:110px;left:-80px;top:-60px;background:var(--roxo)}
+body:after{width:260px;height:160px;right:-110px;bottom:-90px;background:var(--roxo)}
+.w{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:30px 18px 70px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
+.logo{height:34px;display:block}
+.marca{font-weight:400;letter-spacing:.22em;text-transform:uppercase;font-size:15px;text-align:right;line-height:1.25}
+.pill{display:inline-block;background:var(--rosa);color:#0c0d08;font-weight:700;font-size:13px;border-radius:99px;padding:4px 14px}
+h1{margin:10px 0 0;font-size:40px;line-height:1.02;font-weight:800;letter-spacing:-.03em}
+h1 em{display:block;color:var(--lima);font-style:italic}
+.sub{color:#d2d3ce;font-size:15px;margin:14px 0 22px}.sub b{color:#fff}
+.r{background:var(--row);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-top:10px;transition:border-color .15s}
+.r.mod{border-color:var(--lima)}.r.rem{opacity:.55}
+.rr{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dia{font-weight:800;font-size:20px;text-transform:uppercase;letter-spacing:-.01em}
+.dia small{font-weight:500;font-size:13px;color:var(--mut);margin-left:6px;text-transform:none;letter-spacing:0}
+.hr{font-weight:800;font-size:21px;color:var(--lima);text-align:right;white-space:nowrap}
+.hr s{display:block;color:var(--mut);font-size:13px;font-weight:500}
+.pl{font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:99px;padding:1px 8px;color:var(--mut);margin-left:8px;text-transform:none;letter-spacing:0;vertical-align:middle}
+.sg{margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.lk{background:none;border:0;color:var(--mut);font:600 13px Figtree,inherit;padding:2px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.lk:hover{color:var(--lima)}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:2px 10px;background:rgba(220,235,140,.14);color:var(--lima)}
+.tag.rm{background:rgba(255,123,123,.14);color:var(--bad)}.tag.w{background:rgba(255,184,77,.14);color:var(--warn)}
+.ed{margin-top:12px;border-top:1px solid var(--line);padding-top:12px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px}
+.ed label{font-size:12px;color:var(--mut);font-weight:600;display:block}
+.ed .b{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+input,textarea{width:100%;background:#0a0b06;color:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;margin-top:5px;color-scheme:dark}
+input:focus,textarea:focus{outline:2px solid var(--lima);outline-offset:0;border-color:transparent}
+textarea{min-height:84px;resize:vertical}
+.box{background:var(--row);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:24px}
+.box h2{margin:0;font-size:19px;font-weight:800}.box p{margin:4px 0 12px;color:var(--mut);font-size:14px}
+.bt{display:block;width:100%;border:0;border-radius:99px;padding:14px;font:800 16px Figtree,inherit;margin-top:10px;cursor:pointer;transition:transform .12s,opacity .12s}
+.bt:active{transform:scale(.98)}.bt[disabled]{opacity:.5;cursor:default}
+.ok{background:var(--lima);color:#0c0d08}.gh{background:transparent;color:#fff;border:1px solid var(--line)}
+.sm{display:inline-block;width:auto;padding:9px 16px;font-size:14px;margin:0}
+.st{border-radius:18px;padding:14px 16px;margin-top:22px;font-size:15px}
+.st.a{background:rgba(220,235,140,.12);border:1px solid var(--lima)}.st.j{background:rgba(255,184,77,.12);border:1px solid var(--warn)}
+.st .mut{color:var(--mut);font-size:14px}
+.sl{margin-top:10px;display:grid;gap:8px}
+.sl div{background:var(--row);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-size:14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.err{color:var(--bad);font-size:14px;margin-top:8px;min-height:1px}
+.mut{color:var(--mut)}
+details summary{cursor:pointer;color:var(--mut);font-weight:600;font-size:14px;margin-top:6px}
+@media(max-width:420px){h1{font-size:34px}.ed{grid-template-columns:1fr 1fr}.ed>div:first-child{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
-<body><div class="w" id="app"><img class="logo" src="../logo.png" alt="IMPlay"><p class="mut">Carregando…</p></div>
+<body><div class="w" id="app"><div class="top"><img class="logo" src="../logo.png" alt="IMPlay"></div><p class="mut">Carregando…</p></div>
 <script>
 "use strict";
 const db=window.supabase.createClient("https://agdqlnaedojcgivwluty.supabase.co","sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP",{auth:{persistSession:false}});
 const T=new URLSearchParams(location.search).get("t")||"";const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const hm=d=>new Date(d).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",timeZone:"America/Sao_Paulo"});
-const dd=s=>{const [y,m,d]=s.split("-");return d+"/"+m};
-let E=null,modo="";
-function draw(){const a=$("#app");if(!E){a.innerHTML=`<img class="logo" src="../logo.png" alt="IMPlay"><h1>Link inválido</h1><p class="mut">Peça um novo link para a equipe IMPlay.</p>`;return}
-  let h=`<img class="logo" src="../logo.png" alt="IMPlay"><h1>Agenda de lives · ${esc(E.marca||"")}</h1><div class="mut">${dd(E.ini)} a ${dd(E.fim)} · ${(E.itens||[]).length} lives</div>`;let dia="";
-  (E.itens||[]).slice().sort((x,y)=>new Date(x.inicio)-new Date(y.inicio)).forEach(i=>{const d=new Date(i.inicio).toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit",timeZone:"America/Sao_Paulo"});if(d!==dia){dia=d;h+=`<div class="dia">${esc(d)}</div>`}
-    h+=`<div class="it"><b>${hm(i.inicio)} às ${hm(i.fim||i.inicio)}</b>${i.plataforma?`<span class="pl">${esc(i.plataforma)}</span>`:""}</div>`});
-  if(E.status==="aprovado")h+=`<div class="st a">✅ Agenda aprovada por <b>${esc(E.resposta_nome||"")}</b> em ${new Date(E.resposta_em).toLocaleString("pt-BR")}. Obrigado!</div>`;
-  else if(E.status==="ajuste")h+=`<div class="st j">✏️ Ajuste pedido por <b>${esc(E.resposta_nome||"")}</b>: ${esc(E.resposta_obs||"")}<br><span class="mut">A equipe IMPlay vai ajustar e mandar a agenda de novo.</span></div>`;
-  else h+=`<div class="box"><b>Está tudo certo?</b><div class="mut">Confira os dias e horários acima.</div><input id="nome" placeholder="Seu nome" autocomplete="name">
-    ${modo==="aj"?`<textarea id="obs" placeholder="O que precisa mudar? Ex.: terça às 19h, e não às 18h"></textarea><button class="bt ok" id="env">Enviar pedido de ajuste</button><button class="bt aj" id="vol">Voltar</button>`
-    :`<button class="bt ok" id="ok">✅ Aprovar a agenda</button><button class="bt aj" id="aj">✏️ Preciso de ajuste</button>`}<div id="msg" class="err"></div></div>`;
+const TZ="America/Sao_Paulo";
+/* tudo no horário de Brasília, em qualquer aparelho */
+const ymdSP=d=>new Date(d).toLocaleDateString("sv-SE",{timeZone:TZ});
+const hmSP=d=>new Date(d).toLocaleTimeString("pt-BR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+const hf=t=>{const[h,m]=t.split(":");return h.replace(/^0/,"")+"h"+(m==="00"?"":m)};
+const hx=(a,b)=>hf(hmSP(a))+" às "+hf(hmSP(b||a));
+const wd=d=>new Date(d).toLocaleDateString("pt-BR",{timeZone:TZ,weekday:"long"}).replace(/-feira$/,"");
+const dm=d=>ymdSP(d).slice(8)+"/"+ymdSP(d).slice(5,7);
+const dd=s=>{const[,m,d]=s.split("-");return d+"/"+m};
+const longo=s=>{const[y,m,d]=s.split("-").map(Number);return d+" de "+new Date(y,m-1,1).toLocaleDateString("pt-BR",{month:"long"})};
+const isoSP=(data,hora)=>data+"T"+hora+":00-03:00";/* Brasil sem horário de verão desde 2019 */
+let E=null,aj=false,aberto=null,P={},erro="",erroEd="",ed={};
+
+function sugTxt(s,itens){const it=(itens||[]).find(i=>i.id===s.id);const de=s.de_inicio||(it&&it.inicio);const dfim=s.de_fim||(it&&it.fim);
+  const a=de?`${wd(de)} ${dm(de)} · ${hx(de,dfim)}`:"uma live";
+  return s.tipo==="remover"?`Tirar ${a}`:`${a} → ${wd(s.inicio)} ${dm(s.inicio)} · ${hx(s.inicio,s.fim)}`}
+function marcaHtml(n){const p=String(n||"").trim().split(/\s+/);return esc(p[0])+(p.length>1?"<br>"+esc(p.slice(1).join(" ")):"")}
+
+function row(i){const p=P[i.id];const mixed=draw.mixed;
+  const pl=i.plataforma&&mixed?`<span class="pl">${esc(i.plataforma)}</span>`:"";
+  const dia=`<span class="dia">${esc(wd(i.inicio))}<small>${dm(i.inicio)}</small>${pl}</span>`;
+  const resp=!!E.resposta_em;
+  if(p&&p.tipo==="alterar"){const ni=isoSP(p.data,p.ini),nf=isoSP(p.data,p.fim);
+    return `<div class="r mod"><div class="rr">${dia}<span class="hr"><s>${hx(i.inicio,i.fim)}</s>${esc(wd(ni))} ${dm(ni)} · ${hx(ni,nf)}</span></div>
+    <div class="sg"><span class="tag">sua sugestão</span><button class="lk" data-a="edit" data-id="${esc(i.id)}">editar</button><button class="lk" data-a="undo" data-id="${esc(i.id)}">desfazer</button></div></div>`}
+  if(p&&p.tipo==="remover")return `<div class="r rem"><div class="rr">${dia}<span class="hr"><s>${hx(i.inicio,i.fim)}</s></span></div>
+    <div class="sg"><span class="tag rm">tirar esta live</span><button class="lk" data-a="undo" data-id="${esc(i.id)}">desfazer</button></div></div>`;
+  const abre=aberto===i.id;
+  return `<div class="r"><div class="rr">${dia}<span class="hr">${hx(i.inicio,i.fim)}</span></div>
+  ${resp?"":abre?`<div class="ed"><div><label for="nd">Nova data</label><input id="nd" type="date" value="${ed.d||ymdSP(i.inicio)}"></div><div><label for="ni">Início</label><input id="ni" type="time" value="${ed.i||hmSP(i.inicio)}"></div><div><label for="nf">Fim</label><input id="nf" type="time" value="${ed.f||hmSP(i.fim||i.inicio)}"></div>
+    <div class="b err" role="alert" style="margin:0">${esc(erroEd)}</div>
+    <div class="b"><button class="bt ok sm" data-a="apply" data-id="${esc(i.id)}">Usar este horário</button><button class="bt gh sm" data-a="rm" data-id="${esc(i.id)}">Tirar esta live</button><button class="bt gh sm" data-a="close">Cancelar</button></div></div>`
+    :`<div class="sg"><button class="lk" data-a="edit" data-id="${esc(i.id)}">Sugerir outro horário</button></div>`}</div>`}
+
+function resultado(){const s=Array.isArray(E.sugestoes)?E.sugestoes:[];
+  const quando=E.resposta_em?new Date(E.resposta_em).toLocaleString("pt-BR",{timeZone:TZ,day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+  const lista=s.length?`<div class="sl">${s.map(x=>`<div><span>${esc(sugTxt(x,E.itens))}</span>${x.decisao==="aceita"?'<span class="tag">✅ aceita</span>':x.decisao==="recusada"?'<span class="tag w">não deu</span>':'<span class="tag w">em análise</span>'}</div>`).join("")}</div>`:"";
+  if(E.status==="aprovado")return `<div class="st a">✅ Agenda aprovada por <b>${esc(E.resposta_nome||"")}</b> em ${quando}${s.length?" com as alterações pedidas":""}. Obrigado!${lista}</div>`;
+  if(E.status==="ajuste"){const rec=s.some(x=>x.decisao==="recusada");
+    return `<div class="st j">${E.aprova_com_ajustes?"✅ Aprovado com alterações":"✏️ Ajuste pedido"} por <b>${esc(E.resposta_nome||"")}</b>${E.resposta_obs?`: ${esc(E.resposta_obs)}`:""}${lista}<div class="mut" style="margin-top:8px">${rec?"Algumas sugestões não couberam. A equipe IMPlay vai te mandar a agenda de novo.":"A equipe IMPlay vai analisar e confirmar com você."}</div></div>`}
+  return ""}
+
+function draw(){const a=$("#app");const topo=`<div class="top"><img class="logo" src="../logo.png" alt="IMPlay">${E?`<div class="marca">${marcaHtml(E.marca)}</div>`:""}</div>`;
+  if(!E){a.innerHTML=topo+`<h1>Link inválido</h1><p class="mut">Peça um novo link para a equipe IMPlay.</p>`;return}
+  const itens=(E.itens||[]).slice().sort((x,y)=>new Date(x.inicio)-new Date(y.inicio));
+  draw.mixed=new Set(itens.map(i=>i.plataforma||"")).size>1;
+  const plats=[...new Set(itens.map(i=>i.plataforma).filter(Boolean))];
+  const mes=(new Date(E.fim)-new Date(E.ini))/864e5>10;
+  const titulo=mes?`Lives de<em>${esc(new Date(+E.ini.slice(0,4),+E.ini.slice(5,7)-1,1).toLocaleDateString("pt-BR",{month:"long"}))}</em>`:`Lives da semana<em>${dd(E.ini)} a ${dd(E.fim)}</em>`;
+  const resp=!!E.resposta_em;const nmod=Object.keys(P).length;
+  let h=topo+`<span class="pill">Calendário para aprovação</span><h1>${titulo}</h1>
+  <div class="sub">Lives da <b>${esc(E.marca||"")}</b>${plats.length===1?" no "+esc(plats[0]):""} · ${longo(E.ini)} a ${longo(E.fim)}</div>`;
+  h+=itens.length?itens.map(row).join(""):`<p class="mut">Nenhuma live neste período.</p>`;
+  if(resp)h+=resultado();
+  else h+=`<div class="box"><h2>${aj?"O que precisa mudar?":nmod?"Quase lá":"Está tudo certo?"}</h2>
+    <p>${aj?"Conte para a gente e a equipe IMPlay ajusta.":nmod?`Você marcou ${nmod} mudança${nmod>1?"s":""}. Se a equipe topar, a agenda já fica aprovada.`:"Confira os dias e horários. Se algum não funcionar, toque em “Sugerir outro horário”."}</p>
+    <label class="mut" for="nome" style="font-size:13px;font-weight:600">Seu nome</label><input id="nome" placeholder="Quem está aprovando?" autocomplete="name">
+    ${aj||nmod?`<label class="mut" for="obs" style="font-size:13px;font-weight:600;display:block;margin-top:10px">${aj?"Ajuste pedido":"Observação (opcional)"}</label><textarea id="obs" placeholder="${aj?"Ex.: na terça precisamos começar às 20h":"Ex.: quinta só rola depois das 19h"}"></textarea>`:""}
+    ${aj?`<button class="bt ok" id="env">Enviar pedido de ajuste</button><button class="bt gh" id="vol">Voltar</button>`
+      :`<button class="bt ok" id="ok">${nmod?"✅ Aprovar com estas mudanças":"✅ Aprovar a agenda"}</button>${nmod?"":`<button class="bt gh" id="aj">Preciso de ajuste</button>`}`}
+    <div id="msg" class="err" role="alert">${esc(erro)}</div></div>`;
   a.innerHTML=h;
-  const nm=$("#nome");if(nm)try{nm.value=localStorage.getItem("imp-ok-nome")||""}catch(_){}
-  const resp=async(ok)=>{const n=($("#nome").value||"").trim();const o=ok?"":($("#obs").value||"").trim();if(!n)return $("#msg").textContent="Escreva seu nome.";if(!ok&&!o)return $("#msg").textContent="Diga o que precisa mudar.";
-    try{localStorage.setItem("imp-ok-nome",n)}catch(_){}
-    const r=await db.rpc("imp_cal_responder",{p_token:T,p_ok:ok,p_nome:n,p_obs:o||null});if(r.error||!r.data)return $("#msg").textContent="Não deu certo. Tente de novo.";
-    E.status=ok?"aprovado":"ajuste";E.resposta_nome=n;E.resposta_obs=o;E.resposta_em=new Date().toISOString();draw()};
-  if($("#ok"))$("#ok").onclick=()=>resp(true);if($("#env"))$("#env").onclick=()=>resp(false);
-  if($("#aj"))$("#aj").onclick=()=>{try{localStorage.setItem("imp-ok-nome",$("#nome").value||"")}catch(_){}modo="aj";draw()};if($("#vol"))$("#vol").onclick=()=>{modo="";draw()}}
+  const nm=$("#nome");if(nm)try{nm.value=sessionStorage.getItem("imp-ok-nome")||localStorage.getItem("imp-ok-nome")||""}catch(_){}
+  if(aberto&&$("#nd"))$("#nd").focus()}
+
+function lerNome(){const n=($("#nome").value||"").trim();if(n)try{localStorage.setItem("imp-ok-nome",n)}catch(_){}return n}
+async function enviar(ok){const n=lerNome();const o=(($("#obs")||{}).value||"").trim();const btn=$("#ok")||$("#env");
+  if(!n){erro="Escreva seu nome.";return draw()}
+  if(!ok&&!o){erro="Diga o que precisa mudar.";return draw()}
+  const sug=Object.entries(P).map(([id,s])=>{const it=E.itens.find(x=>x.id===id);return{id,tipo:s.tipo,inicio:s.tipo==="alterar"?isoSP(s.data,s.ini):null,fim:s.tipo==="alterar"?isoSP(s.data,s.fim):null,de_inicio:it.inicio,de_fim:it.fim||it.inicio,obs:null}});
+  if(btn){btn.disabled=true;btn.textContent="Enviando…"}
+  let r=await db.rpc("imp_cal_responder2",{p_token:T,p_ok:ok,p_nome:n,p_obs:o||null,p_sug:sug});
+  /* enquanto o SQL novo não foi rodado, o pedido segue como texto no fluxo antigo */
+  if(r.error&&/responder2|schema cache|could not find/i.test(r.error.message||"")){
+    const txt=[...sug.map(s=>"• "+sugTxt(s,E.itens)),o].filter(Boolean).join("\n");
+    r=await db.rpc("imp_cal_responder",{p_token:T,p_ok:ok&&!sug.length,p_nome:n,p_obs:txt||null})}
+  if(r.error||!r.data){erro="Não deu certo. Tente de novo.";return draw()}
+  erro="";const v=await db.rpc("imp_cal_ver",{p_token:T});
+  if(v.data)E=v.data;else{E.status=ok&&!sug.length?"aprovado":"ajuste";E.resposta_nome=n;E.resposta_obs=o;E.resposta_em=new Date().toISOString()}
+  P={};aberto=null;aj=false;draw();scrollTo({top:0,behavior:"smooth"})}
+
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||!E)return;const id=b.dataset.id;
+  switch(b.id||b.dataset.a){
+    case"ok":return enviar(true);case"env":return enviar(false);
+    case"aj":lerNome();aj=true;erro="";return draw();case"vol":aj=false;erro="";return draw();
+    case"edit":{const p=P[id];aberto=id;erroEd="";ed=p?{d:p.data,i:p.ini,f:p.fim}:{};delete P[id];return draw()}
+    case"close":aberto=null;erroEd="";ed={};return draw();
+    case"undo":delete P[id];return draw();
+    case"rm":P[id]={tipo:"remover"};aberto=null;ed={};return draw();
+    case"apply":{const d=$("#nd").value,i=$("#ni").value,f=$("#nf").value;ed={d,i,f};
+      if(!d||!i||!f){erroEd="Preencha data, início e fim.";return draw()}
+      if(f<=i){erroEd="O fim precisa ser depois do início.";return draw()}
+      const it=E.itens.find(x=>x.id===id);aberto=null;erroEd="";ed={};
+      if(it&&d===ymdSP(it.inicio)&&i===hmSP(it.inicio)&&f===hmSP(it.fim||it.inicio))return draw();
+      P[id]={tipo:"alterar",data:d,ini:i,fim:f};return draw()}}});
 (async()=>{if(T.length>=24){const r=await db.rpc("imp_cal_ver",{p_token:T});E=r.data||null}draw()})();
 </script>
 </body></html>
