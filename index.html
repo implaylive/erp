@@ -835,7 +835,7 @@ function conflitos(lista){
 function jobCard(j){const open=!j.principal_id&&j.status==="aberto";
   return `<div class="jc ${platCls(j)} ${j.status==="realizado"?"done":open?"open":""}" data-act="job" data-id="${j.id}"><b>${hm(j.inicio)}–${hm(j.fim)}</b> · ${esc(j.marca||cliNome(j.cliente_id)||"")}${platTag(j)}<br>
   <span class="muted">${j.local_tipo==="estudio"?(j.espaco||"estúdio"):j.local_tipo==="cliente"?"local do cliente":"online"}</span><br>
-  ${j.principal_id?`A: ${esc(nome(j.principal_id))}`:`<span style="color:var(--flash)">A: vaga aberta</span>`}${j.substituto_id?` · B: ${esc(nome(j.substituto_id))}`:""}</div>`}
+  ${j.principal_id?`A: ${esc(nome(j.principal_id))}`:`<span style="color:var(--flash)">A: vaga aberta</span>`}${j.substituto_id?` · B: ${esc(nome(j.substituto_id))}`:""}${j.operador_id?` · 🎛 ${esc(nome(j.operador_id))}`:""}</div>`}
 VIEWS.agenda=()=>{
   const today=new Date();
   const head=`<div class="row" style="justify-content:space-between;margin-bottom:12px">
@@ -1336,7 +1336,7 @@ function jobRow(j){const open=!j.principal_id&&j.status==="aberto";
   <td data-l="Etapa" class="hm">${jobSteps(j)}</td>
   <td data-l="Quando"><div>${dCurta(j.inicio)}</div><div class="s">${hm(j.inicio)}–${hm(j.fim)} · ${horas(j.inicio,j.fim)}</div></td>
   <td data-l="Local">${j.local_tipo==="estudio"?"Estúdio "+(j.espaco||""):j.local_tipo==="cliente"?"Cliente":"Online"}${j.modalidade==="aluguel"?`<div><span class="tag c">aluguel</span></div>`:""}</td>
-  <td data-l="Sellers">${(j.clt_ids||[]).map(x=>`<div>${esc(nome(x))} <span class="muted small">CLT</span></div>`).join("")}${j.convidados?`<div>${esc(j.convidados)}</div>`:""}${j.principal_id?`<div>A · ${esc(nome(j.principal_id))}</div>`:j.publicado&&j.status==="aberto"?`<span class="tag f">vaga aberta</span>`:(j.clt_ids||[]).length||j.convidados?"":"—"}${j.substituto_id?`<div class="s">B · ${esc(nome(j.substituto_id))}</div>`:""}</td>
+  <td data-l="Sellers">${(j.clt_ids||[]).map(x=>`<div>${esc(nome(x))} <span class="muted small">CLT</span></div>`).join("")}${j.convidados?`<div>${esc(j.convidados)}</div>`:""}${j.principal_id?`<div>A · ${esc(nome(j.principal_id))}</div>`:j.publicado&&j.status==="aberto"?`<span class="tag f">vaga aberta</span>`:(j.clt_ids||[]).length||j.convidados?"":"—"}${j.substituto_id?`<div class="s">B · ${esc(nome(j.substituto_id))}</div>`:""}${j.operador_id?`<div class="s">🎛 Op · ${esc(nome(j.operador_id))}</div>`:""}</td>
   <td data-l="Cachê" class="r">${j.valor_seller?brl(j.valor_seller):"—"}</td>
   <td data-l="Status">${j.status==="realizado"?`<span class="tag o">realizada</span>`:j.status==="cancelado"?`<span class="tag x">cancelada</span>`:new Date(j.fim)<new Date()?`<span class="tag w">a fechar</span>`:open?`<span class="tag f">aberta</span>`:`<span class="tag v">confirmada</span>`}</td></tr>`}
 const JCOLS=[["Live"],["Etapa","hm"],["Quando"],["Local"],["Sellers"],["Cachê","r"],["Status"]];
@@ -2638,8 +2638,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="86";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="87";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["87","24/11","Central do cliente mostra só contratos assinados. Operador alocado aparece na agenda e na lista de lives (🎛). Agenda do celular: título como 🎵 Marca · TikTok · Seller, com operador, briefing e observações na descrição."],
  ["86","24/11","📄 Contratos → Resumo (1 página): todos os clientes com contrato, o deal (pacote, valor por mês, % sobre vendas), vigência, condições e lives do mês. Dá para imprimir ou salvar em PDF."],
  ["85","24/11","📥 Briefing da live: agora dá para arrastar o PDF ou imagem direto para a caixa do briefing (ou usar o botão Subir arquivo)."],
  ["84","24/11","🗓️ Disponibilidade: as sellers marcam no app os períodos em que podem fazer live na semana (todo domingo). Em Equipe → Disponibilidade aparece a grade; na tela da live, cada seller mostra ✅ ou ⛔ para aquele horário. 📋 Briefing de cada live: na tela da live, logo abaixo das Promoções, escreva o briefing do dia e suba PDFs, imagens ou links. A seller escalada abre no app dela, no botão 📋 Briefing do cartão da live, junto com o briefing da marca."],
@@ -3371,7 +3372,7 @@ function jobSala(j){return j.local_tipo==="estudio"?(j.espaco?"Sala "+j.espaco:"
 function jobSellerHtml(j){if(j.modalidade==="aluguel")return `<span class="tag c">só aluguel</span>`;const out=[];
   if(j.principal_id)out.push(`<span class="tag v">A: ${esc(nome(j.principal_id))}</span>`);else if(j.publicado&&j.status==="aberto")out.push(`<span class="tag f">vaga aberta no app</span>`);
   if(j.substituto_id)out.push(`<span class="tag">B: ${esc(nome(j.substituto_id))}</span>`);
-  (j.clt_ids||[]).forEach(id=>out.push(`<span class="tag">${esc(nome(id))} (IMPlay)</span>`));if(j.convidados)out.push(`<span class="tag">${esc(j.convidados)}</span>`);
+  (j.clt_ids||[]).forEach(id=>out.push(`<span class="tag">${esc(nome(id))} (IMPlay)</span>`));if(j.operador_id)out.push(`<span class="tag c">🎛 Op: ${esc(nome(j.operador_id))}</span>`);if(j.convidados)out.push(`<span class="tag">${esc(j.convidados)}</span>`);
   return out.join(" ")||`<span class="muted small">sem seller definido</span>`}
 function agLinha(j){return `<div class="agl ${platCls(j)} ${j.status==="realizado"?"done":""} ${!j.principal_id&&j.publicado&&j.status==="aberto"?"open":""}" data-act="job" data-id="${j.id}"><div class="agh"><b>${hm(j.inicio)}</b><span>${hm(j.fim)}</span></div>
   <div class="agb"><div class="agt">${esc(j.marca||cliNome(j.cliente_id)||"Live")}${platTag(j)} <span class="muted small">· ${esc(jobSala(j))}</span>${j.status==="realizado"?` <span class="tag o">realizada</span>`:""}</div><div class="ags">${jobSellerHtml(j)}</div></div></div>`}
@@ -3986,7 +3987,7 @@ function diaView(){const base=S.diaSel?new Date(S.diaSel+"T00:00"):new Date(new 
   const dLab=base.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"});
   const hoje=new Date(new Date().toDateString()).getTime()===base.getTime();
   let grid="";for(let h=h0;h<h1;h++)grid+=`<div class="dvh" style="top:${(h-h0)*PX}px"><span>${String(h).padStart(2,"0")}:00</span></div>`;
-  const blocos=ev.map(e=>{const j=e.j;const top=(e.a-h0)*PX,ht=Math.max(22,(e.b-e.a)*PX-3);const w=100/e.n;const sel=[nome(j.principal_id),j.substituto_id?nome(j.substituto_id)+" (sub)":""].filter(Boolean).join(" · ");
+  const blocos=ev.map(e=>{const j=e.j;const top=(e.a-h0)*PX,ht=Math.max(22,(e.b-e.a)*PX-3);const w=100/e.n;const sel=[nome(j.principal_id),j.substituto_id?nome(j.substituto_id)+" (sub)":"",j.operador_id?"🎛 "+nome(j.operador_id):""].filter(Boolean).join(" · ");
     return `<div class="dvb" data-act="job" data-id="${j.id}" style="top:${top}px;height:${ht}px;left:calc(${e.c*w}% + 2px);width:calc(${w}% - 4px);background:${corMarca(j.marca)}"><b>${platKey(j)==="tt"?"♪ ":platKey(j)==="ig"?"◎ ":""}${esc(j.marca||"Live")}${plat(j)?" · "+esc(plat(j)):""}</b><span>${hm2(j.inicio)}–${j.fim?hm2(j.fim):""}${j.espaco?" · "+esc(j.espaco):""}</span>${sel?`<span>👤 ${esc(sel)}</span>`:`<span class="vg">sem seller</span>`}</div>`}).join("");
   return `<div class="dvbar"><button class="btn sm" data-act="diaNav" data-v="-1">‹</button><button class="btn sm ${hoje?"p":""}" data-act="diaNav" data-v="0">Hoje</button><button class="btn sm" data-act="diaNav" data-v="1">›</button><b>${dLab.charAt(0).toUpperCase()+dLab.slice(1)}</b><span class="small muted">${l.length} live${l.length===1?"":"s"}</span></div>
   <div class="dvw"><div class="dv" style="height:${(h1-h0)*PX}px">${grid}<div class="dvc">${blocos}${hoje&&nowH>h0&&nowH<h1?`<div class="dvnow" style="top:${(nowH-h0)*PX}px"></div>`:""}</div></div></div>${l.length?"":`<div class="empty">Nenhuma live neste dia.</div>`}`}
@@ -4075,7 +4076,7 @@ function horasJob(j){return Math.max(0,(new Date(j.fim||j.inicio)-new Date(j.ini
 function cenMes(cid){const mk=monthKey(new Date());const l=S.jobs.filter(j=>j.cliente_id===cid&&j.status!=="cancelado"&&monthKey(new Date(j.inicio))===mk);const agora=new Date();
   const feitas=l.filter(j=>j.status==="realizado"||new Date(j.fim||j.inicio)<agora);return {l,hTot:l.reduce((a,j)=>a+horasJob(j),0),hFeitas:feitas.reduce((a,j)=>a+horasJob(j),0),nFeitas:feitas.length}}
 const fH=n=>(Math.round(n*10)/10).toLocaleString("pt-BR")+" h";
-function cenAtivo(c){return !!cliContrato(c.id)||(S.ctrs||[]).some(x=>x.cliente_id===c.id&&!["cancelado","recusado","substituido","encerrado"].includes(x.status))}
+function cenAtivo(c){return (S.ctrs||[]).some(x=>x.cliente_id===c.id&&x.status==="assinado")}
 function cenLista(){const q=(S.cenQ||"").toLowerCase();const base=S.clientes.filter(c=>c.status!=="cancelado"&&(!q||(c.marca+" "+(c.empresa||"")).toLowerCase().includes(q)));const nAt=base.filter(cenAtivo).length;const l=(S.cenTodas?base:base.filter(cenAtivo)).sort((a,b)=>(a.marca||"").localeCompare(b.marca||""));
   return `<div class="tool"><div class="q">${ic("search")}<input id="cenQ" value="${esc(S.cenQ||"")}" placeholder="Buscar marca…"></div><div class="chips" style="margin:0"><button type="button" data-act="cenTodas" data-v="0" class="${S.cenTodas?"":"on"}">Contratos ativos <span class="n">${nAt}</span></button><button type="button" data-act="cenTodas" data-v="1" class="${S.cenTodas?"on":""}">Todas <span class="n">${base.length}</span></button></div></div>${!l.length?`<div class="empty">Nenhuma marca com contrato ativo. Toque em <b>Todas</b> para ver as outras.</div>`:""}<div class="cgrid">${l.map(c=>{const ct=cliContrato(c.id);const m=cenMes(c.id);const h=ct&&ct.itens.find(x=>x.h);const prox=S.jobs.filter(j=>j.cliente_id===c.id&&j.status!=="cancelado"&&new Date(j.inicio)>new Date()).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio))[0];
     return `<div class="ccard" data-act="cenCli" data-id="${c.id}"><div class="cc-h"><b>${esc(c.marca||"")}</b>${ct?`<span class="tagc ok">contrato</span>`:`<span class="tagc">sem contrato</span>`}</div>
@@ -4909,6 +4910,7 @@ function crsImprimir(){const L=crsLinhas();const w=window.open("","_blank");if(!
   <table><thead><tr><th>Cliente</th><th>Contrato</th><th>Deal</th><th>Vigência</th><th>Condições</th><th class="r">Lives no mês</th></tr></thead><tbody>${rows||`<tr><td colspan="6">Nenhum contrato ativo.</td></tr>`}</tbody></table></body></html>`);w.document.close()}
 const _haCtr86=HEADACT.contratos;HEADACT.contratos=()=>(isSocio()?`<button class="btn sm" data-act="crsPrint">📄 Resumo (1 página)</button>`:"")+_haCtr86();
 document.addEventListener("click",e=>{const a=e.target.closest('[data-act="crsPrint"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();crsImprimir()},true);
+
 if(!orcPreviewBoot())boot();
 </script>
 <script>
