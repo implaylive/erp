@@ -879,7 +879,8 @@ function cliSel(sel,label){return `<div class="fld"><label style="display:flex;j
  <div class="cols2 t2"><div class="fld"><label>Contato</label><input id="nc_contato"></div><div class="fld"><label>Telefone</label><input id="nc_tel" type="tel"></div></div>
  <div class="row" style="margin-top:10px"><button type="button" class="btn p sm" data-act="ncSalvar">Salvar cliente</button><button type="button" class="btn sm" data-act="ncFechar">Cancelar</button></div>
  <div class="hint">CNPJ, e-mail e endereço podem ser completados depois em Clientes.</div></div></div>`}
-function sellerOpts(sel){return `<option value="">— ninguém —</option>`+S.membros.filter(m=>m.status==="ativo"&&(m.papel==="seller"||m.vinculo==="clt")).map(m=>`<option value="${m.id}" ${m.id===sel?"selected":""}>${esc(m.nome)} (${esc(m.vinculo)})</option>`).join("")}
+function selOk(m){return !["inativo","recusado","bloqueado","excluido"].includes(m.status)}
+function sellerOpts(sel){return `<option value="">— ninguém —</option>`+S.membros.filter(m=>selOk(m)&&(m.papel==="seller"||m.vinculo==="clt")).map(m=>`<option value="${m.id}" ${m.id===sel?"selected":""}>${esc(m.nome)} (${esc(m.vinculo||"seller")})${m.status!=="ativo"?" · cadastro pendente":""}</option>`).join("")}
 /* Padrão Tae, versão múltipla: vários botões ligados ao mesmo tempo + campo livre (valores separados por " + ") */
 function pickM(name,label,val,opts,o={}){const cur=String(val||"").split(" + ").map(x=>x.trim()).filter(Boolean);
   return `<div class="fld pick" data-pickm="${name}">${label?`<label>${label}</label>`:""}<div class="pchips">${opts.map(x=>`<button type="button" class="pch ${cur.includes(x)?"on":""}" data-act="pickMSet" data-v="${esc(x)}">${cur.includes(x)?"✓ ":""}${esc(x)}</button>`).join("")}</div>
@@ -922,7 +923,7 @@ function openJob(id,preset={}){
     <div class="hint v" id="jobQuando"></div></div></div>
    <div data-show="modalidade=servico">
    <div class="sec"><h2>Seller</h2></div>
-   <div class="fld"><label>Quem faz a live</label><input type="hidden" name="principal_id" value="${esc(j.principal_id||"")}"><div class="pchips jsel">${(()=>{const L=S.membros.filter(m=>m.status==="ativo"&&(m.papel==="seller"||m.vinculo==="clt")).sort((a,b)=>String(a.nome).localeCompare(String(b.nome)));return `<button type="button" class="pch ${!j.principal_id?"on":""}" data-act="pselSet" data-v="">Ainda ninguém</button>`+L.map(m=>`<button type="button" class="pch ${m.id===j.principal_id?"on":""}" data-act="pselSet" data-v="${m.id}">${esc(String(m.nome).split(" ").slice(0,2).join(" "))}</button>`).join("")})()}</div></div>
+   <div class="fld"><label>Quem faz a live</label><input type="hidden" name="principal_id" value="${esc(j.principal_id||"")}"><div class="pchips jsel">${(()=>{const L=S.membros.filter(m=>selOk(m)&&(m.papel==="seller"||m.vinculo==="clt")).sort((a,b)=>(a.status==="ativo"?0:1)-(b.status==="ativo"?0:1)||String(a.nome).localeCompare(String(b.nome)));return `<button type="button" class="pch ${!j.principal_id?"on":""}" data-act="pselSet" data-v="">Ainda ninguém</button>`+L.map(m=>`<button type="button" class="pch ${m.id===j.principal_id?"on":""}" data-act="pselSet" data-v="${m.id}" ${m.status!=="ativo"?'style="border-style:dashed" title="Cadastro ainda não aprovado"':""}>${esc(String(m.nome).split(" ").slice(0,2).join(" "))}${m.status!=="ativo"?" ⏳":""}</button>`).join("")})()}</div></div>
    <div class="fld jsub"><label>Substituto (opcional)</label><select name="substituto_id" data-1c="lista">${sellerOpts(j.substituto_id)}</select></div>
    <details class="adv jmais" ${(id&&j.publicado&&!j.principal_id)||j.seller_clt||j.convidados?"open":""}><summary>Mais opções: vaga no app, equipe extra, convidado</summary>
    <div class="row" style="gap:10px;margin-top:10px">${tglBtn("seller_clt","Equipe IMPlay extra",!!j.seller_clt)}${tglBtn("seller_app","Abrir vaga no app",id?!!j.publicado:false)}${tglBtn("seller_conv","Convidado / influenciador",!!j.convidados)}</div></details>
@@ -2640,8 +2641,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="99";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
+const APP_VERSAO="100";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
 const NOVIDADES=[
+ ["100","25/11","Live: dá para escalar seller e substituta que ainda não tiveram o cadastro aprovado. Elas aparecem com ⏳ e borda tracejada. Assim não precisa mais escrever o nome nas observações."],
  ["99","25/11","📱 Check-in pré-live do operador: app novo (operador/) com checklist de 15 itens da live, fotos de prova, avisos 45 min antes e alerta à coordenação se atrasar. Em Lives › Checklist do dia você acompanha cada live, escolhe quem é avisado e edita os itens do cliente (a IA sugere pelo briefing). 📣 Orientações do cliente: cole a conversa do grupo do WhatsApp e a IA separa cupom, sorteio, flash sale, overlay e avisos (você revisa e salva; pode anexar as imagens de overlay). O operador lê no app e a conferência reabre, com aviso, se o cliente combinar algo novo."],
  ["98","25/11","“Contratos ativos” agora é o mesmo número no Painel, no Funil, em Propostas e na Central: cliente com contrato assinado. Clicando, abre a Central. Na Central, cada cliente aparece uma vez só na lista de contratos para marcar como assinado."],
  ["97","25/11","Link direto para recuperar senha: implaylive.github.io/erp/?esqueci"],
