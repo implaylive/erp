@@ -1,4 +1,4 @@
--- IMPlay · v95 · agenda a Edge Function check-avisos a cada minuto.
+-- IMPlay · v98 · agenda a Edge Function check-avisos a cada minuto.
 -- Rode DEPOIS de rodar implay_checklist_prelive.sql e de publicar a função (veja supabase/README.md).
 -- 1) Troque COLE_AQUI_A_CHAVE pela mesma chave que você guardou no secret CRON_KEY da função.
 -- 2) Rode. Pode rodar de novo (troca o agendamento, não duplica).

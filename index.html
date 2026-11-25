@@ -690,6 +690,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 "use strict";
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
+const REC_SENHA=/type=recovery/.test(location.hash+location.search);
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-erp-auth"}});
 
 const ESPACOS=["01","02","03","04","05","11","12","13","14","15","16","17","18","21","22","23","24","25","26","27","31","32","33"];
@@ -2639,9 +2640,12 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="95";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
+const APP_VERSAO="98";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
 const NOVIDADES=[
- ["95","25/11","📱 Check-in pré-live do operador: app novo (operador/) com checklist de 15 itens da live, fotos de prova, avisos 45 min antes e alerta à coordenação se atrasar. Em Lives › Checklist do dia você acompanha cada live, escolhe quem é avisado e edita os itens do cliente (a IA sugere pelo briefing). 📣 Orientações do cliente: cole a conversa do grupo do WhatsApp e a IA separa cupom, sorteio, flash sale, overlay e avisos (você revisa e salva; pode anexar as imagens de overlay). O operador lê no app e a conferência reabre, com aviso, se o cliente combinar algo novo."],
+ ["98","25/11","📱 Check-in pré-live do operador: app novo (operador/) com checklist de 15 itens da live, fotos de prova, avisos 45 min antes e alerta à coordenação se atrasar. Em Lives › Checklist do dia você acompanha cada live, escolhe quem é avisado e edita os itens do cliente (a IA sugere pelo briefing). 📣 Orientações do cliente: cole a conversa do grupo do WhatsApp e a IA separa cupom, sorteio, flash sale, overlay e avisos (você revisa e salva; pode anexar as imagens de overlay). O operador lê no app e a conferência reabre, com aviso, se o cliente combinar algo novo."],
+ ["97","25/11","Link direto para recuperar senha: implaylive.github.io/erp/?esqueci"],
+ ["96","25/11","Esqueci a senha: o link do e-mail abre direto uma tela própria para criar a senha nova (funciona no Safari do iPhone, mesmo sem estar logado). Se o link venceu, avisa e mostra como pedir outro."],
+ ["95","25/11","Esqueci a senha: ao abrir o link do e-mail, a tela de criar a senha nova agora abre sempre."],
  ["94","24/11","Central do cliente: lista os contratos que ainda não foram marcados como assinados, com o botão “✅ Já está assinado”. Ao marcar, o cliente passa a aparecer na Central."],
  ["93","24/11","🔑 Esqueci a senha agora funciona sozinho: a pessoa digita o e-mail, recebe um link e cria a senha nova, sem precisar de sócio."],
  ["92","24/11","📊 Relatórios → Por live: cada live realizada com GMV, GMV por hora, pedidos, itens, visualizações e nota; filtro por marca e período, totais no topo e CSV. No resumo da live, botão “Ver relatório”."],
@@ -3775,9 +3779,26 @@ const _bootTS=boot;boot=async function(){await _bootTS();try{if(S.me&&S.me.id){c
 document.addEventListener("click",e=>{const a=e.target.closest("#esqueci");if(!a)return;e.preventDefault();
   const inp=document.querySelector('#lf input[type=email],#lf input[name=email],#lf input:not([type=password])');let em=((inp&&inp.value)||"").trim();
   if(!/@/.test(em))em=(prompt("Digite o seu e-mail de acesso:")||"").trim();if(!/@/.test(em))return;
-  db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname}).then(({error})=>{if(error)return toast("Não deu para enviar: "+error.message+". Peça a um sócio: Equipe › seu nome › Resetar senha.",true);
+  db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname}).then(({error})=>{if(error)return toast(/rate|limit|seconds/i.test(error.message)?"Já mandamos um link há pouco. Veja seu e-mail (e o spam) e use o mais recente. Para pedir outro, espere alguns minutos.":"Não deu para enviar: "+error.message,true);
     toast("Pronto! Enviamos um link para "+em+". Abra o e-mail (veja o spam também) e crie a senha nova.")})},true);
-db.auth.onAuthStateChange(ev=>{if(ev==="PASSWORD_RECOVERY"){S.recSenha=true;setTimeout(()=>{if(typeof openTrocaSenha==="function"){openTrocaSenha();const h=$("#tsF h3");if(h)h.textContent="Crie sua nova senha";const p=$("#tsF p");if(p)p.textContent="Digite a nova senha duas vezes (mínimo 8 caracteres)."}},1500)}});
+if(/[?&]esqueci\b/.test(location.search)&&!REC_SENHA){(function(){const ov=document.createElement("div");ov.style.cssText="position:fixed;inset:0;z-index:99999;background:#0B0B0C;color:#F7F7F2;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,system-ui,sans-serif";
+  ov.innerHTML=`<form id="esqF" style="max-width:380px;width:100%"><h2 style="margin:0 0 6px">Esqueci a senha</h2><p style="color:#A3A3AB;margin:0 0 16px;line-height:1.5">Digite o seu e-mail de acesso. Vamos mandar um link para você criar a senha nova.</p><input type="email" name="em" placeholder="seu@email.com" autocomplete="email" required style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid #2A2A30;background:#17171A;color:#F7F7F2;font-size:16px"><div id="esqMsg" style="min-height:22px;margin:10px 0;line-height:1.5"></div><button style="width:100%;padding:14px;border-radius:999px;border:0;background:#D4FF2F;color:#0B0B0C;font-weight:800;font-size:16px">Mandar link</button><a href="${location.pathname}" style="display:block;text-align:center;margin-top:14px;color:#A3A3AB">Voltar para o login</a></form>`;
+  const go=()=>{document.body.appendChild(ov);const f=document.getElementById("esqF");f.addEventListener("submit",async e=>{e.preventDefault();const m=document.getElementById("esqMsg");const em=f.em.value.trim();m.style.color="#A3A3AB";m.textContent="Enviando…";
+    const {error}=await db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});
+    if(error){m.style.color="#FF3FA4";m.textContent=/rate|limit|seconds/i.test(error.message)?"Já mandamos um link há pouco. Veja seu e-mail (e o spam) e use o mais recente.":"Não deu para enviar: "+error.message;return}
+    m.style.color="#D4FF2F";m.textContent="Pronto! Abra o e-mail de "+em+" (veja o spam também) e toque no link."})};
+  if(document.body)go();else document.addEventListener("DOMContentLoaded",go)})()}
+if(REC_SENHA||/error_code=otp_expired|error_description=/.test(location.hash)){(function(){const hs=new URLSearchParams(location.hash.slice(1));const err=hs.get("error_code")||hs.get("error");
+  const ov=document.createElement("div");ov.id="recOv";ov.style.cssText="position:fixed;inset:0;z-index:99999;background:#0B0B0C;color:#F7F7F2;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,system-ui,sans-serif";
+  ov.innerHTML=err?`<div style="max-width:380px;width:100%"><h2 style="margin:0 0 10px">Link vencido</h2><p style="color:#A3A3AB;line-height:1.5">Esse link já foi usado ou venceu. Peça um novo: volte para o login, digite seu e-mail e toque em <b>Esqueci a senha</b>. Use sempre o e-mail mais recente.</p><a href="${location.pathname}" style="display:block;text-align:center;margin-top:16px;padding:14px;border-radius:999px;background:#D4FF2F;color:#0B0B0C;font-weight:800;text-decoration:none">Voltar para o login</a></div>`
+   :`<form id="recF" style="max-width:380px;width:100%"><h2 style="margin:0 0 6px">Crie sua nova senha</h2><p style="color:#A3A3AB;margin:0 0 16px">Mínimo 8 caracteres.</p><input type="password" name="a" placeholder="Nova senha" autocomplete="new-password" minlength="8" required style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid #2A2A30;background:#17171A;color:#F7F7F2;font-size:16px;margin-bottom:10px"><input type="password" name="b" placeholder="Repita a senha" autocomplete="new-password" minlength="8" required style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid #2A2A30;background:#17171A;color:#F7F7F2;font-size:16px"><div id="recMsg" style="min-height:22px;margin:10px 0;color:#FF3FA4"></div><button style="width:100%;padding:14px;border-radius:999px;border:0;background:#D4FF2F;color:#0B0B0C;font-weight:800;font-size:16px">Salvar nova senha</button></form>`;
+  const go=()=>{document.body.appendChild(ov);const f=document.getElementById("recF");if(!f)return;f.addEventListener("submit",async e=>{e.preventDefault();const m=document.getElementById("recMsg");const a=f.a.value,b=f.b.value;if(a.length<8)return m.textContent="Use pelo menos 8 caracteres.";if(a!==b)return m.textContent="As duas senhas não são iguais.";
+    m.style.color="#A3A3AB";m.textContent="Salvando…";let ses=null;for(let k=0;k<20&&!ses;k++){ses=(await db.auth.getSession()).data.session;if(!ses)await new Promise(r=>setTimeout(r,300))}
+    if(!ses){m.style.color="#FF3FA4";m.textContent="O link não foi aceito. Peça um novo em Esqueci a senha.";return}
+    const {error}=await db.auth.updateUser({password:a});if(error){m.style.color="#FF3FA4";m.textContent="Erro: "+error.message;return}
+    try{await db.rpc("imp_senha_trocada")}catch(_){}m.style.color="#D4FF2F";m.textContent="Senha salva! Entrando…";setTimeout(()=>location.replace(location.pathname),1200)})};
+  if(document.body)go();else document.addEventListener("DOMContentLoaded",go)})()}
+db.auth.onAuthStateChange(ev=>{if(ev==="PASSWORD_RECOVERY"&&!REC_SENHA){S.recSenha=true;setTimeout(()=>{if(typeof openTrocaSenha==="function"){openTrocaSenha();const h=$("#tsF h3");if(h)h.textContent="Crie sua nova senha";const p=$("#tsF p");if(p)p.textContent="Digite a nova senha duas vezes (mínimo 8 caracteres)."}},1500)}});
 const _renderLoginES=renderLogin;renderLogin=function(...a){_renderLoginES(...a);const h=document.querySelector("#lf .hint");if(h&&!document.getElementById("esqueci"))h.insertAdjacentHTML("beforebegin",`<div style="text-align:center;margin:8px 0"><a href="#" id="esqueci" class="small">Esqueci a senha</a></div>`)};
 const _openMembroRS=openMembro;openMembro=function(id){_openMembroRS(id);const m=id&&S.membros.find(x=>x.id===id);
   if(!m||!isSocio()||!["socio","basico"].includes(m.papel)||!m.email)return;const acts=document.querySelector("#sheetIn form .acts");if(!acts)return;
@@ -5032,7 +5053,7 @@ const _cenLista94=cenLista;cenLista=function(){const h=_cenLista94.apply(this,ar
    ${pend.map(c=>`<div class="row" style="justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line)"><span><b>${esc(c.marca||cliNome(c.cliente_id)||"")}</b> <span class="small muted">${ctn(c.numero)} · ${c.status==="enviado"?"enviado, aguardando assinatura":"pronto para enviar"}</span></span><button type="button" class="btn p sm" data-act="ctrAssinou" data-id="${c.id}">✅ Já está assinado</button></div>`).join("")}</div>`;
   const i=h.indexOf('<div class="empty">Nenhuma marca');const k=i>=0?i:h.indexOf('<div class="cgrid">');return h.slice(0,k)+box+h.slice(k)};
 const _ctrInfo94=openCtrInfo;openCtrInfo=function(){if(S.tab==="central"){closeSheet();render();return}return _ctrInfo94.apply(this,arguments)};
-/* ================= v95 · CHECK-IN PRÉ-LIVE DO OPERADOR (app operador/) ================= */
+/* ================= v98 · CHECK-IN PRÉ-LIVE DO OPERADOR (app operador/) ================= */
 (function(){const st=document.createElement("style");st.textContent=".c95in{box-sizing:border-box;background:var(--card);border:1px solid var(--linha);border-radius:11px;padding:10px 12px;min-height:42px;font-size:16px;color:var(--chalk);max-width:100%}textarea.c95in{min-height:72px;resize:vertical}";document.head.appendChild(st)})();
 S.chk95={rows:null,erro:null,alerta:[],t:0,ed:null,or:null,carregando:false};
 const CHK95_URL=location.origin+location.pathname.replace(/[^/]*$/,"")+"operador/";

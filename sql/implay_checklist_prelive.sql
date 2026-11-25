@@ -1,4 +1,4 @@
--- IMPlay · v95 · Check-in pré-live (app do operador + avisos)
+-- IMPlay · v98 · Check-in pré-live (app do operador + avisos)
 -- Roda no SQL Editor do Supabase ANTES de o PR entrar no ar. Pode rodar de novo sem estragar nada.
 -- Depois rode também sql/implay_checklist_cron.sql (só depois de publicar a Edge Function check-avisos).
 -- Não mexe em imp_check_marcar nem em imp_entrar: o checklist antigo (v53) continua como está.

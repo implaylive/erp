@@ -16,4 +16,4 @@ Sistema de gestão da IMPlay: https://implaylive.github.io/erp/
 ## Mudanças no banco (Supabase)
 Quando uma mudança precisa de SQL novo, o arquivo fica em `sql/` e alguém com acesso ao Supabase roda no SQL Editor **antes** de a mudança entrar no ar. Pode rodar de novo sem estragar nada.
 - `sql/implay_calendario_sugestoes.sql` (v77): sugestões do cliente no calendário da marca.
-- `sql/implay_checklist_prelive.sql` (v95): check-in pré-live do operador. Depois, `sql/implay_checklist_cron.sql` (só após publicar as funções).
+- `sql/implay_checklist_prelive.sql` (v98): check-in pré-live do operador. Depois, `sql/implay_checklist_cron.sql` (só após publicar as funções).
