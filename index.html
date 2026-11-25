@@ -2639,8 +2639,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="94";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="95";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
 const NOVIDADES=[
+ ["95","25/11","📱 Check-in pré-live do operador: app novo (operador/) com checklist de 15 itens da live, fotos de prova, avisos 45 min antes e alerta à coordenação se atrasar. Em Lives › Checklist do dia você acompanha cada live, escolhe quem é avisado e edita os itens do cliente (a IA sugere pelo briefing). 📣 Orientações do cliente: cole a conversa do grupo do WhatsApp e a IA separa cupom, sorteio, flash sale, overlay e avisos (você revisa e salva; pode anexar as imagens de overlay). O operador lê no app e a conferência reabre, com aviso, se o cliente combinar algo novo."],
  ["94","24/11","Central do cliente: lista os contratos que ainda não foram marcados como assinados, com o botão “✅ Já está assinado”. Ao marcar, o cliente passa a aparecer na Central."],
  ["93","24/11","🔑 Esqueci a senha agora funciona sozinho: a pessoa digita o e-mail, recebe um link e cria a senha nova, sem precisar de sócio."],
  ["92","24/11","📊 Relatórios → Por live: cada live realizada com GMV, GMV por hora, pedidos, itens, visualizações e nota; filtro por marca e período, totais no topo e CSV. No resumo da live, botão “Ver relatório”."],
@@ -5031,6 +5032,149 @@ const _cenLista94=cenLista;cenLista=function(){const h=_cenLista94.apply(this,ar
    ${pend.map(c=>`<div class="row" style="justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line)"><span><b>${esc(c.marca||cliNome(c.cliente_id)||"")}</b> <span class="small muted">${ctn(c.numero)} · ${c.status==="enviado"?"enviado, aguardando assinatura":"pronto para enviar"}</span></span><button type="button" class="btn p sm" data-act="ctrAssinou" data-id="${c.id}">✅ Já está assinado</button></div>`).join("")}</div>`;
   const i=h.indexOf('<div class="empty">Nenhuma marca');const k=i>=0?i:h.indexOf('<div class="cgrid">');return h.slice(0,k)+box+h.slice(k)};
 const _ctrInfo94=openCtrInfo;openCtrInfo=function(){if(S.tab==="central"){closeSheet();render();return}return _ctrInfo94.apply(this,arguments)};
+/* ================= v95 · CHECK-IN PRÉ-LIVE DO OPERADOR (app operador/) ================= */
+(function(){const st=document.createElement("style");st.textContent=".c95in{box-sizing:border-box;background:var(--card);border:1px solid var(--linha);border-radius:11px;padding:10px 12px;min-height:42px;font-size:16px;color:var(--chalk);max-width:100%}textarea.c95in{min-height:72px;resize:vertical}";document.head.appendChild(st)})();
+S.chk95={rows:null,erro:null,alerta:[],t:0,ed:null,or:null,carregando:false};
+const CHK95_URL=location.origin+location.pathname.replace(/[^/]*$/,"")+"operador/";
+async function chk95Load(forca){const c=S.chk95;if(S.demo||c.carregando||(!forca&&Date.now()-c.t<20000))return;c.carregando=true;c.t=Date.now();
+  const r=await db.rpc("imp_chk_painel",{p_dias:2});
+  if(r.error){c.erro=r.error.message;c.rows=null}else{c.erro=null;c.rows=r.data||[];const a=await db.rpc("imp_chk_alerta_ler");c.alerta=Array.isArray(a.data)?a.data:[]}
+  c.carregando=false;if(S.tab==="jobs"&&S.liveModo==="check")render()}
+function chk95Dia(){const base=new Date(new Date().toDateString());if(S.chkDia==="amanha")base.setDate(base.getDate()+1);const fim=new Date(base.getTime()+864e5);
+  return S.jobs.filter(j=>j.status!=="cancelado"&&new Date(j.inicio)>=base&&new Date(j.inicio)<fim).sort((a,b)=>new Date(a.inicio)-new Date(b.inicio))}
+function chk95Linha(j){const c=S.chk95,r=(c.rows||[]).find(x=>String(x.id)===String(j.id))||{};const tot=r.itens||0,ok=r.ok||0,pr=(r.problemas||[]).length,m=(new Date(j.inicio)-Date.now())/60000;
+  let k="",t=tot?`Faltam ${tot-ok}`:"Lista ainda não gerada";
+  if(r.pronto_em){k="ok";t="✅ Pronto às "+hm(r.pronto_em)}else if(pr){k="bad";t=`⚠️ ${pr} com problema`}else if(m<=30&&m>-60){k="bad";t="Atrasado"}else if(m<=45&&m>0){k="warn";t="Fazer agora"}
+  const cor=k==="ok"?"var(--ok)":k==="bad"?"var(--bad)":k==="warn"?"var(--warn)":"var(--cinza)";const pc=tot?Math.round(ok/tot*100):0;
+  const ex=(r.extras||[]).length;
+  return `<div class="sbox" style="margin:0 0 10px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><b>${hm(j.inicio)} · ${esc(j.marca||"Live")}</b> ${platTag(j)}
+    <div class="small muted">${j.operador_id?"🎛 "+esc(nome(j.operador_id)):`<b style="color:var(--flash)">Sem operador</b>`}${j.principal_id?" · Seller: "+esc(nome(j.principal_id)):""}</div></div>
+    <span style="font-weight:800;color:${cor}">${esc(t)}</span></div>
+    <div class="k53bar" style="margin:8px 0"><span style="width:${pc}%;background:${cor}"></span></div>
+    <div class="small muted">${ok}/${tot||"—"} itens${r.ia_em?" · itens do cliente por IA":""}</div>
+    ${(r.problemas||[]).map(p=>`<div class="small" style="color:var(--bad);margin-top:4px">⚠️ ${esc(p.titulo||p.item)}: ${esc(p.nota||"")}</div>`).join("")}
+    <div class="row" style="gap:6px;margin-top:8px"><button class="btn sm" data-act="chk95Or" data-id="${j.id}">📣 Orientações do cliente${r.orient_n!=null?` (${r.orient_n})`:""}</button><button class="btn sm" data-act="chk95Ed" data-id="${j.id}">📝 Itens do cliente${ex?` (${ex})`:""}</button></div></div>`}
+function chk95Html(){const c=S.chk95;
+  if(S.demo)return `<div class="warnbox">No modo demonstração o check-in do operador fica desligado.</div>`;
+  if(c.erro)return `<div class="warnbox">${/imp_chk_painel|schema cache|does not exist|Could not find/i.test(c.erro)?"Rode o SQL <b>implay_checklist_prelive.sql</b> para ligar o check-in do operador.":esc(traduz(c.erro))}</div>`;
+  if(!c.rows)return `<div class="muted small" style="margin-bottom:10px">Carregando o check-in do operador…</div>`;
+  const quem=S.membros.filter(m=>m.status==="ativo"&&["socio","basico","operador"].includes(m.papel)).sort((a,b)=>String(a.nome).localeCompare(String(b.nome)));
+  const L=chk95Dia();
+  return `<div class="sbox" style="margin:0 0 12px"><b>📱 Check-in do operador</b> <span class="small muted">· aviso 45 min antes, prazo 30 min antes</span>
+    <div class="small muted" style="margin:6px 0 8px">O operador confere os itens no app do celular. Se atrasar, estas pessoas recebem o aviso (sem ninguém marcado, avisamos todos os sócios):</div>
+    <div class="pchips">${quem.map(m=>`<button type="button" class="pch ${c.alerta.includes(m.id)?"on":""}" data-act="chk95Quem" data-id="${m.id}">${esc(String(m.nome).split(" ").slice(0,2).join(" "))}</button>`).join("")}</div>
+    <div class="row" style="gap:6px;margin-top:10px"><a class="btn sm" href="${CHK95_URL}" target="_blank" rel="noopener">📱 Abrir app do operador</a><button class="btn sm" data-act="chk95Copy">Copiar link</button><button class="btn sm" data-act="chk95Rec">↻ Atualizar</button></div></div>
+    ${L.length?L.map(chk95Linha).join(""):`<div class="empty">Nenhuma live ${S.chkDia==="hoje"?"hoje":"amanhã"}.</div>`}`}
+const _chkView95=chkView;chkView=function(){chk95Load();
+  const tg=`<div class="chips" style="margin:0 0 10px"><button data-act="chkDia" data-v="hoje" class="${S.chkDia==="hoje"?"on":""}">Hoje</button><button data-act="chkDia" data-v="amanha" class="${S.chkDia==="amanha"?"on":""}">Amanhã</button></div>`;
+  const velho=_chkView95().replace(/^<div class="chips"[^>]*>[\s\S]*?<\/div>/,"");
+  return tg+chk95Html()+`<details class="sbox" style="margin-top:12px"><summary class="small muted">Checklist antigo no ERP (v53)</summary><div style="margin-top:10px">${velho}</div></details>`};
+/* editor dos itens do cliente */
+function chk95Sync(){const e=S.chk95.ed;if(!e)return;const box=$("#sheetIn");const n=e.list.length;
+  e.list=e.list.map((x,i)=>{const g=k=>box.querySelector(`[data-ck="${k}"][data-i="${i}"]`);return g("t")?{...x,titulo:g("t").value,detalhe:g("d").value,foto:g("f").checked}:x})}
+function chk95EdHtml(){const e=S.chk95.ed,j=S.jobs.find(x=>String(x.id)===String(e.id))||{};
+  return `<h3>Itens do cliente · ${esc(j.marca||"Live")}</h3><div class="small muted">Vêm depois dos 15 itens fixos e aparecem no app do operador. A IA sugere a partir do briefing; você revisa, edita ou remove.</div>
+  <div style="margin-top:10px">${e.list.length?e.list.map((x,i)=>`<div class="sbox" style="margin:0 0 8px"><input class="c95in" data-ck="t" data-i="${i}" value="${esc(x.titulo||"")}" placeholder="O que o operador deve conferir" style="width:100%"><input class="c95in" data-ck="d" data-i="${i}" value="${esc(x.detalhe||"")}" placeholder="Como conferir (opcional)" style="width:100%;margin-top:6px">
+    <div class="row" style="justify-content:space-between;align-items:center;margin-top:6px"><label class="small"><input type="checkbox" data-ck="f" data-i="${i}" ${x.foto?"checked":""}> pede foto</label>${x.origem==="ia"?`<span class="tag">✨ IA</span>`:""}<button type="button" class="btn sm" data-act="chk95Del" data-i="${i}">✕ Remover</button></div></div>`).join(""):`<div class="empty">Nenhum item do cliente.</div>`}</div>
+  <div class="row" style="gap:6px;margin-top:6px"><button type="button" class="btn sm" data-act="chk95Add">+ Item</button><button type="button" class="btn sm" data-act="chk95IA">✨ Gerar com IA</button></div>
+  <div class="acts"><button type="button" class="btn p" data-act="chk95Save">Salvar</button><button type="button" class="btn" data-act="fechar">Cancelar</button></div>`}
+async function chk95Salvar(){const e=S.chk95.ed;chk95Sync();
+  const lista=e.list.filter(x=>(x.titulo||"").trim()).map((x,i)=>({id:x.id||`m${Date.now()}${i}`,titulo:x.titulo.trim(),detalhe:(x.detalhe||"").trim(),foto:!!x.foto,origem:x.origem||"manual"}));
+  await run(db.rpc("imp_chk_extras_salvar",{p_job:String(e.id),p_extras:lista}));e.list=lista}
+/* orientações do cliente (o que combinaram no grupo do WhatsApp): cupom, sorteio, flash sale, overlay, avisos */
+const OR_TIPOS=[["cupom","🎟️ Cupom"],["sorteio","🎁 Sorteio"],["flash","⚡ Flash sale"],["overlay","🖼️ Overlay"],["aviso","📣 Aviso"],["outro","📝 Outro"]];
+const orNome=t=>(OR_TIPOS.find(x=>x[0]===t)||OR_TIPOS[5])[1];
+const orAteIso=d=>d?`${d}T23:59:00-03:00`:null;
+const orAteDia=iso=>iso?new Date(new Date(iso).getTime()-3*36e5).toISOString().slice(0,10):"";
+const orImg=p=>/\.(png|jpe?g|webp|gif)$/i.test(p||"");
+const orUrls={};
+function orResolve(){document.querySelectorAll("#sheetIn [data-sp]").forEach(async el=>{if(el.dataset.ok)return;el.dataset.ok="1";const p=el.dataset.sp;
+  if(!orUrls[p]){const r=await db.storage.from("implay-check").createSignedUrl(p,3600);if(r.error)return;orUrls[p]=r.data.signedUrl}
+  if(el.tagName==="IMG")el.src=orUrls[p];else el.href=orUrls[p]})}
+const orAnx=a=>orImg(a.path)?`<a data-sp="${esc(a.path)}" target="_blank" rel="noopener"><img data-sp="${esc(a.path)}" alt="${esc(a.nome||"imagem")}" style="height:64px;max-width:120px;object-fit:contain;border-radius:8px;background:#000;border:1px solid var(--linha)"></a>`:`<a data-sp="${esc(a.path)}" target="_blank" rel="noopener" class="small">📎 ${esc(a.nome||"arquivo")}</a>`;
+function orDraw(){$("#sheetIn").innerHTML=chk95OrHtml();orResolve()}
+function orSync(){const o=S.chk95.or;if(!o)return;const box=$("#sheetIn");const cv=box.querySelector("#orConv");if(cv)o.conv=cv.value;
+  if(o.prop)o.prop=o.prop.map((p,i)=>{const g=k=>box.querySelector(`[data-op="${k}"][data-i="${i}"]`);return g("t")?{...p,tipo:g("tp").value,titulo:g("ti").value,texto:g("t").value,valido_ate:orAteIso(g("d").value),sel:g("s").checked}:p});
+  if(o.edit){const g=k=>box.querySelector(`[data-oe="${k}"]`);if(g("t")){o.edit.titulo=g("ti").value;o.edit.texto=g("t").value;o.edit.ate=g("d").value}}}
+function chk95OrHtml(){const o=S.chk95.or,cli=S.clientes.find(x=>String(x.id)===String(o.cli))||{};
+  const tipoSel=(v,at)=>`<select class="c95in" style="width:auto" ${at}>${OR_TIPOS.map(t=>`<option value="${t[0]}" ${t[0]===v?"selected":""}>${t[1]}</option>`).join("")}</select>`;
+  const lista=o.list||[],ativas=lista.filter(x=>x.ativo),arq=lista.filter(x=>!x.ativo);
+  const card=x=>`<div class="sbox" style="margin:0 0 8px"><div class="row" style="justify-content:space-between;gap:8px"><b>${orNome(x.tipo)}</b><span class="small muted">${x.valido_ate?"até "+new Date(x.valido_ate).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})+" · ":""}${x.origem==="ia"?"✨ IA · ":""}${x.por?esc(String(x.por).split(" ")[0])+" · ":""}${new Date(x.mudou_em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</span></div>
+    <div style="margin-top:4px"><b>${esc(x.titulo)}</b></div>${x.texto&&x.texto!==x.titulo?`<div class="small" style="white-space:pre-wrap;margin-top:2px">${esc(x.texto)}</div>`:""}
+    ${(x.anexos||[]).length?`<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:6px">${x.anexos.map(orAnx).join("")}</div>`:""}
+    <div class="row" style="gap:6px;margin-top:8px">${x.ativo?`<button type="button" class="btn sm" data-act="chk95OrEd" data-id="${x.id}">Editar</button><button type="button" class="btn sm" data-act="chk95OrArq" data-id="${x.id}" data-v="0">Arquivar</button>`:`<button type="button" class="btn sm" data-act="chk95OrArq" data-id="${x.id}" data-v="1">Reativar</button>`}</div></div>`;
+  const ed=o.edit;
+  const form=ed?`<div class="sbox" style="margin:10px 0"><b>${ed.id?"Editar orientação":"Nova orientação"}</b>
+    <div class="pchips" style="margin-top:8px">${OR_TIPOS.map(t=>`<button type="button" class="pch ${ed.tipo===t[0]?"on":""}" data-act="chk95OrTipo" data-v="${t[0]}">${t[1]}</button>`).join("")}</div>
+    <input class="c95in" data-oe="ti" value="${esc(ed.titulo||"")}" placeholder="Título curto (ex.: Cupom LIVE15)" style="width:100%;margin-top:8px">
+    <textarea class="c95in" data-oe="t" rows="4" placeholder="O que o cliente combinou (como está no grupo)" style="width:100%;margin-top:6px">${esc(ed.texto||"")}</textarea>
+    <div class="row" style="gap:8px;align-items:center;margin-top:6px"><label class="small">Vale até <input class="c95in" type="date" data-oe="d" style="width:auto" value="${esc(ed.ate||"")}"></label></div>
+    <div style="margin-top:8px"><label class="btn sm" for="orFile" style="cursor:pointer">📎 Anexar imagem (overlay, print, regulamento)</label><input type="file" id="orFile" accept="image/*,application/pdf" multiple hidden>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:6px">${(ed.anexos||[]).map((a,i)=>`<span>${orAnx(a)} <button type="button" class="btn sm" data-act="chk95OrDelAnx" data-i="${i}">✕</button></span>`).join("")}</div></div>
+    <div class="acts"><button type="button" class="btn p" data-act="chk95OrSalvar">Salvar</button><button type="button" class="btn" data-act="chk95OrCancel">Cancelar</button></div></div>`:"";
+  const prop=o.prop?`<div class="sbox" style="margin:10px 0"><b>✨ A IA encontrou ${o.prop.length} orientaç${o.prop.length===1?"ão":"ões"}</b><div class="small muted">Confira, ajuste e desmarque o que não serve. Só salva o que estiver marcado.</div>
+    ${o.prop.map((p,i)=>`<div class="sbox" style="margin:8px 0 0"><label class="small"><input type="checkbox" data-op="s" data-i="${i}" ${p.sel!==false?"checked":""}> usar esta</label>
+      ${tipoSel(p.tipo,`data-op="tp" data-i="${i}"`)}<input class="c95in" data-op="ti" data-i="${i}" value="${esc(p.titulo||"")}" style="width:100%;margin-top:6px"><textarea class="c95in" data-op="t" data-i="${i}" rows="3" style="width:100%;margin-top:6px">${esc(p.texto||"")}</textarea>
+      <label class="small">Vale até <input class="c95in" type="date" data-op="d" style="width:auto" data-i="${i}" value="${esc(orAteDia(p.valido_ate))}"></label></div>`).join("")}
+    <div class="acts"><button type="button" class="btn p" data-act="chk95OrLote">Salvar marcadas</button><button type="button" class="btn" data-act="chk95OrDesc">Descartar</button></div></div>`:"";
+  return `<h3>Orientações do cliente · ${esc(cli.marca||"")}</h3><div class="small muted">O que o cliente combinou no grupo do WhatsApp. O operador lê no app e confirma antes da live; se você acrescentar algo depois, a conferência dele reabre e ele recebe um aviso.</div>
+  <div class="sbox" style="margin:10px 0"><b>💬 Colar conversa do grupo</b><div class="small muted">No WhatsApp: segure as mensagens, copie e cole aqui. A IA separa cupom, sorteio, flash sale, overlay e avisos; você revisa antes de salvar.</div>
+    <textarea class="c95in" id="orConv" rows="5" placeholder="Cole aqui as mensagens recentes do grupo…" style="width:100%;margin-top:6px">${esc(o.conv||"")}</textarea>
+    <div class="row" style="gap:6px;margin-top:6px"><button type="button" class="btn sm p" data-act="chk95OrIA" ${o.busy?"disabled":""}>${o.busy?"Lendo…":"✨ Ler com IA"}</button></div></div>
+  ${prop}${form}
+  <div class="row" style="justify-content:space-between;align-items:center;margin-top:12px"><b>Valendo agora (${ativas.length})</b>${ed?"":`<button type="button" class="btn sm" data-act="chk95OrNovo">+ Nova orientação</button>`}</div>
+  <div style="margin-top:8px">${o.list===null?`<div class="muted small">Carregando…</div>`:ativas.length?ativas.map(card).join(""):`<div class="empty">Nada registrado. Se o cliente não combinou nada novo, o operador só confirma que conferiu o grupo.</div>`}</div>
+  ${arq.length?`<details style="margin-top:10px"><summary class="small muted">Arquivadas (${arq.length})</summary><div style="margin-top:8px">${arq.map(card).join("")}</div></details>`:""}
+  <div class="acts"><button type="button" class="btn" data-act="fechar">Fechar</button></div>`}
+async function chk95OrLoad(){const o=S.chk95.or;const r=await db.rpc("imp_orient_listar",{p_cliente:String(o.cli)});
+  if(r.error){toast(traduz(r.error.message),true);o.list=[]}else o.list=r.data||[];if(S.chk95.or===o)orDraw()}
+document.addEventListener("change",async e=>{if(e.target.id!=="orFile")return;const o=S.chk95.or;if(!o||!o.edit)return;orSync();
+  for(const f of [...e.target.files]){if(f.size>8*1048576){toast(`${f.name} passa de 8 MB`,true);continue}
+    const p=`orient/${o.cli}/${Date.now()}-${(f.name||"arquivo").normalize("NFD").replace(/[^\w.\-]+/g,"_")}`;
+    const r=await db.storage.from("implay-check").upload(p,f,{contentType:f.type||undefined});
+    if(r.error){toast("Envio falhou: "+r.error.message,true);continue}o.edit.anexos.push({path:p,nome:f.name})}
+  orDraw()});
+document.addEventListener("click",async e=>{const a=e.target.closest('[data-act^="chk95"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();const c=S.chk95,act=a.dataset.act;
+  if(act==="chk95Rec"){await chk95Load(true);return}
+  if(act==="chk95Copy"){try{await navigator.clipboard.writeText(CHK95_URL);toast("Link copiado")}catch(_){prompt("Copie o link:",CHK95_URL)}return}
+  if(act==="chk95Quem"){const id=a.dataset.id;const nova=c.alerta.includes(id)?c.alerta.filter(x=>x!==id):[...c.alerta,id];
+    try{await run(db.rpc("imp_chk_alerta_salvar",{p_ids:nova}));c.alerta=nova;render()}catch(_){}return}
+  if(act==="chk95Ed"){const r=(c.rows||[]).find(x=>String(x.id)===String(a.dataset.id))||{};c.ed={id:a.dataset.id,list:JSON.parse(JSON.stringify(r.extras||[]))};openSheet(chk95EdHtml());return}
+  if(act.startsWith("chk95Or")){const o=c.or;
+    if(act==="chk95Or"){const j=S.jobs.find(x=>String(x.id)===String(a.dataset.id));if(!j||!j.cliente_id){toast("Esta live não tem cliente cadastrado",true);return}
+      c.or={job:j.id,cli:j.cliente_id,list:null,edit:null,prop:null,conv:"",busy:false};openSheet(chk95OrHtml());chk95OrLoad();return}
+    if(!o)return;orSync();
+    if(act==="chk95OrNovo"){o.edit={id:null,tipo:"cupom",titulo:"",texto:"",ate:"",anexos:[]};orDraw();return}
+    if(act==="chk95OrEd"){const x=(o.list||[]).find(z=>String(z.id)===a.dataset.id);if(!x)return;o.edit={id:x.id,tipo:x.tipo,titulo:x.titulo,texto:x.texto||"",ate:orAteDia(x.valido_ate),anexos:JSON.parse(JSON.stringify(x.anexos||[]))};orDraw();return}
+    if(act==="chk95OrTipo"){if(o.edit)o.edit.tipo=a.dataset.v;orDraw();return}
+    if(act==="chk95OrDelAnx"){if(o.edit)o.edit.anexos.splice(Number(a.dataset.i),1);orDraw();return}
+    if(act==="chk95OrCancel"){o.edit=null;orDraw();return}
+    if(act==="chk95OrSalvar"){const ed=o.edit;if(!ed)return;if((ed.texto||"").trim().length<3&&!(ed.anexos||[]).length){toast("Escreva a orientação ou anexe uma imagem",true);return}
+      try{await run(db.rpc("imp_orient_salvar",{p_cliente:String(o.cli),p_id:ed.id,p_tipo:ed.tipo,p_titulo:ed.titulo||"",p_texto:ed.texto||"",p_valido_ate:orAteIso(ed.ate),p_anexos:ed.anexos||[],p_origem:"manual"}));
+        o.edit=null;toast("Orientação salva ✓ — o operador é avisado");await chk95OrLoad();chk95Load(true)}catch(_){}return}
+    if(act==="chk95OrArq"){try{await run(db.rpc("imp_orient_ativar",{p_id:Number(a.dataset.id),p_ativo:a.dataset.v==="1"}));await chk95OrLoad();chk95Load(true)}catch(_){}return}
+    if(act==="chk95OrDesc"){o.prop=null;orDraw();return}
+    if(act==="chk95OrIA"){if((o.conv||"").trim().length<10){toast("Cole a conversa do grupo primeiro",true);return}o.busy=true;orDraw();
+      try{const r=await db.functions.invoke("check-ia",{body:{modo:"orientacoes",texto:o.conv}});
+        if(r.error||(r.data&&r.data.erro))throw new Error((r.data&&r.data.erro)||r.error.message);
+        const it=(r.data&&r.data.itens)||[];o.prop=it.length?it.map(x=>({...x,sel:true})):null;toast(it.length?`${it.length} orientação(ões) encontrada(s)`:"A IA não achou orientação de live nessa conversa")}
+      catch(err){toast("IA indisponível: "+err.message,true)}
+      o.busy=false;orDraw();return}
+    if(act==="chk95OrLote"){const sel=(o.prop||[]).filter(p=>p.sel!==false&&(p.texto||"").trim());if(!sel.length){toast("Marque ao menos uma",true);return}
+      try{await run(db.rpc("imp_orient_lote",{p_cliente:String(o.cli),p_itens:sel.map(p=>({tipo:p.tipo,titulo:p.titulo,texto:p.texto,valido_ate:p.valido_ate||""}))}));
+        o.prop=null;o.conv="";toast(`${sel.length} orientação(ões) salva(s) ✓ — o operador é avisado`);await chk95OrLoad();chk95Load(true)}catch(_){}return}
+    return}
+  if(!c.ed)return;
+  if(act==="chk95Add"){chk95Sync();c.ed.list.push({titulo:"",detalhe:"",foto:false,origem:"manual"});$("#sheetIn").innerHTML=chk95EdHtml();return}
+  if(act==="chk95Del"){chk95Sync();c.ed.list.splice(Number(a.dataset.i),1);$("#sheetIn").innerHTML=chk95EdHtml();return}
+  if(act==="chk95Save"){try{await chk95Salvar();toast("Itens salvos ✓");closeSheet();chk95Load(true)}catch(_){}return}
+  if(act==="chk95IA"){a.disabled=true;const t0=a.textContent;a.textContent="Pensando…";
+    try{await chk95Salvar();const r=await db.functions.invoke("check-ia",{body:{job_id:String(c.ed.id)}});
+      if(r.error||(r.data&&r.data.erro))throw new Error((r.data&&r.data.erro)||r.error.message);
+      await chk95Load(true);const nr=(c.rows||[]).find(x=>String(x.id)===String(c.ed.id))||{};c.ed.list=JSON.parse(JSON.stringify(nr.extras||[]));$("#sheetIn").innerHTML=chk95EdHtml();
+      toast(r.data&&r.data.itens?`${r.data.itens} sugestão(ões) da IA`:"A IA não viu nada específico para acrescentar")}
+    catch(err){toast("IA indisponível: "+err.message,true);a.disabled=false;a.textContent=t0}return}
+},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>

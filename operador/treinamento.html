@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Check-in pré-live · guia do operador</title>
+<style>
+:root{--noite:#000;--card:#141414;--card2:#1F1F23;--linha:#2A2A2A;--chalk:#F3F3EC;--cinza:#A3A3AB;--volt:#D5FF3F;--ok:#7CE38B;--warn:#FFB547;--bad:#FF5C6C}
+*{box-sizing:border-box}
+body{margin:0;background:var(--noite);color:var(--chalk);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:880px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:clamp(30px,6vw,46px);line-height:1.05;margin:6px 0 10px;letter-spacing:-.02em}
+h2{font-size:26px;line-height:1.15;margin:48px 0 6px;letter-spacing:-.01em}
+h3{font-size:18px;margin:0 0 4px}
+.eb{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--volt);font-weight:700}
+p{margin:8px 0}
+.mut{color:var(--cinza)}
+.card{background:var(--card);border:1px solid var(--linha);border-radius:18px;padding:16px 18px;margin:12px 0}
+.ok{border-color:#1d4a29;background:#12301a}.ok b{color:var(--ok)}
+.bad{border-color:#6b1c28;background:#3a0f16}.bad b{color:#ff9aa5}
+.warn{border-color:#5a4210;background:#33270b}.warn b{color:var(--warn)}
+.tl{list-style:none;padding:0;margin:14px 0;border-left:2px solid var(--linha)}
+.tl li{position:relative;padding:0 0 16px 22px}
+.tl li:before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--volt)}
+.tl li.r:before{background:var(--bad)}.tl li.y:before{background:var(--warn)}
+.tl b{display:block}
+.passo{display:grid;grid-template-columns:240px 1fr;gap:22px;align-items:start;margin:22px 0}
+.passo img{width:240px;border-radius:26px;border:6px solid #222;background:#000;display:block}
+.passo.d{grid-template-columns:1fr}
+.passo.d img{width:100%;border-radius:14px;border:1px solid var(--linha)}
+.n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--volt);color:#000;font-weight:800;margin-right:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:1px solid var(--linha);background:var(--card2);border-radius:999px;padding:6px 12px;font-size:14px}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:15px}
+td,th{border-bottom:1px solid var(--linha);padding:10px 8px;text-align:left;vertical-align:top}
+th{color:var(--cinza);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+ul.c{list-style:none;padding:0;margin:10px 0}
+ul.c li{padding:8px 0 8px 34px;position:relative;border-bottom:1px solid var(--linha)}
+ul.c li:before{content:"☐";position:absolute;left:4px;top:6px;font-size:20px;color:var(--volt)}
+@media(max-width:640px){.passo{grid-template-columns:1fr}.passo img{width:min(260px,100%);margin:0 auto}}
+@media print{body{background:#fff;color:#000}.card{border-color:#999;background:#fff}}
+</style>
+</head>
+<body>
+<div class="w">
+
+<div class="eb">IMPlay · operador</div>
+<h1>Check-in da live: como usar</h1>
+<p class="mut">Antes de cada live você confere tudo no celular, item por item. O sistema guarda quem conferiu, a que horas e com que foto. Leva uns 10 minutos.</p>
+
+<div class="card ok"><b>A regra de ouro:</b> tudo conferido até <b>30 minutos antes</b> da live. O aviso chega <b>45 minutos antes</b>.</div>
+
+<h2>1. Quando você é avisado</h2>
+<ul class="tl">
+  <li><b>1 dia antes</b>A lista da live fica pronta, com itens específicos do cliente. A coordenação revisa.</li>
+  <li><b>45 min antes</b>Chega o aviso no celular: “Check-in da live às HH:MM”. Abra e comece. Se faltar item, repete aos 40 e aos 35 min.</li>
+  <li class="y"><b>30 min antes: prazo</b>Se ainda faltar item, você recebe “ATRASADO” e a coordenação também é avisada.</li>
+  <li class="r"><b>Do prazo até o início</b>O aviso repete a cada 5 minutos até você concluir.</li>
+  <li><b>Qualquer hora</b>Se o cliente combinar algo novo no grupo (cupom, sorteio, flash, overlay), você recebe um aviso e o item das orientações volta a ficar pendente.</li>
+</ul>
+
+<h2>2. Primeiro acesso (uma vez só)</h2>
+<div class="card">
+  <p><span class="n">1</span><b>Instale o app na Tela de Início.</b> No iPhone, abra o endereço no <b>Safari</b>, toque em <b>Compartilhar</b> (quadrado com seta) e em <b>Adicionar à Tela de Início</b>. Depois abra sempre pelo ícone novo.</p>
+  <p><span class="n">2</span><b>Entre</b> com o mesmo e-mail e senha do ERP.</p>
+  <p><span class="n">3</span><b>Toque em “Ativar avisos”</b> e permita as notificações. Você recebe um aviso de teste na hora.</p>
+</div>
+<div class="card warn"><b>Atenção no iPhone:</b> sem instalar na Tela de Início, o aviso não chega. E se o celular estiver em modo <b>Foco / Não Perturbe</b> ou com o app silenciado, o aviso some. Libere as notificações do app “IMPlay Op” nesse modo.</div>
+
+<h2>3. Na hora da live, passo a passo</h2>
+
+<div class="passo">
+  <img src="guia/1-hoje.jpg" alt="Tela Hoje">
+  <div><h3><span class="n">1</span>Tela “Hoje”</h3>
+    <p>Cada cartão é uma live sua: marca, horário, quantos itens faltam e a barra de progresso. A cor da barra mostra a urgência:</p>
+    <div class="chips"><span class="chip">cinza/amarelo: no prazo</span><span class="chip">vermelho: atrasado ou com problema</span><span class="chip">verde: tudo conferido ✅</span></div>
+    <p>Toque no cartão da próxima live.</p></div>
+</div>
+
+<div class="passo">
+  <img src="guia/2-live.jpg" alt="Tela da live">
+  <div><h3><span class="n">2</span>Dentro da live</h3>
+    <p>No topo fica sempre o <b>prazo</b> (“faltam 20 min”) e quantos itens estão feitos. Logo abaixo, as <b>Orientações do cliente</b> e o <b>Briefing</b>: leia antes de começar.</p>
+    <p>Os itens aparecem em blocos: Equipamento, Conta e plataforma, Briefing, Cenário e amostras, Pessoas.</p></div>
+</div>
+
+<div class="passo">
+  <img src="guia/3-itens.jpg" alt="Itens do checklist">
+  <div><h3><span class="n">3</span>Marcando os itens</h3>
+    <p>Toque no <b>círculo</b> para marcar OK nos itens simples. Toque no <b>texto</b> para abrir o item e ver os detalhes.</p>
+    <p>Itens com orientação do cliente (cupom, sorteio, flash, overlay) sempre abrem a tela com o que foi combinado, para você ler antes de confirmar.</p>
+    <p class="mut">Só marque OK depois de conferir de verdade. A marca fica registrada com seu nome e horário.</p></div>
+</div>
+
+<div class="passo">
+  <img src="guia/4-orientacoes.jpg" alt="Orientações do cliente">
+  <div><h3><span class="n">4</span>Orientações do cliente (grupo do WhatsApp)</h3>
+    <p>Aqui ficam o cupom, o sorteio, a flash sale, as imagens de overlay e os avisos que o cliente combinou. A coordenação lança isso no ERP.</p>
+    <p><b>Mesmo assim, abra o grupo do cliente no WhatsApp e confira se tem algo mais recente.</b> Se faltar algo aqui, toque em <b>Problema</b> e escreva o que falta. A coordenação é avisada na hora.</p>
+    <p><b>Overlay:</b> toque na imagem para abrir; segure para salvar no celular e carregue na live. Teste antes de começar.</p></div>
+</div>
+
+<div class="passo">
+  <img src="guia/5-precos.jpg" alt="Conferir preços">
+  <div><h3><span class="n">5</span>Preços da flash sale</h3>
+    <p>A tela mostra o preço base e o preço da flash do briefing. Digite o preço que está <b>na plataforma</b> (TikTok ou Instagram), produto por produto.</p>
+    <p>Se não bater com o briefing, o sistema <b>não deixa</b> marcar OK. Corrija na plataforma. Se a flash sale não for possível, toque em <b>Problema</b> e avise antes.</p></div>
+</div>
+
+<div class="passo">
+  <img src="guia/6-foto.jpg" alt="Item com foto">
+  <div><h3><span class="n">6</span>Itens com foto</h3>
+    <p>Três itens pedem foto: <b>print da flash sale</b>, <b>amostras</b> e <b>cenário</b>. Toque em “Tirar foto”, tire a foto e confirme. Sem foto, não dá para marcar OK.</p></div>
+</div>
+
+<h2>4. OK, Problema ou Não se aplica?</h2>
+<table>
+  <tr><th>Botão</th><th>Quando usar</th><th>O que acontece</th></tr>
+  <tr><td><b>✅ OK</b></td><td>Conferiu e está certo.</td><td>Fica salvo com seu nome e a hora.</td></tr>
+  <tr><td><b>⚠️ Problema</b></td><td>Algo não está certo ou falta algo (equipamento falhou, preço não bate, orientação faltando).</td><td>Você escreve o motivo e a coordenação recebe o aviso na hora. O checklist não fecha até resolver.</td></tr>
+  <tr><td><b>Não se aplica</b></td><td>O item não existe nessa live (ex.: sem flash sale).</td><td>Você escreve o motivo. Conta como resolvido.</td></tr>
+</table>
+<div class="card bad"><b>Nunca marque OK “para ir adiantando”.</b> Se não conferiu, deixe pendente. Marcar errado é pior do que atrasar o aviso.</div>
+
+<h2>5. Terminou</h2>
+<p>Com todos os itens resolvidos, aparece <b>“Checklist salvo: você conferiu tudo às HH:MM”</b> e o cartão fica verde. Pronto. Se o cliente combinar algo novo depois, o item das orientações volta a ficar pendente e você é avisado.</p>
+<div class="card"><b>Sem sinal?</b> As marcações ficam guardadas no celular e são enviadas quando a internet voltar (aparece “não enviado”). Fotos precisam de sinal.</div>
+
+<h2>6. Para a coordenação</h2>
+<div class="passo d">
+  <img src="guia/7-erp-painel.jpg" alt="Painel do ERP">
+  <div><h3>No ERP: Lives › Checklist do dia</h3>
+    <p>Uma linha por live: progresso, operador, quem fechou e a que horas, e os itens com problema (em vermelho). Aqui também se escolhe <b>quem recebe os avisos de atraso</b> (sem ninguém marcado, vão todos os sócios).</p>
+    <p>O botão <b>📣 Orientações do cliente</b> abre o cadastro do que o cliente combinou. O botão <b>📝 Itens do cliente</b> edita os itens extras daquela live (a IA sugere, você revisa).</p></div>
+</div>
+<div class="passo d">
+  <img src="guia/8-erp-orientacoes.jpg" alt="Orientações do cliente no ERP">
+  <div><h3>Lançando as orientações do grupo</h3>
+    <p><b>Opção rápida:</b> copie as mensagens recentes do grupo, cole na caixa e toque em <b>Ler com IA</b>. Ela separa cupom, sorteio, flash sale, overlay e avisos. <b>Você revisa, ajusta e salva</b>: a IA pode errar, nada vai para o operador sem você aprovar.</p>
+    <p><b>Opção manual:</b> “+ Nova orientação”, escolha o tipo, escreva e anexe imagens (overlay, regulamento do sorteio).</p>
+    <p>Ao salvar, o operador recebe o aviso e a conferência das orientações volta a ficar pendente para ele. Orientação vencida ou arquivada sai sozinha da live.</p></div>
+</div>
+
+<h2>7. Roteiro de treino (20 minutos)</h2>
+<p class="mut">Faça com o operador, no celular dele, usando uma live de teste.</p>
+<ul class="c">
+  <li><b>Instalar e entrar:</b> app na Tela de Início, login, “Ativar avisos”, receber o aviso de teste.</li>
+  <li><b>Silenciar não vale:</b> mostrar onde liberar as notificações do app no modo Foco / Não Perturbe.</li>
+  <li><b>Fazer um checklist inteiro</b> da live de teste, do começo ao “salvo”.</li>
+  <li><b>Preço errado de propósito:</b> digitar um preço diferente e ver o sistema recusar.</li>
+  <li><b>Item com foto:</b> tirar a foto do cenário e confirmar.</li>
+  <li><b>Problema:</b> marcar um item com problema, escrever o motivo e ver o aviso chegar na coordenação.</li>
+  <li><b>Orientações:</b> a coordenação lança um cupom e uma imagem de overlay; o operador recebe o aviso, abre a imagem, salva e confirma de novo.</li>
+  <li><b>Combinar o hábito:</b> abrir o grupo do cliente no WhatsApp antes de confirmar as orientações.</li>
+</ul>
+<div class="card warn"><b>Primeira semana:</b> a coordenação acompanha o painel em cada live e conversa com quem atrasar. Depois de 1 ou 2 lives sem erro, o operador segue sozinho.</div>
+
+<h2>Dúvidas comuns</h2>
+<div class="card"><b>Não recebi o aviso.</b><br>Confira: app instalado pela Tela de Início, “Ativar avisos” tocado, celular fora do Foco / Não Perturbe. Se ainda falhar, avise a coordenação: ela também vê quando o operador não ativou os avisos.</div>
+<div class="card"><b>A live é minha mas não aparece.</b><br>A coordenação precisa te escolher como operador da live no ERP.</div>
+<div class="card"><b>Errei uma marcação.</b><br>Toque no item e em <b>Desmarcar</b>, ou marque de novo. O histórico guarda as duas.</div>
+<div class="card"><b>O preço da flash não bate com o briefing.</b><br>Não marque OK. Toque em <b>Problema</b>: a coordenação corrige o briefing ou a flash antes da live.</div>
+
+</div>
+</body>
+</html>
