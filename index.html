@@ -690,6 +690,7 @@ const LOGO_LIMA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAACJCAYAAAABi
 "use strict";
 const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
 const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
+const REC_SENHA=/type=recovery/.test(location.hash+location.search);
 const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-erp-auth"}});
 
 const ESPACOS=["01","02","03","04","05","11","12","13","14","15","16","17","18","21","22","23","24","25","26","27","31","32","33"];
@@ -2639,8 +2640,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="94";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="95";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["95","25/11","Esqueci a senha: ao abrir o link do e-mail, a tela de criar a senha nova agora abre sempre."],
  ["94","24/11","Central do cliente: lista os contratos que ainda não foram marcados como assinados, com o botão “✅ Já está assinado”. Ao marcar, o cliente passa a aparecer na Central."],
  ["93","24/11","🔑 Esqueci a senha agora funciona sozinho: a pessoa digita o e-mail, recebe um link e cria a senha nova, sem precisar de sócio."],
  ["92","24/11","📊 Relatórios → Por live: cada live realizada com GMV, GMV por hora, pedidos, itens, visualizações e nota; filtro por marca e período, totais no topo e CSV. No resumo da live, botão “Ver relatório”."],
@@ -3776,7 +3778,8 @@ document.addEventListener("click",e=>{const a=e.target.closest("#esqueci");if(!a
   if(!/@/.test(em))em=(prompt("Digite o seu e-mail de acesso:")||"").trim();if(!/@/.test(em))return;
   db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname}).then(({error})=>{if(error)return toast("Não deu para enviar: "+error.message+". Peça a um sócio: Equipe › seu nome › Resetar senha.",true);
     toast("Pronto! Enviamos um link para "+em+". Abra o e-mail (veja o spam também) e crie a senha nova.")})},true);
-db.auth.onAuthStateChange(ev=>{if(ev==="PASSWORD_RECOVERY"){S.recSenha=true;setTimeout(()=>{if(typeof openTrocaSenha==="function"){openTrocaSenha();const h=$("#tsF h3");if(h)h.textContent="Crie sua nova senha";const p=$("#tsF p");if(p)p.textContent="Digite a nova senha duas vezes (mínimo 8 caracteres)."}},1500)}});
+if(REC_SENHA){const t0=Date.now();const iv=setInterval(()=>{if(typeof openTrocaSenha==="function"&&typeof S!=="undefined"&&S.me){clearInterval(iv);openTrocaSenha();const h=$("#tsF h3");if(h)h.textContent="Crie sua nova senha";history.replaceState(null,"",location.pathname)}else if(Date.now()-t0>30000)clearInterval(iv)},500)}
+db.auth.onAuthStateChange(ev=>{if(ev==="PASSWORD_RECOVERY"&&!REC_SENHA){S.recSenha=true;setTimeout(()=>{if(typeof openTrocaSenha==="function"){openTrocaSenha();const h=$("#tsF h3");if(h)h.textContent="Crie sua nova senha";const p=$("#tsF p");if(p)p.textContent="Digite a nova senha duas vezes (mínimo 8 caracteres)."}},1500)}});
 const _renderLoginES=renderLogin;renderLogin=function(...a){_renderLoginES(...a);const h=document.querySelector("#lf .hint");if(h&&!document.getElementById("esqueci"))h.insertAdjacentHTML("beforebegin",`<div style="text-align:center;margin:8px 0"><a href="#" id="esqueci" class="small">Esqueci a senha</a></div>`)};
 const _openMembroRS=openMembro;openMembro=function(id){_openMembroRS(id);const m=id&&S.membros.find(x=>x.id===id);
   if(!m||!isSocio()||!["socio","basico"].includes(m.papel)||!m.email)return;const acts=document.querySelector("#sheetIn form .acts");if(!acts)return;
