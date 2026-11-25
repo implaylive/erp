@@ -15,7 +15,7 @@ async function autorizado(req: Request): Promise<boolean> {
   if (!tk) return false;
   const { data } = await sb.auth.getUser(tk);
   if (!data?.user) return false;
-  const { data: m } = await sb.from("imp_membros").select("papel,status").eq("id", data.user.id).maybeSingle();
+  const { data: m } = await sb.from("imp_membros").select("papel,status").eq("user_id", data.user.id).maybeSingle();
   return !!m && m.status === "ativo" && ["socio", "basico"].includes(m.papel);
 }
 

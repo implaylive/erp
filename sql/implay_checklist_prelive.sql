@@ -98,6 +98,14 @@ alter table public.imp_check_config  enable row level security;
 revoke all on public.imp_check_marcas, public.imp_check_hist, public.imp_check_envios,
               public.imp_push_subs, public.imp_check_config from public, anon, authenticated;
 alter table public.imp_cli_orient enable row level security;
+
+-- Quem está logado, como membro da IMPlay (imp_membros.user_id = login). Os ids de membro (operador_id etc.) não são o id do login.
+create or replace function public.imp_chk_eu() returns uuid
+language sql stable security definer set search_path = public as $$
+  select id from public.imp_membros where user_id = auth.uid() limit 1
+$$;
+revoke all on function public.imp_chk_eu() from public, anon;
+grant execute on function public.imp_chk_eu() to authenticated;
 revoke all on public.imp_cli_orient from public, anon, authenticated;
 revoke all on sequence public.imp_cli_orient_id_seq from public, anon, authenticated;
 
@@ -213,7 +221,7 @@ language plpgsql stable security definer set search_path = public as $$
 declare m record;
 begin
   select id, papel, nome into m from public.imp_membros
-   where id = auth.uid() and status='ativo' and papel in ('operador','basico','socio');
+   where id = public.imp_chk_eu() and status='ativo' and papel in ('operador','basico','socio');
   if not found then return null; end if;
   return jsonb_build_object('id', m.id, 'nome', m.nome, 'papel', m.papel,
     'coord', m.papel in ('socio','basico') or m.id = any(public.imp_chk_coord_ids()));
@@ -231,7 +239,7 @@ begin
     select * from public.imp_jobs
      where status = 'aberto'
        and inicio::timestamptz between now() - interval '3 hours' and now() + make_interval(days => greatest(1, least(p_dias, 7)))
-       and (coord or operador_id = auth.uid())
+       and (coord or operador_id = public.imp_chk_eu())
      order by inicio
   loop
     itens := coalesce(j.checklist_itens, public.imp_chk_garantir(j.id::text));
@@ -256,7 +264,7 @@ begin
       'central', jsonb_build_object('produtos', cl.central->'produtos', 'cupons', cl.central->'cupons',
                   'links', cl.central->'links', 'nao_falar', cl.central->'nao_falar'),
       'orient', ori, 'orient_reaberta', rea,
-      'itens', itens, 'marcas', ms, 'pronto_em', j.checklist_pronto_em, 'meu', j.operador_id = auth.uid());
+      'itens', itens, 'marcas', ms, 'pronto_em', j.checklist_pronto_em, 'meu', j.operador_id = public.imp_chk_eu());
   end loop;
   return r;
 end $$;
@@ -269,14 +277,14 @@ begin
   if eu is null then raise exception 'sem acesso'; end if;
   select * into j from public.imp_jobs where id::text = p_job;
   if not found then raise exception 'live não encontrada'; end if;
-  if not ((eu->>'coord')::boolean or j.operador_id = auth.uid()) then raise exception 'esta live não é sua'; end if;
+  if not ((eu->>'coord')::boolean or j.operador_id = public.imp_chk_eu()) then raise exception 'esta live não é sua'; end if;
   if p_estado not in ('ok','problema','na','limpar') then raise exception 'estado inválido'; end if;
   select x into it from jsonb_array_elements(coalesce(j.checklist_itens, public.imp_chk_garantir(p_job))) x where x->>'id' = p_item;
   if it is null then raise exception 'item não existe nesta live'; end if;
 
   if p_estado = 'limpar' then
     delete from public.imp_check_marcas where job_id::text = p_job and item = p_item;
-    insert into public.imp_check_hist(job_id,item,estado,por) values (j.id,p_item,'limpar',auth.uid());
+    insert into public.imp_check_hist(job_id,item,estado,por) values (j.id,p_item,'limpar',public.imp_chk_eu());
     perform public.imp_chk_fechar(p_job);
     return jsonb_build_object('ok', true);
   end if;
@@ -303,11 +311,11 @@ begin
   end if;
 
   insert into public.imp_check_marcas(job_id,item,estado,valor,nota,foto_path,por,em)
-  values (j.id,p_item,p_estado,p_valor,nullif(btrim(coalesce(p_nota,'')),''),nullif(p_foto,''),auth.uid(),now())
+  values (j.id,p_item,p_estado,p_valor,nullif(btrim(coalesce(p_nota,'')),''),nullif(p_foto,''),public.imp_chk_eu(),now())
   on conflict (job_id,item) do update set estado=excluded.estado, valor=excluded.valor, nota=excluded.nota,
      foto_path=coalesce(excluded.foto_path, public.imp_check_marcas.foto_path), por=excluded.por, em=excluded.em;
   insert into public.imp_check_hist(job_id,item,estado,valor,nota,foto_path,por)
-  values (j.id,p_item,p_estado,p_valor,nullif(btrim(coalesce(p_nota,'')),''),nullif(p_foto,''),auth.uid());
+  values (j.id,p_item,p_estado,p_valor,nullif(btrim(coalesce(p_nota,'')),''),nullif(p_foto,''),public.imp_chk_eu());
   perform public.imp_chk_fechar(p_job);
   return jsonb_build_object('ok', true, 'pronto_em', (select checklist_pronto_em from public.imp_jobs where id::text = p_job));
 end $$;
@@ -316,13 +324,13 @@ create or replace function public.imp_op_push_salvar(p_sub jsonb, p_aparelho tex
 language plpgsql security definer set search_path = public as $$
 begin
   if public.imp_op_entrar() is null then raise exception 'sem acesso'; end if;
-  insert into public.imp_push_subs(endpoint, membro_id, sub, aparelho) values (p_sub->>'endpoint', auth.uid(), p_sub, p_aparelho)
-  on conflict (endpoint) do update set membro_id = auth.uid(), sub = excluded.sub, aparelho = excluded.aparelho;
+  insert into public.imp_push_subs(endpoint, membro_id, sub, aparelho) values (p_sub->>'endpoint', public.imp_chk_eu(), p_sub, p_aparelho)
+  on conflict (endpoint) do update set membro_id = public.imp_chk_eu(), sub = excluded.sub, aparelho = excluded.aparelho;
 end $$;
 
 create or replace function public.imp_op_push_remover(p_endpoint text) returns void
 language sql security definer set search_path = public as $$
-  delete from public.imp_push_subs where endpoint = p_endpoint and membro_id = auth.uid()
+  delete from public.imp_push_subs where endpoint = p_endpoint and membro_id = public.imp_chk_eu()
 $$;
 
 -- Coordenação: salvar os itens do cliente (depois de revisar a sugestão da IA) e quem recebe os alertas.
@@ -413,13 +421,13 @@ begin
   tit := left(coalesce(nullif(btrim(coalesce(p_titulo,'')),''), nullif(txt,''), 'Imagem'), 80);
   if p_id is null then
     insert into public.imp_cli_orient(cliente_id, tipo, titulo, texto, valido_ate, anexos, origem, por)
-      select id, p_tipo, tit, left(txt, 2000), p_valido_ate, anx, case when p_origem = 'ia' then 'ia' else 'manual' end, auth.uid()
+      select id, p_tipo, tit, left(txt, 2000), p_valido_ate, anx, case when p_origem = 'ia' then 'ia' else 'manual' end, public.imp_chk_eu()
         from public.imp_clientes where id::text = p_cliente
       returning id into v;
     if v is null then raise exception 'cliente não encontrado'; end if;
   else
     update public.imp_cli_orient set tipo = p_tipo, titulo = tit, texto = left(txt, 2000), valido_ate = p_valido_ate,
-           anexos = anx, por = auth.uid(), mudou_em = now()
+           anexos = anx, por = public.imp_chk_eu(), mudou_em = now()
      where id = p_id and cliente_id::text = p_cliente returning id into v;
     if v is null then raise exception 'orientação não encontrada'; end if;
   end if;
@@ -446,7 +454,7 @@ language plpgsql security definer set search_path = public as $$
 declare eu jsonb := public.imp_op_entrar(); c text;
 begin
   if eu is null or (eu->>'papel') not in ('socio','basico') then raise exception 'só a coordenação'; end if;
-  update public.imp_cli_orient set ativo = p_ativo, mudou_em = now(), por = auth.uid() where id = p_id returning cliente_id::text into c;
+  update public.imp_cli_orient set ativo = p_ativo, mudou_em = now(), por = public.imp_chk_eu() where id = p_id returning cliente_id::text into c;
   if c is null then raise exception 'orientação não encontrada'; end if;
   perform public.imp_chk_orient_refresh(c);
 end $$;
