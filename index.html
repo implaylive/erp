@@ -2640,9 +2640,10 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="98";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
+const APP_VERSAO="99";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
 const NOVIDADES=[
- ["98","25/11","📱 Check-in pré-live do operador: app novo (operador/) com checklist de 15 itens da live, fotos de prova, avisos 45 min antes e alerta à coordenação se atrasar. Em Lives › Checklist do dia você acompanha cada live, escolhe quem é avisado e edita os itens do cliente (a IA sugere pelo briefing). 📣 Orientações do cliente: cole a conversa do grupo do WhatsApp e a IA separa cupom, sorteio, flash sale, overlay e avisos (você revisa e salva; pode anexar as imagens de overlay). O operador lê no app e a conferência reabre, com aviso, se o cliente combinar algo novo."],
+ ["99","25/11","📱 Check-in pré-live do operador: app novo (operador/) com checklist de 15 itens da live, fotos de prova, avisos 45 min antes e alerta à coordenação se atrasar. Em Lives › Checklist do dia você acompanha cada live, escolhe quem é avisado e edita os itens do cliente (a IA sugere pelo briefing). 📣 Orientações do cliente: cole a conversa do grupo do WhatsApp e a IA separa cupom, sorteio, flash sale, overlay e avisos (você revisa e salva; pode anexar as imagens de overlay). O operador lê no app e a conferência reabre, com aviso, se o cliente combinar algo novo."],
+ ["98","25/11","“Contratos ativos” agora é o mesmo número no Painel, no Funil, em Propostas e na Central: cliente com contrato assinado. Clicando, abre a Central. Na Central, cada cliente aparece uma vez só na lista de contratos para marcar como assinado."],
  ["97","25/11","Link direto para recuperar senha: implaylive.github.io/erp/?esqueci"],
  ["96","25/11","Esqueci a senha: o link do e-mail abre direto uma tela própria para criar a senha nova (funciona no Safari do iPhone, mesmo sem estar logado). Se o link venceu, avisa e mostra como pedir outro."],
  ["95","25/11","Esqueci a senha: ao abrir o link do e-mail, a tela de criar a senha nova agora abre sempre."],
@@ -5048,12 +5049,12 @@ document.addEventListener("click",e=>{const a=e.target.closest('[data-act="dsRel
 
 /* ================= v94 · central: contratos para marcar como assinados ================= */
 const _cenLista94=cenLista;cenLista=function(){const h=_cenLista94.apply(this,arguments);if(S.cenTodas)return h;
-  const pend=ctrUltimas().filter(c=>["aprovado","enviado"].includes(c.status)&&!(S.ctrs||[]).some(x=>x.cliente_id===c.cliente_id&&x.status==="assinado"));if(!pend.length)return h;
+  const _pp=ctrUltimas().filter(c=>["aprovado","enviado"].includes(c.status)&&!(S.ctrs||[]).some(x=>x.cliente_id===c.cliente_id&&x.status==="assinado"));const _vis=new Set();const pend=_pp.sort((a,b)=>(b.numero||0)-(a.numero||0)).filter(c=>{const k=c.cliente_id||c.marca;if(_vis.has(k))return false;_vis.add(k);return true});if(!pend.length)return h;
   const box=`<div class="sbox" style="margin:0 0 14px;border-color:var(--volt)"><b>📝 ${pend.length} contrato${pend.length>1?"s":""} ainda não marcado${pend.length>1?"s":""} como assinado</b><div class="small muted" style="margin:4px 0 10px">A Central mostra só cliente com contrato <b>assinado</b>. Se já foi assinado, clique no botão e o cliente aparece aqui.</div>
    ${pend.map(c=>`<div class="row" style="justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line)"><span><b>${esc(c.marca||cliNome(c.cliente_id)||"")}</b> <span class="small muted">${ctn(c.numero)} · ${c.status==="enviado"?"enviado, aguardando assinatura":"pronto para enviar"}</span></span><button type="button" class="btn p sm" data-act="ctrAssinou" data-id="${c.id}">✅ Já está assinado</button></div>`).join("")}</div>`;
   const i=h.indexOf('<div class="empty">Nenhuma marca');const k=i>=0?i:h.indexOf('<div class="cgrid">');return h.slice(0,k)+box+h.slice(k)};
 const _ctrInfo94=openCtrInfo;openCtrInfo=function(){if(S.tab==="central"){closeSheet();render();return}return _ctrInfo94.apply(this,arguments)};
-/* ================= v98 · CHECK-IN PRÉ-LIVE DO OPERADOR (app operador/) ================= */
+/* ================= v99 · CHECK-IN PRÉ-LIVE DO OPERADOR (app operador/) ================= */
 (function(){const st=document.createElement("style");st.textContent=".c95in{box-sizing:border-box;background:var(--card);border:1px solid var(--linha);border-radius:11px;padding:10px 12px;min-height:42px;font-size:16px;color:var(--chalk);max-width:100%}textarea.c95in{min-height:72px;resize:vertical}";document.head.appendChild(st)})();
 S.chk95={rows:null,erro:null,alerta:[],t:0,ed:null,or:null,carregando:false};
 const CHK95_URL=location.origin+location.pathname.replace(/[^/]*$/,"")+"operador/";
@@ -5196,6 +5197,16 @@ document.addEventListener("click",async e=>{const a=e.target.closest('[data-act^
       toast(r.data&&r.data.itens?`${r.data.itens} sugestão(ões) da IA`:"A IA não viu nada específico para acrescentar")}
     catch(err){toast("IA indisponível: "+err.message,true);a.disabled=false;a.textContent=t0}return}
 },true);
+
+/* ================= v98 · "contrato ativo" igual em todo o ERP (= contrato assinado) ================= */
+function ctrAtivosInfo(){const cls=(S.clientes||[]).filter(c=>cenAtivo(c));let fixo=0;
+  try{crsLinhas().filter(x=>x.st==="assinado").forEach(x=>fixo+=x.fixo||0)}catch(_){}return {n:cls.length,fixo}}
+const _render98=render;render=function(){const r=_render98.apply(this,arguments);try{const a=ctrAtivosInfo();
+  document.querySelectorAll("#main .mk").forEach(m=>{const l=m.querySelector(".l");if(!l||!/^Contratos ativos/i.test(l.textContent.trim()))return;
+    m.querySelector(".n").textContent=a.n;let sb=m.querySelector(".s");if(!sb){sb=document.createElement("div");sb.className="s";m.appendChild(sb)}sb.textContent=a.fixo?brlK(a.fixo)+"/mês fixo":"contratos assinados";m.style.cursor="pointer";m.dataset.act="goCentral"});
+  document.querySelectorAll("#main .stage").forEach(m=>{const h=m.querySelector(".h");if(!h||!/Contratos ativos/i.test(h.textContent))return;const n=m.querySelector(".n");if(n)n.innerHTML=`${a.n}<small>${a.fixo?brl(a.fixo)+"/mês":"assinados"}</small>`;m.dataset.act="goCentral"});
+ }catch(e){console.warn(e)}return r};
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="goCentral"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();S.tab="central";S.cenCli=null;S.cenTodas=false;render();window.scrollTo(0,0)},true);
 if(!orcPreviewBoot())boot();
 </script>
 <script>
