@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IMPlay Operador</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="IMPlay Op">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-operador-v1.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-operador-v1.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,700;12..96,75..100,800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{--fh:"Bricolage Grotesque",Inter,system-ui,sans-serif;--noite:#000;--card:#141414;--card2:#1F1F23;--linha:#2A2A2A;--chalk:#F3F3EC;--cinza:#A3A3AB;--volt:#D5FF3F;--flash:#EF8FC4;--ok:#7CE38B;--warn:#FFB547;--bad:#FF5C6C}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--noite);color:var(--chalk);font-family:Figtree,system-ui,sans-serif;font-size:16px;overflow-x:hidden}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--fh);margin:0;letter-spacing:-.01em}
+.wrap{max-width:640px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom))}
+.logo{font-family:var(--fh);font-weight:800;font-size:24px;color:var(--volt);text-shadow:3px 3px 0 var(--flash);line-height:1}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--flash)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.who{font-size:13px;color:var(--cinza);text-align:right}
+.btn{border:1px solid var(--linha);background:var(--card2);border-radius:999px;padding:13px 18px;font-weight:800;min-height:48px;cursor:pointer;width:100%}
+.btn.p{background:var(--volt);color:#000;border-color:var(--volt)}
+.btn.ok{background:var(--ok);color:#06210d;border-color:var(--ok)}
+.btn.bad{background:transparent;color:var(--bad);border-color:#5d1a24}
+.btn.sm{width:auto;min-height:38px;padding:8px 14px;font-size:13px}
+.btn:disabled{opacity:.4}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;border:1px solid var(--linha);background:var(--card);border-radius:999px;padding:10px 6px;font-weight:800;min-height:46px;font-size:14px}
+.tabs button.on{background:var(--volt);color:#000;border-color:var(--volt)}
+.card{background:var(--card);border:1px solid var(--linha);border-radius:20px;padding:16px;margin-bottom:12px}
+.muted{color:var(--cinza)}.small{font-size:13px}
+.empty{color:var(--cinza);text-align:center;padding:34px 10px;border:1px dashed var(--linha);border-radius:18px}
+.fld{margin-top:14px}.fld label{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--cinza);margin-bottom:6px}
+.fld input,.fld textarea{width:100%;background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:13px;min-height:50px;font-size:16px}
+.warnbox{background:#3a2a0b;border:1px solid #5a4110;color:var(--warn);border-radius:14px;padding:12px 14px;font-size:14px;margin-bottom:12px;line-height:1.45}
+.okbox{background:#12301a;border:1px solid #1d4a29;color:var(--ok);border-radius:14px;padding:12px 14px;font-size:14px;margin-bottom:12px}
+.badbox{background:#3a0f16;border:1px solid #6b1c28;color:#ff9aa5;border-radius:14px;padding:12px 14px;font-size:14px;margin-bottom:12px;font-weight:700}
+/* cartão de live */
+.lv{display:block;width:100%;text-align:left;cursor:pointer}
+.lv .hd{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.lv .mk{font-family:var(--fh);font-weight:800;font-size:21px;overflow-wrap:anywhere;line-height:1.1}
+.lv .qd{font-weight:700;margin-top:6px}
+.chip{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:4px 9px;border:1px solid var(--linha);background:var(--card2);white-space:nowrap}
+.chip.g{background:#12301a;color:var(--ok);border-color:#1d4a29}.chip.y{background:#3a2a0b;color:var(--warn);border-color:#5a4110}.chip.r{background:#3a0f16;color:#ff9aa5;border-color:#6b1c28}.chip.v{background:var(--volt);color:#000;border-color:var(--volt)}
+.bar{height:10px;border-radius:99px;background:#26262b;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--warn);transition:width .35s}
+.bar.g i{background:var(--ok)}.bar.r i{background:var(--bad)}
+.cnt{font-family:var(--fh);font-weight:800;font-size:26px;margin-top:10px}
+.cnt small{font:600 13px Figtree;color:var(--cinza)}
+/* tela da live */
+.sticky{position:sticky;top:0;z-index:5;background:linear-gradient(#000 82%,transparent);padding:calc(8px + env(safe-area-inset-top)) 16px 12px;margin:0 -16px}
+.back{background:none;border:0;color:var(--cinza);font-weight:700;padding:6px 0;min-height:40px}
+.prazo{border-radius:16px;padding:12px 14px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:800}
+.prazo.g{background:#12301a;color:var(--ok)}.prazo.y{background:#3a2a0b;color:var(--warn)}.prazo.r{background:#3a0f16;color:#ff9aa5;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.62}}
+.bloco{margin-top:20px}
+.bloco h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--cinza);display:flex;justify-content:space-between;margin-bottom:8px}
+.it{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--linha);border-radius:18px;padding:14px;margin-bottom:8px;cursor:pointer;min-height:72px}
+.it .tk{flex:none;width:44px;height:44px;border-radius:50%;border:2.5px solid #4a4a52;display:grid;place-items:center;font-size:22px;font-weight:900}
+.it.ok{border-color:#1d4a29}.it.ok .tk{background:var(--ok);border-color:var(--ok);color:#06210d}
+.it.problema{border-color:#6b1c28;background:#1d0b0f}.it.problema .tk{background:var(--bad);border-color:var(--bad);color:#2a0007}
+.it.na{opacity:.6}.it.na .tk{border-style:dashed;font-size:13px;color:var(--cinza)}
+.it .tt{font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.it .ds{font-size:13px;color:var(--cinza);margin-top:3px;line-height:1.35;overflow-wrap:anywhere}
+.it .mt{font-size:12px;color:var(--cinza);margin-top:5px}
+.it .ic{margin-left:auto;flex:none;font-size:18px}
+.ia{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--flash);margin-left:6px}
+/* folha de item */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.72);display:flex;align-items:flex-end}
+.sheet>div{background:#101012;border:1px solid var(--linha);border-radius:26px 26px 0 0;width:100%;max-width:640px;margin:0 auto;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+.sheet h2{font-size:22px;line-height:1.15}
+.promo{border:1px solid var(--linha);border-radius:14px;padding:12px;margin-top:10px}
+.promo b{display:block;overflow-wrap:anywhere}
+.promo .pp{display:flex;gap:12px;margin:6px 0;font-size:14px;color:var(--cinza)}
+.promo .pp s{opacity:.7}.promo .pp strong{color:var(--volt)}
+.foto{display:block;border:1.5px dashed #555;border-radius:16px;padding:18px;text-align:center;cursor:pointer;margin-top:14px;font-weight:700}
+.foto img{max-width:100%;border-radius:12px;margin-top:10px;display:block}
+.stack{display:grid;gap:10px;margin-top:16px}
+.brief{white-space:pre-wrap;font-size:15px;line-height:1.5;margin-top:8px;overflow-wrap:anywhere}
+.brief a{color:var(--volt)}
+.ori{border:1px solid var(--linha);border-radius:14px;padding:12px;margin-top:10px;background:var(--card2)}
+.ori .oh{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--cinza)}
+.ori .nv{background:var(--volt);color:#000;border-radius:999px;padding:2px 8px;font-weight:800;font-size:11px}
+.ori .ot{font-weight:800;margin-top:6px;overflow-wrap:anywhere}
+.ori .ox{white-space:pre-wrap;font-size:15px;line-height:1.45;margin-top:4px;overflow-wrap:anywhere}
+.ori .th{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ori .th img{height:84px;max-width:140px;object-fit:contain;border-radius:10px;background:#000;border:1px solid var(--linha)}
+.ori .th a{color:var(--volt);font-size:14px}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:40;background:var(--chalk);color:#000;font-weight:800;border-radius:16px;padding:14px 16px;text-align:center}
+.toast.bad{background:var(--bad);color:#2a0007}
+.fila{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--warn);color:#2b1c00;font-weight:800;font-size:13px;text-align:center;padding:calc(6px + env(safe-area-inset-top)) 10px 6px}
+details.card summary{font-weight:800;cursor:pointer;min-height:28px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SB_URL="https://agdqlnaedojcgivwluty.supabase.co";
+const SB_KEY="sb_publishable_PKGxxrfpduzI7xY1_DWQyQ_cnJA9isP";
+// Chave PÚBLICA do push (gerada com: npx web-push generate-vapid-keys). Vazia = avisos ainda não configurados.
+const VAPID_PUBLIC="";
+const db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"implay-op-auth"}});
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const S={me:null,lives:[],aba:"hoje",live:null,tela:"home",fotoCache:{},pend:0,carregando:false};
+const FILA_K="impl-op-fila";
+const lerFila=()=>{try{return JSON.parse(localStorage.getItem(FILA_K)||"[]")}catch(_){return[]}};
+const salvaFila=f=>{try{localStorage.setItem(FILA_K,JSON.stringify(f))}catch(_){}};
+const hm=iso=>new Date(iso).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+const ymd=d=>new Date(d).toLocaleDateString("sv-SE");
+function diaLabel(iso){const d=ymd(iso),h=ymd(new Date()),a=ymd(new Date(Date.now()+864e5));return d===h?"Hoje":d===a?"Amanhã":new Date(iso).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})}
+const minAte=iso=>(new Date(iso).getTime()-Date.now())/60000;
+function toast(t,bad){const e=document.createElement("div");e.className="toast"+(bad?" bad":"");e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),bad?4200:2000)}
+
+/* ---------- cálculos ---------- */
+const marcaDe=(l,id)=>(l.marcas||[]).find(m=>m.item===id);
+function prog(l){const it=l.itens||[];let ok=0,pr=0;it.forEach(i=>{const m=marcaDe(l,i.id);if(!m)return;if(m.estado==="problema")pr++;else ok++});return{total:it.length,ok,pr,falta:it.length-ok}}
+function status(l){const p=prog(l),m=minAte(l.inicio);
+  if(l.pronto_em)return{k:"g",t:"✅ Pronto às "+hm(l.pronto_em)};
+  if(p.pr)return{k:"r",t:"⚠️ "+p.pr+" com problema"};
+  if(m<=30)return{k:"r",t:"Atrasado · faltam "+p.falta};
+  if(m<=45)return{k:"y",t:"Fazer agora · faltam "+p.falta};
+  return{k:"",t:"Faltam "+p.falta}}
+function cor(l){const p=prog(l);if(l.pronto_em)return"g";if(p.pr||minAte(l.inicio)<=30)return"r";return""}
+
+/* ---------- dados ---------- */
+async function carregar(quieto){if(S.carregando)return;S.carregando=true;
+  const {data,error}=await db.rpc("imp_op_lives",{p_dias:2});S.carregando=false;
+  if(error){if(!quieto)toast("Sem conexão: mostrando o que está salvo",true);return}
+  S.lives=data||[];try{localStorage.setItem("impl-op-cache",JSON.stringify(S.lives))}catch(_){}
+  aplicaFilaLocal();badge();render()}
+function aplicaFilaLocal(){lerFila().forEach(f=>{const l=S.lives.find(x=>String(x.id)===String(f.job));if(!l)return;l.marcas=(l.marcas||[]).filter(m=>m.item!==f.item);if(f.estado!=="limpar")l.marcas.push({item:f.item,estado:f.estado,valor:f.valor,nota:f.nota,por:S.me&&S.me.nome,em:f.em,local:true})});S.pend=lerFila().length}
+function badge(){const n=S.lives.filter(l=>l.meu&&!l.pronto_em&&minAte(l.inicio)<=60*5).length;try{n?navigator.setAppBadge&&navigator.setAppBadge(n):navigator.clearAppBadge&&navigator.clearAppBadge()}catch(_){}}
+
+/* ---------- marcar (com fila se estiver sem sinal) ---------- */
+async function enviar(f){const {data,error}=await db.rpc("imp_op_marcar",{p_job:String(f.job),p_item:f.item,p_estado:f.estado,p_valor:f.valor||null,p_nota:f.nota||null,p_foto:f.foto||null});
+  if(error){const rede=!navigator.onLine||/fetch|network|load failed/i.test(error.message||"");return{erro:error.message,rede}}return{data}}
+async function marcar(l,item,estado,extra={}){
+  const f={job:l.id,item,estado,valor:extra.valor||null,nota:extra.nota||null,foto:extra.foto||null,em:new Date().toISOString()};
+  const ant=(l.marcas||[]).slice();
+  l.marcas=(l.marcas||[]).filter(m=>m.item!==item);if(estado!=="limpar")l.marcas.push({item,estado,valor:f.valor,nota:f.nota,foto_path:f.foto||(marcaDe({marcas:ant},item)||{}).foto_path,por:S.me.nome,em:f.em,local:true});
+  render();
+  const r=await enviar(f);
+  if(r.erro){
+    if(r.rede&&!f.foto){const q=lerFila().filter(x=>!(String(x.job)===String(f.job)&&x.item===item));q.push(f);salvaFila(q);S.pend=q.length;toast("Sem sinal: vai enviar quando voltar");render();return true}
+    l.marcas=ant;render();toast(r.erro,true);return false}
+  if(r.data&&r.data.pronto_em!==undefined)l.pronto_em=r.data.pronto_em;
+  await carregar(true);return true}
+async function esvaziaFila(){let q=lerFila();if(!q.length||!navigator.onLine||!S.me)return;const resto=[];
+  for(const f of q){const r=await enviar(f);if(r.erro&&r.rede)resto.push(f)}
+  salvaFila(resto);S.pend=resto.length;if(resto.length<q.length){toast("Marcações enviadas ✓");carregar(true)}}
+window.addEventListener("online",esvaziaFila);
+
+/* ---------- foto ---------- */
+function comprime(file){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const m=1280,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(new Error("foto")),"image/jpeg",.8)};im.onerror=()=>rej(new Error("não consegui ler a foto"));im.src=u})}
+async function subirFoto(l,item,file){const b=await comprime(file);const cam=`${l.id}/${item}-${Date.now()}.jpg`;const r=await db.storage.from("implay-check").upload(cam,b,{contentType:"image/jpeg"});if(r.error)throw new Error(r.error.message);return cam}
+async function urlFoto(path){if(!path)return"";if(S.fotoCache[path])return S.fotoCache[path];const r=await db.storage.from("implay-check").createSignedUrl(path,3600);if(r.error)return"";S.fotoCache[path]=r.data.signedUrl;return r.data.signedUrl}
+
+/* ---------- avisos (push) ---------- */
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const instalado=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const b64=s=>{const p="=".repeat((4-s.length%4)%4),r=(s+p).replace(/-/g,"+").replace(/_/g,"/"),w=atob(r);return Uint8Array.from([...w].map(c=>c.charCodeAt(0)))};
+function pushStatus(){if(!("serviceWorker" in navigator)||!("PushManager" in window))return ios&&!instalado?"instalar":"sem-suporte";if(!VAPID_PUBLIC)return"sem-chave";if(typeof Notification==="undefined")return"instalar";return Notification.permission==="granted"?"ativo":Notification.permission==="denied"?"negado":"pedir"}
+async function ativaPush(){try{const reg=await navigator.serviceWorker.ready;const p=await Notification.requestPermission();if(p!=="granted"){toast("Sem permissão: ative nas Configurações do iPhone",true);render();return}
+  let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(VAPID_PUBLIC)});
+  const {error}=await db.rpc("imp_op_push_salvar",{p_sub:sub.toJSON(),p_aparelho:(ios?"iPhone":"Android/PC")+" · "+new Date().toLocaleDateString("pt-BR")});if(error)throw new Error(error.message);
+  await reg.showNotification("Avisos ativados ✓",{body:"Você vai receber o check-in 45 min antes de cada live.",icon:"icon-operador-v1.png"});toast("Avisos ativados");render()}catch(e){toast("Não deu: "+e.message,true)}}
+async function garantePush(){if(pushStatus()!=="ativo")return;try{const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();if(sub)db.rpc("imp_op_push_salvar",{p_sub:sub.toJSON(),p_aparelho:(ios?"iPhone":"Android/PC")+" · "+new Date().toLocaleDateString("pt-BR")})}catch(_){}}
+function avisoPush(){const s=pushStatus();
+  if(s==="ativo")return"";
+  if(s==="instalar")return`<div class="warnbox"><b>Instale o app para receber os avisos.</b><br>No iPhone: toque em <b>Compartilhar</b> (quadrado com seta) → <b>Adicionar à Tela de Início</b> → abra o app pelo ícone novo.</div>`;
+  if(s==="pedir")return`<div class="warnbox"><b>Ative os avisos.</b> Sem isso você não é avisado 45 min antes da live.<div class="stack"><button class="btn p" data-a="push">🔔 Ativar avisos</button></div></div>`;
+  if(s==="negado")return`<div class="badbox">Avisos bloqueados. No iPhone: Ajustes → Notificações → IMPlay Op → Permitir.</div>`;
+  if(s==="sem-chave")return`<div class="warnbox">Os avisos ainda não foram configurados no servidor. Fale com a coordenação.</div>`;
+  return`<div class="warnbox">Este aparelho não recebe avisos por aqui.</div>`}
+
+/* ---------- telas ---------- */
+function render(){const A=$("#app");
+  if(!S.me){A.innerHTML=loginHtml();return}
+  const fila=S.pend?`<div class="fila">⏳ ${S.pend} marcação(ões) ainda não enviada(s) — sem sinal</div>`:"";
+  const l=S.tela==="live"?S.lives.find(x=>String(x.id)===String(S.live)):null;
+  if(S.tela==="live"&&!l){S.tela="home"}
+  A.innerHTML=fila+(S.tela==="live"&&l?liveHtml(l):homeHtml());carregaImgs()}
+function loginHtml(){return`<div class="wrap"><div class="top"><div class="logo">IMPlay</div><div class="eyebrow">operador</div></div>
+ <h1 style="font-size:30px;margin:18px 0 6px">Check-in da live</h1><p class="muted">Entre com o mesmo e-mail e senha do ERP.</p>
+ <form id="lg"><div class="fld"><label>E-mail</label><input name="email" type="email" autocomplete="username" required></div>
+ <div class="fld"><label>Senha</label><input name="password" type="password" autocomplete="current-password" required></div>
+ <div class="stack"><button class="btn p" type="submit">Entrar</button><button class="btn" type="button" data-a="esqueci">Esqueci a senha</button></div><div id="lgErr" class="badbox" hidden></div></form></div>`}
+function homeHtml(){
+  const coord=S.me.coord;const hoje=ymd(new Date()),amanha=ymd(new Date(Date.now()+864e5));
+  let L=S.lives.filter(l=>S.aba==="coord"?true:l.meu);
+  if(S.aba==="hoje")L=L.filter(l=>ymd(l.inicio)<=hoje);else if(S.aba==="amanha")L=L.filter(l=>ymd(l.inicio)===amanha);
+  const abas=`<div class="tabs"><button data-a="aba" data-v="hoje" class="${S.aba==="hoje"?"on":""}">Hoje</button><button data-a="aba" data-v="amanha" class="${S.aba==="amanha"?"on":""}">Amanhã</button>${coord?`<button data-a="aba" data-v="coord" class="${S.aba==="coord"?"on":""}">Coordenação</button>`:""}</div>`;
+  const cards=L.map(l=>{const p=prog(l),st=status(l),m=minAte(l.inicio),pc=p.total?Math.round(p.ok/p.total*100):0;
+   return`<button class="card lv" data-a="abrir" data-v="${esc(l.id)}"><div class="hd"><div><div class="mk">${esc(l.marca||"Live")}</div><div class="qd">${diaLabel(l.inicio)} · ${hm(l.inicio)}${l.plataforma?" · "+esc(l.plataforma):""}</div></div><span class="chip ${st.k}">${esc(st.t)}</span></div>
+   <div class="small muted" style="margin-top:6px">${S.aba==="coord"?(l.operador?"🎛 "+esc(l.operador):"<b style='color:var(--bad)'>Sem operador</b>")+" · ":""}${l.seller?"Seller: "+esc(l.seller):"Sem seller"}</div>
+   <div class="bar ${cor(l)}"><i style="width:${pc}%"></i></div>
+   <div class="cnt">${p.ok}/${p.total} <small>${l.pronto_em?"conferido":m>0?(m>=60?"começa em "+Math.floor(Math.round(m)/60)+"h"+String(Math.round(m)%60).padStart(2,"0"):"começa em "+Math.round(m)+" min"):"em andamento"}</small></div></button>`}).join("");
+  return`<div class="wrap"><div class="top"><div class="logo">IMPlay</div><div class="who">${esc(String(S.me.nome).split(" ")[0])}<br><a href="#" data-a="sair" style="color:var(--cinza)">sair</a></div></div>
+   ${avisoPush()}${abas}${cards||`<div class="empty">${S.aba==="coord"?"Nenhuma live nesta janela.":"Nenhuma live sua "+(S.aba==="hoje"?"hoje":"amanhã")+". ✌️"}</div>`}</div>`}
+function itemHtml(l,i){const m=marcaDe(l,i.id),e=m?m.estado:"";
+  const tk=e==="ok"?"✓":e==="problema"?"!":e==="na"?"N/A":"";
+  const meta=m?`${esc(m.por||"")} · ${hm(m.em)}${m.local?" · ⏳ não enviado":""}${m.nota?` · “${esc(m.nota)}”`:""}`:(i.foto?"📷 pede foto":"");
+  return`<button class="it ${e}" data-a="item" data-v="${esc(i.id)}"><span class="tk" data-a="tick" data-v="${esc(i.id)}">${tk}</span><span style="min-width:0"><div class="tt">${esc(i.titulo)}${i.origem==="ia"?'<span class="ia">IA</span>':""}</div><div class="ds">${esc(i.detalhe||"")}</div>${meta?`<div class="mt">${meta}</div>`:""}</span><span class="ic">${i.foto&&e==="ok"?"📷":"›"}</span></button>`}
+function oriCard(l){const o=l.orient||[];if(!o.length)return`<div class="card" style="margin-bottom:12px"><b>📣 Orientações do cliente</b><div class="small muted" style="margin-top:6px">Nada registrado no ERP. Confira o grupo do cliente no WhatsApp; se houver algo novo (cupom, sorteio, flash, overlay), toque em Problema no item “Orientações recentes” e escreva o que falta.</div></div>`;
+  const nv=o.filter(x=>Date.now()-new Date(x.mudou_em).getTime()<864e5).length;
+  return`<details class="card" style="margin-bottom:12px" ${l.orient_reaberta||nv?"open":""}><summary>📣 Orientações do cliente (${o.length})${nv?` · ${nv} nova${nv>1?"s":""}`:""}</summary>${o.map(orientCard).join("")}</details>`}
+function liveHtml(l){const p=prog(l),st=status(l),m=minAte(l.inicio),lim=new Date(new Date(l.inicio).getTime()-30*60e3).toISOString(),ml=minAte(lim),pc=p.total?Math.round(p.ok/p.total*100):0;
+  const blocos=[];(l.itens||[]).forEach(i=>{let b=blocos.find(x=>x.n===i.bloco);if(!b){b={n:i.bloco,it:[]};blocos.push(b)}b.it.push(i)});
+  const prazoK=l.pronto_em?"g":ml<=0?"r":ml<=15?"y":"g";
+  const prazo=l.pronto_em?`✅ Tudo conferido às ${hm(l.pronto_em)}`:ml>0?`Prazo ${hm(lim)} · faltam ${Math.round(ml)} min`:m>0?`⏰ Prazo passou (${hm(lim)}) · a live começa em ${Math.round(m)} min`:`Live em andamento`;
+  const cp=l.central||{};const arqs=(l.briefing_arqs||[]).filter(a=>a.tipo==="link"&&a.url);
+  const brief=(l.briefing||cp.cupons||cp.nao_falar||arqs.length)?`<details class="card"><summary>📋 Briefing desta live</summary>
+    ${l.briefing?`<div class="brief">${esc(l.briefing)}</div>`:""}
+    ${cp.cupons?`<div class="small muted" style="margin-top:12px">CUPONS</div><div class="brief">${esc(typeof cp.cupons==="string"?cp.cupons:JSON.stringify(cp.cupons))}</div>`:""}
+    ${cp.nao_falar?`<div class="small muted" style="margin-top:12px">NÃO FALAR</div><div class="brief">${esc(typeof cp.nao_falar==="string"?cp.nao_falar:JSON.stringify(cp.nao_falar))}</div>`:""}
+    ${arqs.map(a=>`<div style="margin-top:8px">🔗 <a class="brief" style="color:var(--volt)" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo||a.url)}</a></div>`).join("")}</details>`:"";
+  return`<div class="wrap"><div class="sticky"><button class="back" data-a="voltar">‹ Voltar</button>
+   <div class="eyebrow">${diaLabel(l.inicio)} · ${hm(l.inicio)}${l.plataforma?" · "+esc(l.plataforma):""}</div>
+   <h1 style="font-size:28px;line-height:1.05;margin-top:4px;overflow-wrap:anywhere">${esc(l.marca||"Live")}</h1>
+   <div class="small muted" style="margin-top:4px">🎛 ${l.operador?esc(l.operador):"<b style='color:var(--bad)'>sem operador</b>"} · ${l.seller?"Seller: "+esc(l.seller):"sem seller"}</div>
+   <div class="prazo ${prazoK}"><span>${esc(prazo)}</span><span>${p.ok}/${p.total}</span></div><div class="bar ${cor(l)}"><i style="width:${pc}%"></i></div></div>
+   ${p.pr?`<div class="badbox" style="margin-top:12px">⚠️ ${p.pr} item(ns) com problema — a coordenação foi avisada.</div>`:""}
+   ${l.pronto_em?`<div class="okbox" style="margin-top:12px">Checklist salvo: ${esc(l.operador||"")} conferiu tudo às ${hm(l.pronto_em)}.</div>`:""}
+   ${l.orient_reaberta?`<div class="badbox" style="margin-top:12px">📣 O cliente combinou algo novo depois da sua conferência. Leia as orientações e confirme de novo o item “Orientações recentes”.</div>`:""}
+   <div style="margin-top:12px">${oriCard(l)}${brief}</div>
+   ${blocos.map(b=>{const ok=b.it.filter(i=>{const m=marcaDe(l,i.id);return m&&m.estado!=="problema"}).length;return`<div class="bloco"><h3><span>${esc(b.n)}</span><span>${ok}/${b.it.length}</span></h3>${b.it.map(i=>itemHtml(l,i)).join("")}</div>`}).join("")}</div>`}
+
+/* ---------- orientações do cliente (grupo do WhatsApp) ---------- */
+const TIPO_OR={cupom:["🎟️","Cupom"],sorteio:["🎁","Sorteio"],flash:["⚡","Flash sale"],overlay:["🖼️","Overlay / imagens"],aviso:["📣","Aviso"],outro:["📝","Outro"]};
+const REL_OR={orientacoes:null,cupons:["cupom"],flash:["flash"],precos:["flash"],overlay:["overlay"],sorteio:["sorteio"]};
+function orientDe(l,id){if(!(id in REL_OR))return[];const t=REL_OR[id],o=l.orient||[];return t?o.filter(x=>t.includes(x.tipo)):o}
+function orientCard(o){const t=TIPO_OR[o.tipo]||TIPO_OR.outro,nova=Date.now()-new Date(o.mudou_em).getTime()<864e5;
+  const ate=o.valido_ate?`<div class="small muted" style="margin-top:4px">Vale até ${new Date(o.valido_ate).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</div>`:"";
+  const an=(o.anexos||[]).map(a=>/\.(png|jpe?g|webp|gif)$/i.test(a.path||"")?`<a data-sp="${esc(a.path)}" target="_blank" rel="noopener"><img data-sp="${esc(a.path)}" alt="${esc(a.nome||"imagem")}"></a>`:`<a data-sp="${esc(a.path)}" target="_blank" rel="noopener">📎 ${esc(a.nome||"arquivo")}</a>`).join("");
+  return`<div class="ori"><div class="oh"><span>${t[0]} ${t[1]}</span>${nova?'<span class="nv">NOVA</span>':""}</div><div class="ot">${esc(o.titulo)}</div>${o.texto&&o.texto!==o.titulo?`<div class="ox">${esc(o.texto)}</div>`:""}${ate}${an?`<div class="th">${an}</div><div class="small muted" style="margin-top:6px">Toque na imagem para abrir; segure para salvar no celular.</div>`:""}</div>`}
+function carregaImgs(){document.querySelectorAll("[data-sp]").forEach(async el=>{if(el.dataset.ok)return;el.dataset.ok="1";const u=await urlFoto(el.dataset.sp);if(!u)return;if(el.tagName==="IMG")el.src=u;else el.href=u})}
+
+/* ---------- folha do item ---------- */
+let FOTO_ARQ=null;
+function abrirItem(l,id){const i=(l.itens||[]).find(x=>x.id===id);if(!i)return;const m=marcaDe(l,id)||{};FOTO_ARQ=null;
+  const promos=(l.promocoes||[]).map((p,idx)=>({p,idx})).filter(x=>x.p.preco_live!==""&&x.p.preco_live!=null);
+  let val={};try{val=m.valor?JSON.parse(m.valor):{}}catch(_){}
+  const preco=i.tipo==="preco"?(promos.length?promos.map(({p,idx})=>`<div class="promo"><b>${esc(p.produto||"Produto")}</b><div class="pp"><span>Preço base: <s>R$ ${esc(p.preco||"—")}</s></span><span>Flash: <strong>R$ ${esc(p.preco_live)}</strong></span></div>
+     <div class="fld" style="margin-top:6px"><label>O que está na plataforma (Por R$)</label><input inputmode="decimal" data-pr="${idx}" value="${esc(val[idx]??"")}" placeholder="ex.: 99,90"></div></div>`).join(""):`<div class="okbox" style="margin-top:12px">O briefing não tem preço de flash sale nesta live.</div>`):"";
+  const foto=i.foto?`<label class="foto">📷 ${m.foto_path?"Trocar foto":"Tirar foto"}<input type="file" accept="image/*" capture="environment" id="ftIn" hidden><div id="ftPrev"></div></label>`:"";
+  const el=document.createElement("div");el.className="sheet";el.id="folha";
+  el.innerHTML=`<div><div class="eyebrow">${esc(i.bloco)}</div><h2 style="margin-top:4px">${esc(i.titulo)}</h2><p class="muted" style="margin:8px 0 0;line-height:1.45">${esc(i.detalhe||"")}</p>
+   ${orientDe(l,id).map(orientCard).join("")}
+   ${m.estado==="problema"?`<div class="badbox" style="margin-top:12px">Problema: ${esc(m.nota||"")}</div>`:""}${preco}${foto}
+   <div class="fld" id="notaBox" hidden><label>Conte em poucas palavras</label><textarea id="nota" rows="3" placeholder="O que aconteceu? O que falta?"></textarea></div>
+   <div class="stack"><button class="btn ok" data-a="f-ok">✅ Conferi, está OK</button><button class="btn bad" data-a="f-prob">⚠️ Tenho um problema</button><button class="btn" data-a="f-na">Não se aplica</button>
+   ${m.estado?`<button class="btn" data-a="f-limpar">Desmarcar</button>`:""}<button class="btn" data-a="f-fechar">Fechar</button></div></div>`;
+  el.dataset.l=l.id;el.dataset.i=id;document.body.appendChild(el);carregaImgs();
+  if(m.foto_path)urlFoto(m.foto_path).then(u=>{const p=$("#ftPrev");if(p&&u)p.innerHTML=`<img src="${esc(u)}" alt="foto">`})}
+async function folhaAcao(a){const el=$("#folha");if(!el)return;const l=S.lives.find(x=>String(x.id)===el.dataset.l),id=el.dataset.i;const i=(l.itens||[]).find(x=>x.id===id);
+  if(a==="f-fechar"){el.remove();return}
+  if(a==="f-limpar"){el.remove();await marcar(l,id,"limpar");return}
+  const nb=$("#notaBox");
+  if(a==="f-prob"||a==="f-na"){if(nb.hidden){nb.hidden=false;$("#nota").focus();$("#nota").dataset.q=a;return}
+    const t=$("#nota").value.trim();if(t.length<3)return toast("Conte em poucas palavras",true);el.remove();await marcar(l,id,a==="f-prob"?"problema":"na",{nota:t});return}
+  // OK
+  const btn=el.querySelector('[data-a="f-ok"]');btn.disabled=true;
+  try{let foto=(marcaDe(l,id)||{}).foto_path||null,valor=null;
+    if(i.foto){const f=$("#ftIn")&&$("#ftIn").files[0];if(f){btn.textContent="Enviando foto…";foto=await subirFoto(l,id,f)}if(!foto){btn.disabled=false;return toast("Tire a foto antes de confirmar",true)}}
+    if(i.tipo==="preco"){const mp={};let falta=false;el.querySelectorAll("[data-pr]").forEach(inp=>{if(!inp.value.trim())falta=true;mp[inp.dataset.pr]=inp.value.trim()});if(falta){btn.disabled=false;return toast("Digite o preço de cada produto",true)}valor=JSON.stringify(mp)}
+    const okk=await marcar(l,id,"ok",{foto,valor});if(okk)el.remove();else{btn.disabled=false;btn.textContent="✅ Conferi, está OK"}}
+  catch(e){btn.disabled=false;btn.textContent="✅ Conferi, está OK";toast(e.message,true)}}
+
+/* ---------- eventos ---------- */
+document.addEventListener("click",async e=>{const t=e.target.closest("[data-a]");if(!t)return;const a=t.dataset.a,v=t.dataset.v;
+  if(a==="tick"){e.stopPropagation();const l=S.lives.find(x=>String(x.id)===String(S.live));const i=l&&(l.itens||[]).find(x=>x.id===v);if(!i)return;
+    const m=marcaDe(l,v);if(i.foto||i.tipo==="preco"||i.tipo==="orient"||orientDe(l,v).length||(m&&m.estado))return abrirItem(l,v);navigator.vibrate&&navigator.vibrate(15);marcar(l,v,"ok");return}
+  if(a==="item"){abrirItem(S.lives.find(x=>String(x.id)===String(S.live)),v);return}
+  if(a.startsWith("f-")){folhaAcao(a);return}
+  if(a==="aba"){S.aba=v;render()}
+  else if(a==="abrir"){S.live=v;S.tela="live";location.hash="live="+v;render();window.scrollTo(0,0)}
+  else if(a==="voltar"){S.tela="home";history.replaceState(null,"",location.pathname);render()}
+  else if(a==="push")ativaPush();
+  else if(a==="sair"){e.preventDefault();await db.auth.signOut();S.me=null;S.lives=[];render()}
+  else if(a==="esqueci"){const em=($("#lg [name=email]").value||"").trim();if(!em)return toast("Digite seu e-mail primeiro",true);const {error}=await db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname.replace(/operador\/.*$/,"")});toast(error?error.message:"Enviamos um link para o seu e-mail",!!error)}
+});
+document.addEventListener("submit",async e=>{if(e.target.id!=="lg")return;e.preventDefault();const f=new FormData(e.target);const b=e.target.querySelector("button.p");b.disabled=true;
+  const {error}=await db.auth.signInWithPassword({email:String(f.get("email")).trim(),password:String(f.get("password"))});b.disabled=false;
+  if(error){const x=$("#lgErr");x.hidden=false;x.textContent="E-mail ou senha incorretos.";return}await boot()});
+document.addEventListener("change",e=>{if(e.target.id!=="ftIn")return;const f=e.target.files[0];if(!f)return;const p=$("#ftPrev");p.innerHTML=`<img src="${URL.createObjectURL(f)}" alt="prévia">`});
+
+/* ---------- início ---------- */
+async function boot(){
+  const {data:{session}}=await db.auth.getSession();
+  if(!session){S.me=null;render();return}
+  const {data:me,error}=await db.rpc("imp_op_entrar");
+  if(error||!me){S.me=null;render();if(error&&/imp_op_entrar/.test(error.message))alert("O servidor ainda não tem o SQL do checklist (implay_checklist_prelive.sql).");else if(!error){await db.auth.signOut();alert("Seu acesso não é de operador ou coordenação.")}return}
+  S.me=me;try{S.lives=JSON.parse(localStorage.getItem("impl-op-cache")||"[]")}catch(_){}
+  aplicaFilaLocal();render();await carregar(true);esvaziaFila();garantePush();
+  const h=(location.hash.match(/live=([^&]+)/)||[])[1];if(h&&S.lives.some(l=>String(l.id)===decodeURIComponent(h))){S.live=decodeURIComponent(h);S.tela="live";render()}}
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.me){carregar(true);esvaziaFila()}});
+setInterval(()=>{if(S.me&&!document.hidden&&!$("#folha")){carregar(true)}},60000);
+setInterval(()=>{if(S.me&&!document.hidden&&!$("#folha")&&!document.querySelector("details[open]"))render()},30000);
+boot();
+</script>
+</body>
+</html>
