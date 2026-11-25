@@ -2640,8 +2640,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="96";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
+const APP_VERSAO="97";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="23/11/2026";
 const NOVIDADES=[
+ ["97","25/11","Link direto para recuperar senha: implaylive.github.io/erp/?esqueci"],
  ["96","25/11","Esqueci a senha: o link do e-mail abre direto uma tela própria para criar a senha nova (funciona no Safari do iPhone, mesmo sem estar logado). Se o link venceu, avisa e mostra como pedir outro."],
  ["95","25/11","Esqueci a senha: ao abrir o link do e-mail, a tela de criar a senha nova agora abre sempre."],
  ["94","24/11","Central do cliente: lista os contratos que ainda não foram marcados como assinados, com o botão “✅ Já está assinado”. Ao marcar, o cliente passa a aparecer na Central."],
@@ -3779,6 +3780,13 @@ document.addEventListener("click",e=>{const a=e.target.closest("#esqueci");if(!a
   if(!/@/.test(em))em=(prompt("Digite o seu e-mail de acesso:")||"").trim();if(!/@/.test(em))return;
   db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname}).then(({error})=>{if(error)return toast(/rate|limit|seconds/i.test(error.message)?"Já mandamos um link há pouco. Veja seu e-mail (e o spam) e use o mais recente. Para pedir outro, espere alguns minutos.":"Não deu para enviar: "+error.message,true);
     toast("Pronto! Enviamos um link para "+em+". Abra o e-mail (veja o spam também) e crie a senha nova.")})},true);
+if(/[?&]esqueci\b/.test(location.search)&&!REC_SENHA){(function(){const ov=document.createElement("div");ov.style.cssText="position:fixed;inset:0;z-index:99999;background:#0B0B0C;color:#F7F7F2;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,system-ui,sans-serif";
+  ov.innerHTML=`<form id="esqF" style="max-width:380px;width:100%"><h2 style="margin:0 0 6px">Esqueci a senha</h2><p style="color:#A3A3AB;margin:0 0 16px;line-height:1.5">Digite o seu e-mail de acesso. Vamos mandar um link para você criar a senha nova.</p><input type="email" name="em" placeholder="seu@email.com" autocomplete="email" required style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid #2A2A30;background:#17171A;color:#F7F7F2;font-size:16px"><div id="esqMsg" style="min-height:22px;margin:10px 0;line-height:1.5"></div><button style="width:100%;padding:14px;border-radius:999px;border:0;background:#D4FF2F;color:#0B0B0C;font-weight:800;font-size:16px">Mandar link</button><a href="${location.pathname}" style="display:block;text-align:center;margin-top:14px;color:#A3A3AB">Voltar para o login</a></form>`;
+  const go=()=>{document.body.appendChild(ov);const f=document.getElementById("esqF");f.addEventListener("submit",async e=>{e.preventDefault();const m=document.getElementById("esqMsg");const em=f.em.value.trim();m.style.color="#A3A3AB";m.textContent="Enviando…";
+    const {error}=await db.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});
+    if(error){m.style.color="#FF3FA4";m.textContent=/rate|limit|seconds/i.test(error.message)?"Já mandamos um link há pouco. Veja seu e-mail (e o spam) e use o mais recente.":"Não deu para enviar: "+error.message;return}
+    m.style.color="#D4FF2F";m.textContent="Pronto! Abra o e-mail de "+em+" (veja o spam também) e toque no link."})};
+  if(document.body)go();else document.addEventListener("DOMContentLoaded",go)})()}
 if(REC_SENHA||/error_code=otp_expired|error_description=/.test(location.hash)){(function(){const hs=new URLSearchParams(location.hash.slice(1));const err=hs.get("error_code")||hs.get("error");
   const ov=document.createElement("div");ov.id="recOv";ov.style.cssText="position:fixed;inset:0;z-index:99999;background:#0B0B0C;color:#F7F7F2;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,system-ui,sans-serif";
   ov.innerHTML=err?`<div style="max-width:380px;width:100%"><h2 style="margin:0 0 10px">Link vencido</h2><p style="color:#A3A3AB;line-height:1.5">Esse link já foi usado ou venceu. Peça um novo: volte para o login, digite seu e-mail e toque em <b>Esqueci a senha</b>. Use sempre o e-mail mais recente.</p><a href="${location.pathname}" style="display:block;text-align:center;margin-top:16px;padding:14px;border-radius:999px;background:#D4FF2F;color:#0B0B0C;font-weight:800;text-decoration:none">Voltar para o login</a></div>`
