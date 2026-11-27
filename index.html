@@ -2641,8 +2641,9 @@ document.addEventListener("drop",async e=>{const d=e.target.closest&&e.target.cl
 
 VIEWS.pessoa=VPessoa;
 /* ================= v13 · VERSÃO DO SISTEMA + LER CONDIÇÕES DE ARQUIVOS ================= */
-const APP_VERSAO="100";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
+const APP_VERSAO="101";const APP_HOST=(location.host+location.pathname).replace(/[^/]*$/,"");const APP_DATA="25/11/2026";
 const NOVIDADES=[
+ ["101","27/11","Proposta: as páginas tiradas em “✂ Escolher páginas” agora ficam salvas na própria proposta. Valem em qualquer computador, depois de recarregar e no PDF."],
  ["100","25/11","Live: dá para escalar seller e substituta que ainda não tiveram o cadastro aprovado. Elas aparecem com ⏳ e borda tracejada. Assim não precisa mais escrever o nome nas observações."],
  ["99","25/11","📱 Check-in pré-live do operador: app novo (operador/) com checklist de 15 itens da live, fotos de prova, avisos 45 min antes e alerta à coordenação se atrasar. Em Lives › Checklist do dia você acompanha cada live, escolhe quem é avisado e edita os itens do cliente (a IA sugere pelo briefing). 📣 Orientações do cliente: cole a conversa do grupo do WhatsApp e a IA separa cupom, sorteio, flash sale, overlay e avisos (você revisa e salva; pode anexar as imagens de overlay). O operador lê no app e a conferência reabre, com aviso, se o cliente combinar algo novo."],
  ["98","25/11","“Contratos ativos” agora é o mesmo número no Painel, no Funil, em Propostas e na Central: cliente com contrato assinado. Clicando, abre a Central. Na Central, cada cliente aparece uma vez só na lista de contratos para marcar como assinado."],
@@ -3672,8 +3673,9 @@ function cdTestOp(){const n=[...(S.socios||[]).map(s=>s.nome_completo||s.nome),.
 @media print{.pgw.off{display:none!important}.pgx,.pgn{display:none!important}#doc.sel .pgw{display:block!important;margin:0 auto!important}.pgw.lastv .pg{break-after:auto!important;page-break-after:auto!important}}`;document.head.appendChild(st)})();
 function pgKey(p,i){if(i===0)return "capa";const m=p.html.match(/deck\d*\/s(\d+[a-z]?)\.jpg/);if(m)return "s"+m[1];if(/Resumo da proposta/.test(p.html))return "resumo";const h=(p.html.match(/<h2>([^<]+)/)||[])[1]||String(i);return "inv:"+h.slice(0,40)}
 function pgChave(){const o=S._docO||{};return "implay-pgoff-"+(o.id||(o.numero?"n"+o.numero:"prev"))}
-function pgOff(){try{return new Set(JSON.parse(localStorage.getItem(pgChave())||"[]"))}catch(e){return new Set()}}
-function pgSalva(s){try{localStorage.setItem(pgChave(),JSON.stringify([...s]))}catch(e){}}
+function pgOff(){const o=S._docO||{};if(o.contrato&&Array.isArray(o.contrato._pgoff))return new Set(o.contrato._pgoff);try{return new Set(JSON.parse(localStorage.getItem(pgChave())||"[]"))}catch(e){return new Set()}}
+function pgSalva(s){const arr=[...s];try{localStorage.setItem(pgChave(),JSON.stringify(arr))}catch(e){}const o=S._docO;if(!o)return;o.contrato=Object.assign({},o.contrato||{},{_pgoff:arr});
+  if(o.id){const x=(S.orcs||[]).find(z=>z.id===o.id);if(x&&x!==o)x.contrato=Object.assign({},x.contrato||{},{_pgoff:arr});clearTimeout(S._pgT);S._pgT=setTimeout(async()=>{const r=await db.from("imp_orcamentos").update({contrato:o.contrato}).eq("id",o.id);if(r.error)toast("Não salvou as páginas escolhidas: "+r.error.message,true)},400)}}
 function pgApply(){const off=pgOff();const ws=[...document.querySelectorAll("#doc .pgw[data-pk]")];if(!ws.length)return;let n=0,last=null;
   ws.forEach((w,ix)=>{const o=off.has(w.dataset.pk);w.classList.toggle("off",o);w.classList.remove("lastv");if(!o){n++;last=w;const v=w.querySelector(".vnum");if(v)v.textContent=String(n).padStart(2,"0")}
     if(!w.querySelector(".pgx"))w.insertAdjacentHTML("beforeend",`<button type="button" class="pgx" data-act="pgTog"></button><span class="pgn"></span>`);
